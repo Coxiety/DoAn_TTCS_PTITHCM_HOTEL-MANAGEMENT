@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Login Modal Fragment -->
+    <div th:fragment="loginModal">
+        <div id="modalOverlayLogin" class="modal-overlay">
+            <div class="modal">
+                <span id="closeModalLogin" class="close-button">&times;</span>
+                <h2 class="modal-title">Login</h2>
+                <form action="/auth/login" method="POST">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" 
+                               id="username" 
+                               name="username" 
+                               placeholder="Username" 
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" 
+                               id="password" 
+                               name="password" 
+                               placeholder="Password" 
+                               required>
+                    </div>
+                    <div class="modal-buttons">
+                        <button type="submit" class="modal-btn login-modal-btn">
+                            Login
+                        </button>
+                        <button type="button" 
+                                class="modal-btn signup-modal-btn" 
+                                id="toSignUpFromLogin">
+                            Sign-Up
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Modal Fragment -->
+    <div th:fragment="signupModal">
+        <div id="modalOverlaySignUp" class="modal-overlay">
+            <div class="modal">
+                <span id="closeModalSignUp" class="close-button">&times;</span>
+                <h2 class="modal-title">Sign-Up</h2>
+                <form action="/auth/signup" method="POST" id="signupForm">
+                    <div class="form-group">
+                        <label for="signupPhone">Phone number</label>
+                        <input type="text" 
+                               id="signupPhone" 
+                               name="phone" 
+                               placeholder="Phone number" 
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupEmail">Email</label>
+                        <input type="email" 
+                               id="signupEmail" 
+                               name="email" 
+                               placeholder="Email" 
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupFullName">Full Name</label>
+                        <input type="text" 
+                               id="signupFullName" 
+                               name="fullName" 
+                               placeholder="Full Name" 
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupUsername">Username</label>
+                        <input type="text" 
+                               id="signupUsername" 
+                               name="username" 
+                               placeholder="Username" 
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <input type="password" 
+                               id="signupPassword" 
+                               name="password" 
+                               placeholder="Password" 
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <input type="password" 
+                               id="confirmPassword" 
+                               name="confirmPassword" 
+                               placeholder="Confirm Password" 
+                               required>
+                    </div>
+                    <div class="modal-buttons">
+                        <button type="button" 
+                                class="modal-btn login-modal-btn" 
+                                id="toLoginFromSignUp">
+                            Login
+                        </button>
+                        <button type="submit" class="modal-btn signup-modal-btn">
+                            Sign-Up
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Scripts Fragment -->
+    <div th:fragment="modalScripts">
+        <script>
+            // Modal elements
+            const loginNavBtn = document.querySelector('.login-btn');
+            const signupNavBtn = document.querySelector('.signup-btn');
+            const modalOverlayLogin = document.getElementById('modalOverlayLogin');
+            const modalOverlaySignUp = document.getElementById('modalOverlaySignUp');
+            const closeModalLogin = document.getElementById('closeModalLogin');
+            const closeModalSignUp = document.getElementById('closeModalSignUp');
+            const toSignUpFromLogin = document.getElementById('toSignUpFromLogin');
+            const toLoginFromSignUp = document.getElementById('toLoginFromSignUp');
+
+            // Login modal handlers
+            loginNavBtn?.addEventListener('click', (e) => 
+            {
+                e.preventDefault();
+                modalOverlayLogin.style.display = 'flex';
+            });
+
+            closeModalLogin?.addEventListener('click', () => 
+            {
+                modalOverlayLogin.style.display = 'none';
+            });
+
+            // Sign-up modal handlers
+            signupNavBtn?.addEventListener('click', (e) => 
+            {
+                e.preventDefault();
+                modalOverlaySignUp.style.display = 'flex';
+            });
+
+            closeModalSignUp?.addEventListener('click', () => 
+            {
+                modalOverlaySignUp.style.display = 'none';
+            });
+
+            // Switch between modals
+            toSignUpFromLogin?.addEventListener('click', () => 
+            {
+                modalOverlayLogin.style.display = 'none';
+                modalOverlaySignUp.style.display = 'flex';
+            });
+
+            toLoginFromSignUp?.addEventListener('click', () => 
+            {
+                modalOverlaySignUp.style.display = 'none';
+                modalOverlayLogin.style.display = 'flex';
+            });
+
+            // Close on outside click
+            window.addEventListener('click', (e) => 
+            {
+                if (e.target === modalOverlayLogin) 
+                {
+                    modalOverlayLogin.style.display = 'none';
+                }
+                if (e.target === modalOverlaySignUp) 
+                {
+                    modalOverlaySignUp.style.display = 'none';
+                }
+            });
+
+            // Password confirmation validation
+            document.getElementById('signupForm')?.addEventListener('submit', function(e) 
+            {
+                const password = document.getElementById('signupPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (password !== confirmPassword) 
+                {
+                    e.preventDefault();
+                    alert('Passwords do not match!');
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Home Page</title>
+        <link rel="stylesheet" th:href="@{/css/stylesHome.css}">
+    </head>
+    <body>
+        <!-- Messages -->
+        <div th:if="${error}" class="alert alert-error" th:text="${error}">
+        </div>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}">
+        </div>
+
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="logo">
+                LOGO
+            </div>
+            <ul class="nav-links">
+                <li>
+                    <a href="#">Contract</a>
+                </li>
+                <li>
+                    <a href="#">Home</a>
+                </li>
+                <li>
+                    <a href="#">Introduction</a>
+                </li>
+                <!-- Show these if user is not logged in -->
+                <li th:if="${session.user == null}">
+                    <a href="#" class="btn login-btn">Login</a>
+                </li>
+                <li th:if="${session.user == null}">
+                    <a href="#" class="btn signup-btn">Sign-up</a>
+                </li>
+                <!-- Show these if user is logged in -->
+                <li th:if="${session.user != null}">
+                    <span th:text="${session.user.fullName}"></span>
+                </li>
+                <li th:if="${session.user != null}">
+                    <form action="/auth/logout" method="POST" style="display: inline;">
+                        <button type="submit" class="btn">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Hero section -->
+        <div class="hero-section">
+            <div class="hero-text">
+                <h1>Hotel Management</h1>
+                <p>Your Comfort is Our Priority</p>
+                <a href="/booking" class="book-call">Book a Room</a>
+            </div>
+        </div>
+
+        <!-- Include Auth Modals -->
+        <div th:replace="~{fragments/auth-modals :: loginModal}">
+        </div>
+        <div th:replace="~{fragments/auth-modals :: signupModal}">
+        </div>
+
+        <!-- Include Modal Scripts -->
+        <div th:replace="~{fragments/auth-modals :: modalScripts}">
+        </div>
+    </body>
+</html>

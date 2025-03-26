@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Booking Page</title>
+        <!-- Include both CSS files -->
+        <link rel="stylesheet" th:href="@{/css/stylesHome.css}" />
+        <link rel="stylesheet" th:href="@{/css/stylesBooking.css}" />
+    </head>
+    <body>
+        <!-- Messages -->
+        <div th:if="${error}" class="alert alert-error" th:text="${error}">
+        </div>
+        <div th:if="${success}" class="alert alert-success" th:text="${success}">
+        </div>
+
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="logo">
+                LOGO
+            </div>
+            <ul class="nav-links">
+                <li>
+                    <a href="#">Contract</a>
+                </li>
+                <li>
+                    <a href="#">Home</a>
+                </li>
+                <li>
+                    <a href="#">Introduction</a>
+                </li>
+                <!-- Show these if user is not logged in -->
+                <li th:if="${session.user == null}">
+                    <a href="#" class="btn login-btn">Login</a>
+                </li>
+                <li th:if="${session.user == null}">
+                    <a href="#" class="btn signup-btn">Sign-up</a>
+                </li>
+                <!-- Show these if user is logged in -->
+                <li th:if="${session.user != null}">
+                    <span th:text="${session.user.fullName}"></span>
+                </li>
+                <li th:if="${session.user != null}">
+                    <form action="/auth/logout" method="POST" style="display: inline;">
+                        <button type="submit" class="btn">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main>
+            <!-- LEFT COLUMN: Rooms List -->
+            <section class="rooms-section">
+                <!-- Example: Room #1 -->
+                <div class="room-card">
+                    <div class="room-image">
+                    </div>
+                    <div class="room-details">
+                        <h2>Standard Room</h2>
+                        <div class="room-options">
+                            <button class="btn availability-btn">Available 5</button>
+                            <select class="room-select">
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Example: Room #2 -->
+                <div class="room-card">
+                    <div class="room-image">
+                    </div>
+                    <div class="room-details">
+                        <h2>Deluxe Room</h2>
+                        <div class="room-options">
+                            <button class="btn availability-btn">Available 5</button>
+                            <select class="room-select">
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Example: Room #3 -->
+                <div class="room-card">
+                    <div class="room-image">
+                    </div>
+                    <div class="room-details">
+                        <h2>Executive Suite</h2>
+                        <div class="room-options">
+                            <button class="btn availability-btn">Available 5</button>
+                            <select class="room-select">
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT COLUMN: Phone-like summary box -->
+            <section class="summary-section">
+                <div class="phone-mockup">
+                    <div class="phone-header">
+                    </div>
+                    <div class="phone-content">
+                        <p>Total Rooms: <span id="totalRooms">0</span></p>
+                        <p>Total Price: <span id="totalPrice">0</span></p>
+                        <p>Check-in date:</p>
+                        <div class="calendar-icon" id="calendarIcon">
+                            📅
+                        </div>
+                        <input type="date" id="checkInDate" style="display:none;" />
+                    </div>
+                    <button class="btn book-btn">Book</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Include Auth Modals -->
+        <div th:replace="~{fragments/auth-modals :: loginModal}">
+        </div>
+        <div th:replace="~{fragments/auth-modals :: signupModal}">
+        </div>
+
+        <!-- Include Room Detail Modal -->
+        <div th:replace="~{fragments/room-modals :: roomDetailModal}">
+        </div>
+
+        <!-- Include Modal Scripts -->
+        <div th:replace="~{fragments/auth-modals :: modalScripts}">
+        </div>
+        <div th:replace="~{fragments/room-modals :: roomDetailScripts}">
+        </div>
+
+        <!-- Booking specific scripts -->
+        <script>
+            const ROOM_PRICE = 100;
+            const roomSelects = document.querySelectorAll('.room-select');
+            const totalRoomsEl = document.getElementById('totalRooms');
+            const totalPriceEl = document.getElementById('totalPrice');
+
+            roomSelects.forEach(select => 
+            {
+                select.addEventListener('change', updateTotals);
+            });
+
+            function updateTotals() 
+            {
+                let totalRooms = 0;
+                roomSelects.forEach(select => 
+                {
+                    totalRooms += parseInt(select.value, 10);
+                });
+                totalRoomsEl.textContent = totalRooms;
+                totalPriceEl.textContent = totalRooms * ROOM_PRICE;
+            }
+
+            const calendarIcon = document.getElementById('calendarIcon');
+            const checkInDate = document.getElementById('checkInDate');
+
+            calendarIcon.addEventListener('click', () => 
+            {
+                if (checkInDate.showPicker) 
+                {
+                    checkInDate.showPicker();
+                } 
+                else 
+                {
+                    checkInDate.style.display = 'inline-block';
+                    checkInDate.focus();
+                }
+            });
+        </script>
+    </body>
+</html>

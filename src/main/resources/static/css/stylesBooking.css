@@ -1,0 +1,123 @@
+/* Import common styles */
+@import 'common.css';
+
+/* ============ MAIN LAYOUT ============ */
+main 
+{
+    display: flex;
+    gap: 20px;
+    padding: 80px 20px;
+}
+
+/* ============ LEFT COLUMN: ROOMS ============ */
+.rooms-section 
+{
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.room-card 
+{
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.room-image 
+{
+    width: 180px;
+    height: 100px;
+    background-color: #333;
+    margin-right: 20px;
+    border-radius: 4px;
+}
+
+.room-details 
+{
+    flex: 1;
+}
+
+.room-details h2 
+{
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.room-options 
+{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.availability-btn 
+{
+    background-color: #00C853;
+    color: #000;
+    font-weight: bold;
+}
+
+.room-select 
+{
+    padding: 6px;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+/* ============ RIGHT COLUMN: PHONE MOCKUP ============ */
+.summary-section 
+{
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.phone-mockup 
+{
+    width: 280px;
+    background-color: #fff;
+    border: 4px solid #000;
+    border-radius: 30px;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+}
+
+.phone-header 
+{
+    width: 100%;
+    height: 20px;
+    background-color: #000;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 10px;
+}
+
+.phone-content p 
+{
+    margin: 10px 0;
+    font-weight: 500;
+}
+
+.calendar-icon 
+{
+    font-size: 40px;
+    cursor: pointer;
+    margin: 10px 0;
+}
+
+.book-btn 
+{
+    width: 100%;
+    background-color: #00C853;
+    color: #000;
+    font-size: 1rem;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 10px;
+}

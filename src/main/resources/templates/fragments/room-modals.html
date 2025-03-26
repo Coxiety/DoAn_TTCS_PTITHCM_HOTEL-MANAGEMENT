@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Room Detail Modal Fragment -->
+    <div th:fragment="roomDetailModal">
+        <div id="modalOverlayRoomDetail" class="modal-overlay">
+            <div class="modal room-detail-modal">
+                <span id="closeModalRoomDetail" class="close-button">&times;</span>
+                <div class="room-detail-content">
+                    <div class="room-detail-image">
+                        <!-- Room image will be set dynamically -->
+                    </div>
+                    <h2 class="modal-title">Room Details</h2>
+                    <div class="room-info">
+                        <p class="room-type">Type: <span id="roomTypeDetail"></span></p>
+                        <p class="room-capacity">Capacity: <span id="roomCapacityDetail"></span> persons</p>
+                        <p class="room-price">Price: $<span id="roomPriceDetail"></span> per night</p>
+                        <p class="room-status">Status: <span id="roomStatusDetail"></span></p>
+                    </div>
+                    <div class="room-description">
+                        <h3>Description</h3>
+                        <p id="roomDescriptionDetail"></p>
+                    </div>
+                    <div class="room-amenities">
+                        <h3>Amenities</h3>
+                        <ul id="roomAmenitiesList">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Room Detail Scripts Fragment -->
+    <div th:fragment="roomDetailScripts">
+        <script>
+            const roomCards = document.querySelectorAll('.room-card');
+            const modalOverlayRoomDetail = document.getElementById('modalOverlayRoomDetail');
+            const closeModalRoomDetail = document.getElementById('closeModalRoomDetail');
+
+            // Sample room data (replace with actual data from backend)
+            const roomData = 
+            {
+                "standard": 
+                {
+                    type: "Standard Room",
+                    capacity: 2,
+                    price: 100,
+                    status: "Available",
+                    description: "A comfortable standard room with essential amenities.",
+                    amenities: ["Wi-Fi", "TV", "Air Conditioning", "Private Bathroom"]
+                },
+                "deluxe": 
+                {
+                    type: "Deluxe Room",
+                    capacity: 3,
+                    price: 150,
+                    status: "Available",
+                    description: "Spacious deluxe room with premium furnishings and city view.",
+                    amenities: ["Wi-Fi", "TV", "Air Conditioning", "Mini Bar", "Safe", "City View"]
+                },
+                "suite": 
+                {
+                    type: "Executive Suite",
+                    capacity: 4,
+                    price: 200,
+                    status: "Available",
+                    description: "Luxurious suite with separate living area and premium amenities.",
+                    amenities: ["Wi-Fi", "TV", "Air Conditioning", "Mini Bar", "Safe", "Living Room", "Bathtub", "Ocean View"]
+                }
+            };
+
+            function showRoomDetails(roomType) 
+            {
+                const room = roomData[roomType];
+                document.getElementById('roomTypeDetail').textContent = room.type;
+                document.getElementById('roomCapacityDetail').textContent = room.capacity;
+                document.getElementById('roomPriceDetail').textContent = room.price;
+                document.getElementById('roomStatusDetail').textContent = room.status;
+                document.getElementById('roomDescriptionDetail').textContent = room.description;
+                
+                const amenitiesList = document.getElementById('roomAmenitiesList');
+                amenitiesList.innerHTML = room.amenities
+                    .map(amenity => `<li>${amenity}</li>`)
+                    .join('');
+                
+                modalOverlayRoomDetail.style.display = 'flex';
+            }
+
+            // Add click event to room headings
+            roomCards.forEach((card, index) => 
+            {
+                const heading = card.querySelector('h2');
+                const roomTypes = ['standard', 'deluxe', 'suite'];
+                
+                heading.style.cursor = 'pointer';
+                heading.addEventListener('click', () => 
+                {
+                    showRoomDetails(roomTypes[index]);
+                });
+            });
+
+            // Close modal handlers
+            closeModalRoomDetail.addEventListener('click', () => 
+            {
+                modalOverlayRoomDetail.style.display = 'none';
+            });
+
+            window.addEventListener('click', (e) => 
+            {
+                if (e.target === modalOverlayRoomDetail) 
+                {
+                    modalOverlayRoomDetail.style.display = 'none';
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>
