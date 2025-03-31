@@ -16,9 +16,9 @@
     <nav class="navbar">
       <div class="logo">LOGO</div>
       <ul class="nav-links">
-        <li><a href="#">Contract</a></li>
-        <li><a href="#">Home</a></li>
-        <li><a href="#">Introduction</a></li>
+        <li><a th:href="@{/contract}">Contract</a></li>
+        <li><a th:href="@{/}">Home</a></li>
+        <li><a th:href="@{/intro}">Introduction</a></li>
         <!-- Show these if user is not logged in -->
         <li th:if="${session.user == null}"><a href="#" class="btn login-btn">Login</a></li>
         <li th:if="${session.user == null}"><a href="#" class="btn signup-btn">Sign-up</a></li>

@@ -17,4 +17,16 @@ public class HomeController
     {
         return "BookingPage";
     }
+    
+    @GetMapping("/contract")
+    public String contractPage() 
+    {
+        return "ContractPage";
+    }
+    
+    @GetMapping("/intro")
+    public String introductionPage() 
+    {
+        return "IntroductionPage";
+    }
 }

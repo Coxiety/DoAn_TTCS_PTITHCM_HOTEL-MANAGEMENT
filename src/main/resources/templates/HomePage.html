@@ -19,13 +19,13 @@
             </div>
             <ul class="nav-links">
                 <li>
-                    <a href="#">Contract</a>
+                    <a th:href="@{/contract}">Contract</a>
                 </li>
                 <li>
-                    <a href="#">Home</a>
+                    <a th:href="@{/}" class="active">Home</a>
                 </li>
                 <li>
-                    <a href="#">Introduction</a>
+                    <a th:href="@{/intro}">Introduction</a>
                 </li>
                 <!-- Show these if user is not logged in -->
                 <li th:if="${session.user == null}">
@@ -51,7 +51,7 @@
             <div class="hero-text">
                 <h1>Hotel Management</h1>
                 <p>Your Comfort is Our Priority</p>
-                <a href="/booking" class="book-call">Book a Room</a>
+                <a th:href="@{/booking}" class="book-call">Book a Room</a>
             </div>
         </div>
 

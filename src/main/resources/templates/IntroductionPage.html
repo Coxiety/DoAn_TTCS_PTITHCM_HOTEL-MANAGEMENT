@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Introduction - Hotel Management</title>
+    <link rel="stylesheet" th:href="@{/css/stylesHome.css}">
+    <link rel="stylesheet" th:href="@{/css/stylesInfo.css}">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+</head>
+<body>
+    <!-- Messages -->
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">LOGO</div>
+        <ul class="nav-links">
+            <li><a th:href="@{/contract}">Contract</a></li>
+            <li><a th:href="@{/}">Home</a></li>
+            <li><a th:href="@{/intro}" class="active">Introduction</a></li>
+            <!-- Show these if user is not logged in -->
+            <li th:if="${session.user == null}"><a href="#" class="btn login-btn">Login</a></li>
+            <li th:if="${session.user == null}"><a href="#" class="btn signup-btn">Sign-up</a></li>
+            <!-- Show these if user is logged in -->
+            <li th:if="${session.user != null}"><span th:text="${session.user.fullName}"></span></li>
+            <li th:if="${session.user != null}">
+                <form action="/auth/logout" method="POST" style="display: inline;">
+                    <button type="submit" class="btn">Logout</button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="info-container">
+        <div class="info-header">
+            <h1>Welcome to Luxury Hotel</h1>
+            <p class="subtitle">Experience the perfect blend of comfort, elegance, and impeccable service at our award-winning hotel in the heart of the city.</p>
+        </div>
+
+        <!-- Feature Image -->
+        <div class="intro-image-container"></div>
+
+        <div class="info-section">
+            <h2>About Our Hotel</h2>
+            <p>Since opening our doors in 2010, Luxury Hotel has been synonymous with excellence in hospitality. Our establishment combines modern design with timeless elegance to create an unforgettable experience for our guests.</p>
+            
+            <p>Situated in a prime location, our hotel offers easy access to major attractions, business districts, and transportation hubs. Whether you're visiting for business or leisure, you'll find our location ideal for your needs.</p>
+            
+            <div class="intro-grid">
+                <!-- Feature 1 -->
+                <div class="intro-card">
+                    <i class="fas fa-bed"></i>
+                    <h3>Luxurious Rooms</h3>
+                    <p>Our rooms are designed with your comfort in mind, featuring premium bedding, modern amenities, and elegant décor.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="intro-card">
+                    <i class="fas fa-utensils"></i>
+                    <h3>Fine Dining</h3>
+                    <p>Experience culinary excellence at our award-winning restaurant serving local and international cuisine.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="intro-card">
+                    <i class="fas fa-dumbbell"></i>
+                    <h3>Wellness Center</h3>
+                    <p>Maintain your fitness routine at our state-of-the-art gym or unwind at our spa and wellness center.</p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="intro-card">
+                    <i class="fas fa-wifi"></i>
+                    <h3>Modern Connectivity</h3>
+                    <p>Stay connected with high-speed WiFi throughout the property and smart room controls.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h2>Our Mission</h2>
+            <p>At Luxury Hotel, our mission is to provide exceptional hospitality experiences that exceed our guests' expectations. We strive to:</p>
+            
+            <ul>
+                <li>Deliver personalized service that anticipates guest needs</li>
+                <li>Maintain the highest standards of cleanliness and comfort</li>
+                <li>Create memorable experiences for every visitor</li>
+                <li>Contribute positively to our local community</li>
+                <li>Implement sustainable practices throughout our operations</li>
+            </ul>
+        </div>
+
+        <div class="info-section">
+            <h2>Meet Our Team</h2>
+            <p>Our dedicated team of hospitality professionals works tirelessly to ensure your stay is perfect in every detail.</p>
+            
+            <div class="team-grid">
+                <!-- Team Member 1 -->
+                <div class="team-member">
+                    <div class="avatar"><i class="fas fa-user"></i></div>
+                    <h4>Sarah Johnson</h4>
+                    <span class="position">General Manager</span>
+                    <p>With 15+ years in luxury hospitality, Sarah ensures every aspect of your stay exceeds expectations.</p>
+                </div>
+
+                <!-- Team Member 2 -->
+                <div class="team-member">
+                    <div class="avatar"><i class="fas fa-user"></i></div>
+                    <h4>Michael Chen</h4>
+                    <span class="position">Executive Chef</span>
+                    <p>Chef Michael's innovative culinary creations blend local flavors with international techniques.</p>
+                </div>
+
+                <!-- Team Member 3 -->
+                <div class="team-member">
+                    <div class="avatar"><i class="fas fa-user"></i></div>
+                    <h4>Elena Rodriguez</h4>
+                    <span class="position">Guest Relations</span>
+                    <p>Elena's attention to detail and warm personality make every guest feel special and valued.</p>
+                </div>
+
+                <!-- Team Member 4 -->
+                <div class="team-member">
+                    <div class="avatar"><i class="fas fa-user"></i></div>
+                    <h4>David Kim</h4>
+                    <span class="position">Facilities Director</span>
+                    <p>David ensures our hotel's amenities and facilities are maintained to perfection.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h2>Awards & Recognition</h2>
+            <p>Our commitment to excellence has been recognized with numerous awards in the hospitality industry:</p>
+            
+            <ul>
+                <li>Five-Star Excellence Award (2023)</li>
+                <li>Best Luxury Hotel Experience (2022)</li>
+                <li>Sustainable Hospitality Certification (2021-2023)</li>
+                <li>Top-Rated Customer Service (2020-2023)</li>
+                <li>Culinary Excellence Award for our restaurant (2022)</li>
+            </ul>
+            
+            <p>Ready to experience our award-winning hospitality? <a th:href="@{/booking}" style="color: #4CAF50; font-weight: bold;">Book your stay</a> with us today!</p>
+        </div>
+    </div>
+
+    <!-- Include Auth Modals -->
+    <div th:replace="~{fragments/auth-modals :: loginModal}"></div>
+    <div th:replace="~{fragments/auth-modals :: signupModal}"></div>
+
+    <!-- Include Modal Scripts -->
+    <div th:replace="~{fragments/auth-modals :: modalScripts}"></div>
+</body>
+</html>
