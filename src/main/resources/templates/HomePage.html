@@ -1,68 +1,100 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-    <head>
-        <meta charset="UTF-8">
-        <title>Home Page</title>
-        <link rel="stylesheet" th:href="@{/css/stylesHome.css}">
-    </head>
-    <body>
-        <!-- Messages -->
-        <div th:if="${error}" class="alert alert-error" th:text="${error}">
-        </div>
-        <div th:if="${success}" class="alert alert-success" th:text="${success}">
-        </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxury Hotel - Your Ultimate Comfort</title>
+    <link rel="stylesheet" th:href="@{/css/stylesHome.css}">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Messages -->
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
 
-        <!-- Navbar -->
-        <nav class="navbar">
-            <div class="logo">
-                LOGO
-            </div>
-            <ul class="nav-links">
-                <li>
-                    <a th:href="@{/contract}">Contract</a>
-                </li>
-                <li>
-                    <a th:href="@{/}" class="active">Home</a>
-                </li>
-                <li>
-                    <a th:href="@{/intro}">Introduction</a>
-                </li>
-                <!-- Show these if user is not logged in -->
-                <li th:if="${session.user == null}">
-                    <a href="#" class="btn login-btn">Login</a>
-                </li>
-                <li th:if="${session.user == null}">
-                    <a href="#" class="btn signup-btn">Sign-up</a>
-                </li>
-                <!-- Show these if user is logged in -->
-                <li th:if="${session.user != null}">
-                    <span th:text="${session.user.fullName}"></span>
-                </li>
-                <li th:if="${session.user != null}">
-                    <form action="/auth/logout" method="POST" style="display: inline;">
-                        <button type="submit" class="btn">Logout</button>
-                    </form>
-                </li>
-            </ul>
-        </nav>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">LUXURY HOTEL</div>
+        <ul class="nav-links">
+            <li><a th:href="@{/contract}">Contract</a></li>
+            <li><a th:href="@{/}" class="active">Home</a></li>
+            <li><a th:href="@{/intro}">Introduction</a></li>
+            <!-- Show these if user is not logged in -->
+            <li th:if="${session.user == null}"><a href="#" class="btn login-btn">Login</a></li>
+            <li th:if="${session.user == null}"><a href="#" class="btn signup-btn">Sign-up</a></li>
+            <!-- Show these if user is logged in -->
+            <li th:if="${session.user != null}"><span th:text="${session.user.fullName}"></span></li>
+            <li th:if="${session.user != null}">
+                <form action="/auth/logout" method="POST" style="display: inline;">
+                    <button type="submit" class="btn">Logout</button>
+                </form>
+            </li>
+        </ul>
+        <button class="mobile-menu-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </nav>
 
-        <!-- Hero section -->
-        <div class="hero-section">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
             <div class="hero-text">
-                <h1>Hotel Management</h1>
-                <p>Your Comfort is Our Priority</p>
-                <a th:href="@{/booking}" class="book-call">Book a Room</a>
+                <h1>Experience Luxury & Comfort</h1>
+                <p>Discover the perfect balance of hospitality, luxury, and comfort at our award-winning hotel in the heart of the city.</p>
+                <div class="hero-cta">
+                    <a th:href="@{/booking}" class="book-call">Book a Room</a>
+                    <a th:href="@{/intro}" class="learn-more">Learn More</a>
+                </div>
             </div>
         </div>
+        <a href="#features" class="scroll-down">
+            <i class="fas fa-chevron-down"></i>
+        </a>
+    </section>
 
-        <!-- Include Auth Modals -->
-        <div th:replace="~{fragments/auth-modals :: loginModal}">
-        </div>
-        <div th:replace="~{fragments/auth-modals :: signupModal}">
-        </div>
+    <!-- Include Auth Modals -->
+    <div th:replace="~{fragments/auth-modals :: loginModal}"></div>
+    <div th:replace="~{fragments/auth-modals :: signupModal}"></div>
 
-        <!-- Include Modal Scripts -->
-        <div th:replace="~{fragments/auth-modals :: modalScripts}">
-        </div>
-    </body>
+    <!-- Include Modal Scripts -->
+    <div th:replace="~{fragments/auth-modals :: modalScripts}"></div>
+
+    <!-- JS for Navbar -->
+    <script>
+        // Mobile menu toggle
+        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+        const navLinks = document.querySelector('.nav-links');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+        
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+        
+        // Smooth scroll for the scroll-down button
+        document.querySelector('.scroll-down').addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 70,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    </script>
+</body>
 </html>

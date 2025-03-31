@@ -1,342 +1,477 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Booking Page</title>
-    <!-- Include both CSS files -->
-    <link rel="stylesheet" th:href="@{/css/stylesHome.css}" />
-    <link rel="stylesheet" th:href="@{/css/stylesBooking.css}" />
-  </head>
-  <body>
-    <!-- Messages -->
-    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
-    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Your Stay - Luxury Hotel</title>
+  <link rel="stylesheet" th:href="@{/css/stylesHome.css}" />
+  <link rel="stylesheet" th:href="@{/css/stylesBooking.css}" />
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+</head>
+<body>
+  <!-- Messages -->
+  <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+  <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
 
-    <!-- Navbar -->
-    <nav class="navbar">
-      <div class="logo">LOGO</div>
-      <ul class="nav-links">
-        <li><a th:href="@{/contract}">Contract</a></li>
-        <li><a th:href="@{/}">Home</a></li>
-        <li><a th:href="@{/intro}">Introduction</a></li>
-        <!-- Show these if user is not logged in -->
-        <li th:if="${session.user == null}"><a href="#" class="btn login-btn">Login</a></li>
-        <li th:if="${session.user == null}"><a href="#" class="btn signup-btn">Sign-up</a></li>
-        <!-- Show these if user is logged in -->
-        <li th:if="${session.user != null}"><span th:text="${session.user.fullName}"></span></li>
-        <li th:if="${session.user != null}">
-          <form action="/auth/logout" method="POST" style="display: inline;">
-            <button type="submit" class="btn">Logout</button>
-          </form>
-        </li>
-      </ul>
-    </nav>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">LOGO</div>
+    <ul class="nav-links">
+      <li><a th:href="@{/contract}">Contract</a></li>
+      <li><a th:href="@{/}">Home</a></li>
+      <li><a th:href="@{/intro}">Introduction</a></li>
+      <!-- Show these if user is not logged in -->
+      <li th:if="${session.user == null}"><a href="#" class="btn login-btn">Login</a></li>
+      <li th:if="${session.user == null}"><a href="#" class="btn signup-btn">Sign-up</a></li>
+      <!-- Show these if user is logged in -->
+      <li th:if="${session.user != null}"><span th:text="${session.user.fullName}"></span></li>
+      <li th:if="${session.user != null}">
+        <form action="/auth/logout" method="POST" style="display: inline;">
+          <button type="submit" class="btn">Logout</button>
+        </form>
+      </li>
+    </ul>
+  </nav>
 
-    <!-- Main Content -->
-    <main>
-      <!-- LEFT COLUMN: Rooms List -->
-      <section class="rooms-section">
-        <!-- Standard Room -->
-        <div class="room-card" data-room-type="standard">
-          <div class="room-image"></div>
-          <div class="room-details">
-            <h2>Standard Room</h2>
-            <div class="bed-price-info">
-              <img src="/img/icon/bedIcon.png" alt="Bed Icon" class="bed-icon" />
-              <span class="beds-count">X2</span>
-              <span class="price-tag">Price: $100</span>
+  <!-- Header -->
+  <div class="booking-header">
+    <h1>Book Your Perfect Stay</h1>
+    <p>Choose from our selection of luxurious rooms and suites designed for your ultimate comfort and relaxation.</p>
+  </div>
+
+  <!-- Main Content -->
+  <main>
+    <!-- LEFT COLUMN: Rooms List -->
+    <section class="rooms-section">
+      <!-- Standard Room -->
+      <div class="room-card" data-room-type="standard">
+        <div class="room-image standard"></div>
+        <div class="room-details">
+          <h2>Standard Room</h2>
+          
+          <div class="room-meta">
+            <div class="meta-item"><i class="fas fa-user"></i> <span>Up to 2 guests</span></div>
+            <div class="meta-item"><i class="fas fa-bed"></i> <span>1 Queen Bed</span></div>
+            <div class="meta-item"><i class="fas fa-ruler-combined"></i> <span>28 m²</span></div>
+          </div>
+          
+          <p class="room-description">
+            Cozy and comfortable standard room with all essential amenities for a relaxing stay. Perfect for solo travelers or couples.
+          </p>
+          
+          <div class="bed-price-info">
+            <i class="fas fa-bed bed-icon"></i>
+            <span class="beds-count">Queen Bed</span>
+            <span class="price-tag">$100 per night</span>
+          </div>
+          
+          <div class="room-options">
+            <div class="availability-btn">
+              <i class="fas fa-check-circle"></i> Available 5
             </div>
-            <div class="room-options">
-              <button class="btn availability-btn">Available 5</button>
-              <select class="room-select" data-room-price="100">
-                <option value="0">0</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-              </select>
-            </div>
+            <select class="room-select" data-room-price="100">
+              <option value="0">0 Rooms</option>
+              <option value="1">1 Room</option>
+              <option value="2">2 Rooms</option>
+              <option value="3">3 Rooms</option>
+              <option value="4">4 Rooms</option>
+              <option value="5">5 Rooms</option>
+            </select>
           </div>
         </div>
+      </div>
 
-        <!-- Deluxe Room -->
-        <div class="room-card" data-room-type="deluxe">
-          <div class="room-image"></div>
-          <div class="room-details">
-            <h2>Deluxe Room</h2>
-            <div class="bed-price-info">
-              <img src="/img/icon/bedIcon.png" alt="Bed Icon" class="bed-icon" />
-              <span class="beds-count">X3</span>
-              <span class="price-tag">Price: $150</span>
+      <!-- Deluxe Room -->
+      <div class="room-card" data-room-type="deluxe">
+        <div class="room-image deluxe"></div>
+        <div class="room-details">
+          <h2>Deluxe Room</h2>
+          
+          <div class="room-meta">
+            <div class="meta-item"><i class="fas fa-user"></i> <span>Up to 3 guests</span></div>
+            <div class="meta-item"><i class="fas fa-bed"></i> <span>1 King Bed</span></div>
+            <div class="meta-item"><i class="fas fa-ruler-combined"></i> <span>35 m²</span></div>
+          </div>
+          
+          <p class="room-description">
+            Spacious deluxe room featuring premium furnishings, city views, and enhanced amenities for a superior experience.
+          </p>
+          
+          <div class="bed-price-info">
+            <i class="fas fa-bed bed-icon"></i>
+            <span class="beds-count">King Bed</span>
+            <span class="price-tag">$150 per night</span>
+          </div>
+          
+          <div class="room-options">
+            <div class="availability-btn">
+              <i class="fas fa-check-circle"></i> Available 5
             </div>
-            <div class="room-options">
-              <button class="btn availability-btn">Available 5</button>
-              <select class="room-select" data-room-price="150">
-                <option value="0">0</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-              </select>
-            </div>
+            <select class="room-select" data-room-price="150">
+              <option value="0">0 Rooms</option>
+              <option value="1">1 Room</option>
+              <option value="2">2 Rooms</option>
+              <option value="3">3 Rooms</option>
+              <option value="4">4 Rooms</option>
+              <option value="5">5 Rooms</option>
+            </select>
           </div>
         </div>
+      </div>
 
-        <!-- Executive Suite -->
-        <div class="room-card" data-room-type="suite">
-          <div class="room-image"></div>
-          <div class="room-details">
-            <h2>Executive Suite</h2>
-            <div class="bed-price-info">
-              <img src="/img/icon/bedIcon.png" alt="Bed Icon" class="bed-icon" />
-              <span class="beds-count">X4</span>
-              <span class="price-tag">Price: $200</span>
+      <!-- Executive Suite -->
+      <div class="room-card" data-room-type="suite">
+        <div class="room-image suite"></div>
+        <div class="room-details">
+          <h2>Executive Suite</h2>
+          
+          <div class="room-meta">
+            <div class="meta-item"><i class="fas fa-user"></i> <span>Up to 4 guests</span></div>
+            <div class="meta-item"><i class="fas fa-bed"></i> <span>1 King Bed + Sofa</span></div>
+            <div class="meta-item"><i class="fas fa-ruler-combined"></i> <span>50 m²</span></div>
+          </div>
+          
+          <p class="room-description">
+            Luxurious suite with separate living area, premium amenities, and stunning views. Our most spacious accommodation option.
+          </p>
+          
+          <div class="bed-price-info">
+            <i class="fas fa-bed bed-icon"></i>
+            <span class="beds-count">King + Sofa Bed</span>
+            <span class="price-tag">$200 per night</span>
+          </div>
+          
+          <div class="room-options">
+            <div class="availability-btn">
+              <i class="fas fa-check-circle"></i> Available 5
             </div>
-            <div class="room-options">
-              <button class="btn availability-btn">Available 5</button>
-              <select class="room-select" data-room-price="200">
-                <option value="0">0</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-              </select>
-            </div>
+            <select class="room-select" data-room-price="200">
+              <option value="0">0 Rooms</option>
+              <option value="1">1 Room</option>
+              <option value="2">2 Rooms</option>
+              <option value="3">3 Rooms</option>
+              <option value="4">4 Rooms</option>
+              <option value="5">5 Rooms</option>
+            </select>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- RIGHT COLUMN: Phone-like Summary Box -->
-      <section class="summary-section">
-        <div class="phone-mockup">
-          <div class="phone-header"></div>
-          <div class="phone-content">
-            <p>Total Rooms: <span id="totalRooms">0</span></p>
-            <p>Total Price: $<span id="totalPrice">0</span></p>
-            <p>Check-in date:</p>
-            <div class="calendar-icon" id="calendarIcon">📅</div>
-            <input type="date" id="checkInDate" style="display:none;" />
+    <!-- RIGHT COLUMN: Booking Summary -->
+    <section class="summary-section">
+      <div class="summary-card">
+        <div class="summary-header">
+          <h3>Booking Summary</h3>
+        </div>
+        
+        <div class="summary-content">
+          <div class="summary-item">
+            <span>Total Rooms</span>
+            <span id="totalRooms">0</span>
           </div>
-          <button class="btn book-btn">Book</button>
-        </div>
-      </section>
-    </main>
-
-    <!-- Include Auth Modals -->
-    <div th:replace="~{fragments/auth-modals :: loginModal}"></div>
-    <div th:replace="~{fragments/auth-modals :: signupModal}"></div>
-
-    <!-- Room Detail Modal HTML -->
-    <div id="modalOverlayRoomDetail" class="modal-overlay">
-        <div class="modal room-detail-modal">
-            <span id="closeModalRoomDetail" class="close-button">&times;</span>
-            <div class="room-detail-content">
-                <!-- Room Image (placeholder) -->
-                <div class="room-detail-image" id="detailRoomImage">
-                    <!-- Image will be set dynamically -->
-                    <p style="text-align:center;">Room Image</p>
-                </div>
-                
-                <!-- Title -->
-                <h2 class="modal-title" id="detailRoomTitle">Room Details</h2>
-                
-                <!-- Basic Info: type, capacity, price, status -->
-                <div class="room-info">
-                    <p class="room-type">Type: <span id="roomTypeDetail"></span></p>
-                    <p class="room-capacity">Capacity: <span id="roomCapacityDetail"></span> persons</p>
-                    <p class="room-price">Price: $<span id="roomPriceDetail"></span> per night</p>
-                    <p class="room-status">Status: <span id="roomStatusDetail"></span></p>
-                </div>
-                
-                <!-- Description -->
-                <div class="room-description">
-                    <h3>Description</h3>
-                    <p id="roomDescriptionDetail"></p>
-                </div>
-                
-                <!-- Amenities -->
-                <div class="room-amenities">
-                    <h3>Amenities</h3>
-                    <ul id="roomAmenitiesList"></ul>
-                </div>
-                
-                <!-- Booking controls (Available, dropdown, Close) -->
-                <div class="modal-booking-controls">
-                    <button class="btn availability-btn" id="modalAvailableBtn">
-                        Available 5
-                    </button>
-                    <select class="modal-room-select" id="modalRoomSelect">
-                        <option value="0">0</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                    </select>
-                    <button class="btn modal-add-btn" id="modalAddBtn">
-                        Done
-                    </button>
-                </div>
+          
+          <div class="date-picker">
+            <label>Select Dates</label>
+            <div class="date-inputs">
+              <input type="date" id="checkInDate" placeholder="Check-in">
+              <input type="date" id="checkOutDate" placeholder="Check-out">
             </div>
+          </div>
+          
+          <div class="summary-item total">
+            <span>Total Price</span>
+            <span>$<span id="totalPrice">0</span></span>
+          </div>
+          
+          <button class="book-btn">
+            <i class="fas fa-check-circle"></i> Complete Booking
+          </button>
         </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Include Auth Modals -->
+  <div th:replace="~{fragments/auth-modals :: loginModal}"></div>
+  <div th:replace="~{fragments/auth-modals :: signupModal}"></div>
+
+  <!-- Room Detail Modal HTML -->
+  <div id="modalOverlayRoomDetail" class="modal-overlay">
+    <div class="modal room-detail-modal">
+      <div id="modalHeader" class="modal-header">
+        <span id="closeModalRoomDetail" class="close-button">&times;</span>
+        <h2 id="detailRoomTitle" class="modal-title">Room Details</h2>
+      </div>
+      
+      <div class="room-detail-content">
+        <!-- Room Info -->
+        <div class="room-info">
+          <div class="info-item">
+            <i class="fas fa-user"></i>
+            <span>Capacity: <span id="roomCapacityDetail">2</span> persons</span>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-bed"></i>
+            <span>Bed Type: <span id="roomBedTypeDetail">Queen</span></span>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-ruler-combined"></i>
+            <span>Size: <span id="roomSizeDetail">28</span> m²</span>
+          </div>
+          <div class="info-item">
+            <i class="fas fa-tag"></i>
+            <span>Price: $<span id="roomPriceDetail">100</span>/night</span>
+          </div>
+        </div>
+        
+        <!-- Description -->
+        <div class="room-description">
+          <h3>Description</h3>
+          <p id="roomDescriptionDetail"></p>
+        </div>
+        
+        <!-- Amenities -->
+        <div class="room-amenities">
+          <h3>Amenities</h3>
+          <ul id="roomAmenitiesList"></ul>
+        </div>
+        
+        <!-- Booking controls -->
+        <div class="modal-booking-controls">
+          <div class="availability-btn" id="modalAvailableBtn">
+            <i class="fas fa-check-circle"></i> Available 5
+          </div>
+          <select class="modal-room-select" id="modalRoomSelect">
+            <option value="0">0 Rooms</option>
+            <option value="1">1 Room</option>
+            <option value="2">2 Rooms</option>
+            <option value="3">3 Rooms</option>
+            <option value="4">4 Rooms</option>
+            <option value="5">5 Rooms</option>
+          </select>
+          <button class="modal-add-btn" id="modalAddBtn">
+            <i class="fas fa-check"></i> Done
+          </button>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Include Auth Modal Scripts -->
-    <div th:replace="~{fragments/auth-modals :: modalScripts}"></div>
+  <!-- Booking specific scripts -->
+  <script>
+    // -- Main Page Booking Script --
+    const roomSelects = document.querySelectorAll('.rooms-section .room-select');
+    const totalRoomsEl = document.getElementById('totalRooms');
+    const totalPriceEl = document.getElementById('totalPrice');
+    const checkInDate = document.getElementById('checkInDate');
+    const checkOutDate = document.getElementById('checkOutDate');
 
-    <!-- Booking specific scripts -->
-    <script>
-      // -- Main Page Booking Script --
-      // Only select room selects in the main rooms section, not in the modal
-      const roomSelects = document.querySelectorAll('.rooms-section .room-select');
-      const totalRoomsEl = document.getElementById('totalRooms');
-      const totalPriceEl = document.getElementById('totalPrice');
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    checkInDate.min = today;
+    checkOutDate.min = today;
 
+    // Update checkout min date when checkin changes
+    checkInDate.addEventListener('change', function() {
+      checkOutDate.min = this.value;
+      if (checkOutDate.value && checkOutDate.value < this.value) {
+        checkOutDate.value = this.value;
+      }
+      calculateTotals();
+    });
+
+    checkOutDate.addEventListener('change', calculateTotals);
+
+    // Listen for room selection changes
+    roomSelects.forEach(select => {
+      select.addEventListener('change', calculateTotals);
+    });
+
+    // Calculate total rooms and price
+    function calculateTotals() {
+      let totalRooms = 0;
+      let totalPrice = 0;
+      
+      // Get selected dates
+      const startDate = new Date(checkInDate.value);
+      const endDate = new Date(checkOutDate.value);
+      
+      // Calculate number of nights
+      let nights = 1; // Default to 1 night if dates not selected
+      if (checkInDate.value && checkOutDate.value) {
+        nights = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24));
+        nights = nights || 1; // Ensure at least 1 night
+      }
+      
+      // Calculate totals
       roomSelects.forEach(select => {
-        select.addEventListener('change', calculateTotals);
-      });
-
-      function calculateTotals() {
-        let totalRooms = 0;
-        let totalPrice = 0;
-        roomSelects.forEach(select => {
-          const count = parseInt(select.value, 10) || 0;
-          const price = parseInt(select.dataset.roomPrice, 10) || 0;
-          totalRooms += count;
-          totalPrice += (count * price);
-        });
-        totalRoomsEl.textContent = totalRooms;
-        totalPriceEl.textContent = totalPrice;
-      }
-
-      // Calendar handling
-      const calendarIcon = document.getElementById('calendarIcon');
-      const checkInDate = document.getElementById('checkInDate');
-
-      calendarIcon.addEventListener('click', () => {
-        if (checkInDate.showPicker) {
-          checkInDate.showPicker();
-        } else {
-          checkInDate.style.display = 'inline-block';
-          checkInDate.focus();
-        }
-      });
-
-      // -- Room Detail Modal Script --
-      const modalOverlayRoomDetail = document.getElementById('modalOverlayRoomDetail');
-      const modalRoomSelect = document.getElementById('modalRoomSelect');
-      const closeModalRoomDetail = document.getElementById('closeModalRoomDetail');
-      let currentRoomCard = null; // reference to the room card whose details are being viewed
-
-      // Sample room data (replace with actual backend data if needed)
-      const roomData = {
-        standard: {
-          type: "Standard Room",
-          capacity: 2,
-          price: 100,
-          status: "Available",
-          description: "A comfortable standard room with essential amenities.",
-          amenities: ["Wi-Fi", "TV", "Air Conditioning", "Private Bathroom"],
-          availableCount: 5
-        },
-        deluxe: {
-          type: "Deluxe Room",
-          capacity: 3,
-          price: 150,
-          status: "Available",
-          description: "Spacious deluxe room with premium furnishings and city view.",
-          amenities: ["Wi-Fi", "TV", "Air Conditioning", "Mini Bar", "Safe", "City View"],
-          availableCount: 5
-        },
-        suite: {
-          type: "Executive Suite",
-          capacity: 4,
-          price: 200,
-          status: "Available",
-          description: "Luxurious suite with separate living area and premium amenities.",
-          amenities: ["Wi-Fi", "TV", "Air Conditioning", "Mini Bar", "Safe", "Living Room", "Bathtub", "Ocean View"],
-          availableCount: 5
-        }
-      };
-
-      // Attach click handlers to room headings when the document loads
-      document.addEventListener('DOMContentLoaded', function() {
-        const roomCards = document.querySelectorAll('.room-card');
-        roomCards.forEach(card => {
-          const heading = card.querySelector('h2');
-          if (heading) {
-            heading.style.cursor = 'pointer';
-            heading.addEventListener('click', () => {
-              showRoomDetails(card);
-            });
-          }
-        });
-      });
-
-      // Function to display the room detail modal
-      function showRoomDetails(roomCard) {
-        currentRoomCard = roomCard;
-        const roomType = roomCard.dataset.roomType;
-        const room = roomData[roomType];
-        if (!room) {
-          console.error('Room type not found:', roomType);
-          return;
-        }
+        const count = parseInt(select.value, 10) || 0;
+        const price = parseInt(select.dataset.roomPrice, 10) || 0;
         
-        // Populate modal fields with room data
-        document.getElementById('roomTypeDetail').textContent = room.type;
-        document.getElementById('roomCapacityDetail').textContent = room.capacity;
-        document.getElementById('roomPriceDetail').textContent = room.price;
-        document.getElementById('roomStatusDetail').textContent = room.status;
-        document.getElementById('roomDescriptionDetail').textContent = room.description;
-        
-        const amenitiesList = document.getElementById('roomAmenitiesList');
-        amenitiesList.innerHTML = room.amenities.map(amenity => `<li>${amenity}</li>`).join('');
-        
-        document.getElementById('modalAvailableBtn').textContent = "Available " + room.availableCount;
-
-        // Sync modal select with main page select for this room
-        const mainSelect = roomCard.querySelector('.room-select');
-        if (mainSelect) {
-          modalRoomSelect.value = mainSelect.value;
-        } else {
-          modalRoomSelect.value = "0";
-        }
-        
-        // Show the modal
-        modalOverlayRoomDetail.style.display = 'flex';
-      }
-
-      // Modal Room Select change handler - automatically update main page select
-      modalRoomSelect.addEventListener('change', function() {
-        if (currentRoomCard) {
-          const mainPageSelect = currentRoomCard.querySelector('.room-select');
-          if (mainPageSelect) {
-            mainPageSelect.value = this.value;
-            // Trigger change event to update totals
-            mainPageSelect.dispatchEvent(new Event('change', { bubbles: true }));
-          }
-        }
-      });
-
-      // "Done" button handler - just closes the modal
-      document.getElementById('modalAddBtn').addEventListener('click', function() {
-        modalOverlayRoomDetail.style.display = 'none';
-      });
-
-      // Modal close handlers
-      closeModalRoomDetail.addEventListener('click', () => {
-        modalOverlayRoomDetail.style.display = 'none';
+        totalRooms += count;
+        totalPrice += (count * price * nights);
       });
       
-      window.addEventListener('click', (e) => {
-        if (e.target === modalOverlayRoomDetail) {
-          modalOverlayRoomDetail.style.display = 'none';
+      totalRoomsEl.textContent = totalRooms;
+      totalPriceEl.textContent = totalPrice;
+    }
+
+    // -- Room Detail Modal Script --
+    const modalOverlayRoomDetail = document.getElementById('modalOverlayRoomDetail');
+    const modalRoomSelect = document.getElementById('modalRoomSelect');
+    const closeModalRoomDetail = document.getElementById('closeModalRoomDetail');
+    const modalHeader = document.getElementById('modalHeader');
+    let currentRoomCard = null;
+
+    // Sample room data
+    const roomData = {
+      standard: {
+        type: "Standard Room",
+        capacity: 2,
+        bedType: "Queen Bed",
+        size: "28",
+        price: 100,
+        status: "Available",
+        description: "Experience comfort in our Standard Room, featuring a plush queen bed, modern bathroom, and all essential amenities. The room is designed with neutral tones and contemporary furnishings to create a relaxing atmosphere. Enjoy amenities including complimentary Wi-Fi, flat-screen TV, and workspace.",
+        amenities: [
+          {icon: "fas fa-wifi", name: "Free Wi-Fi"},
+          {icon: "fas fa-tv", name: "Flat-screen TV"},
+          {icon: "fas fa-snowflake", name: "Air Conditioning"},
+          {icon: "fas fa-shower", name: "Private Bathroom"},
+          {icon: "fas fa-coffee", name: "Coffee Maker"},
+          {icon: "fas fa-phone", name: "Telephone"}
+        ],
+        availableCount: 5
+      },
+      deluxe: {
+        type: "Deluxe Room",
+        capacity: 3,
+        bedType: "King Bed",
+        size: "35",
+        price: 150,
+        status: "Available",
+        description: "Upgrade your experience with our Deluxe Room featuring a luxurious king bed, sitting area, and premium amenities. Enjoy city views from large windows that let in abundant natural light. The spacious bathroom includes a walk-in shower and premium toiletries.",
+        amenities: [
+          {icon: "fas fa-wifi", name: "High-speed Wi-Fi"},
+          {icon: "fas fa-tv", name: "55\" Smart TV"},
+          {icon: "fas fa-snowflake", name: "Climate Control"},
+          {icon: "fas fa-shower", name: "Rainfall Shower"},
+          {icon: "fas fa-glass-martini-alt", name: "Mini Bar"},
+          {icon: "fas fa-lock", name: "In-room Safe"},
+          {icon: "fas fa-city", name: "City View"},
+          {icon: "fas fa-coffee", name: "Espresso Machine"}
+        ],
+        availableCount: 5
+      },
+      suite: {
+        type: "Executive Suite",
+        capacity: 4,
+        bedType: "King Bed + Sofa Bed",
+        size: "50",
+        price: 200,
+        status: "Available",
+        description: "Indulge in luxury in our Executive Suite featuring a separate bedroom with king bed and spacious living area with a comfortable sofa bed. Perfect for families or those seeking extra space. Enjoy spectacular views, premium amenities, and exclusive access to the Executive Lounge.",
+        amenities: [
+          {icon: "fas fa-wifi", name: "Premium Wi-Fi"},
+          {icon: "fas fa-tv", name: "Two 65\" Smart TVs"},
+          {icon: "fas fa-snowflake", name: "Climate Control"},
+          {icon: "fas fa-glass-martini-alt", name: "Complimentary Mini Bar"},
+          {icon: "fas fa-lock", name: "Digital Safe"},
+          {icon: "fas fa-couch", name: "Separate Living Room"},
+          {icon: "fas fa-bath", name: "Bathtub & Shower"},
+          {icon: "fas fa-water", name: "Ocean View"},
+          {icon: "fas fa-concierge-bell", name: "Butler Service"},
+          {icon: "fas fa-utensils", name: "Dining Area"}
+        ],
+        availableCount: 5
+      }
+    };
+
+    // Set up room headings click event
+    document.addEventListener('DOMContentLoaded', function() {
+      const roomCards = document.querySelectorAll('.room-card');
+      roomCards.forEach(card => {
+        const heading = card.querySelector('h2');
+        if (heading) {
+          heading.style.cursor = 'pointer';
+          heading.addEventListener('click', () => {
+            showRoomDetails(card);
+          });
         }
       });
-    </script>
-  </body>
+    });
+
+    // Show room details modal
+    function showRoomDetails(roomCard) {
+      currentRoomCard = roomCard;
+      const roomType = roomCard.dataset.roomType;
+      const room = roomData[roomType];
+      
+      if (!room) return;
+      
+      // Update modal header class for different background images
+      modalHeader.className = 'modal-header';
+      modalHeader.classList.add(roomType);
+      
+      // Update modal content
+      document.getElementById('detailRoomTitle').textContent = room.type;
+      document.getElementById('roomCapacityDetail').textContent = room.capacity;
+      document.getElementById('roomBedTypeDetail').textContent = room.bedType;
+      document.getElementById('roomSizeDetail').textContent = room.size;
+      document.getElementById('roomPriceDetail').textContent = room.price;
+      document.getElementById('roomDescriptionDetail').textContent = room.description;
+      
+      // Update amenities with icons
+      const amenitiesList = document.getElementById('roomAmenitiesList');
+      amenitiesList.innerHTML = room.amenities
+        .map(amenity => `<li><i class="${amenity.icon}"></i> ${amenity.name}</li>`)
+        .join('');
+      
+      // Update availability button
+      document.getElementById('modalAvailableBtn').innerHTML = 
+        `<i class="fas fa-check-circle"></i> Available ${room.availableCount}`;
+
+      // Sync dropdown with main page
+      const mainSelect = roomCard.querySelector('.room-select');
+      if (mainSelect) {
+        modalRoomSelect.value = mainSelect.value;
+      }
+      
+      // Show modal
+      modalOverlayRoomDetail.style.display = 'flex';
+    }
+
+    // Modal room select change syncs with main page
+    modalRoomSelect.addEventListener('change', function() {
+      if (currentRoomCard) {
+        const mainPageSelect = currentRoomCard.querySelector('.room-select');
+        if (mainPageSelect) {
+          mainPageSelect.value = this.value;
+          mainPageSelect.dispatchEvent(new Event('change'));
+        }
+      }
+    });
+
+    // Modal done button just closes modal
+    document.getElementById('modalAddBtn').addEventListener('click', function() {
+      modalOverlayRoomDetail.style.display = 'none';
+    });
+
+    // Close modal handlers
+    closeModalRoomDetail.addEventListener('click', () => {
+      modalOverlayRoomDetail.style.display = 'none';
+    });
+    
+    window.addEventListener('click', (e) => {
+      if (e.target === modalOverlayRoomDetail) {
+        modalOverlayRoomDetail.style.display = 'none';
+      }
+    });
+
+    // Initialize totals on page load
+    calculateTotals();
+  </script>
+</body>
 </html>
