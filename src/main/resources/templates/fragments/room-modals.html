@@ -61,11 +61,12 @@
     <!-- Room Detail Scripts Fragment -->
     <div th:fragment="roomDetailScripts">
         <script>
-            const roomCards = document.querySelectorAll('.room-card');
             const modalOverlayRoomDetail = document.getElementById('modalOverlayRoomDetail');
+            const modalRoomSelect = document.getElementById('modalRoomSelect');
             const closeModalRoomDetail = document.getElementById('closeModalRoomDetail');
-            const totalRoomsEl = document.getElementById('totalRooms');
-            const totalPriceEl = document.getElementById('totalPrice');
+            
+            // Track which room's detail we're viewing
+            let currentRoomCard = null;
 
             // Sample room data (replace with actual data from backend)
             const roomData = 
@@ -102,15 +103,36 @@
                 }
             };
 
-            // Store current room type to use in the Add to Book button
-            let currentRoomType = "";
+            // Set up click handlers on all room headings
+            document.addEventListener('DOMContentLoaded', function() {
+                const roomCards = document.querySelectorAll('.room-card');
+                roomCards.forEach(card => {
+                    const heading = card.querySelector('h2');
+                    if (heading) {
+                        heading.style.cursor = 'pointer';
+                        heading.addEventListener('click', () => {
+                            showRoomDetails(card);
+                        });
+                    }
+                });
+            });
 
-            function showRoomDetails(roomType) 
+            // Show the room detail modal
+            function showRoomDetails(roomCard) 
             {
-                currentRoomType = roomType;
+                // Store reference to the clicked room card
+                currentRoomCard = roomCard;
+                
+                // Get the room type from data attribute
+                const roomType = roomCard.dataset.roomType;
                 const room = roomData[roomType];
                 
-                // Update text fields
+                if (!room) {
+                    console.error('Room type not found:', roomType);
+                    return;
+                }
+                
+                // Fill in modal with room details
                 document.getElementById('roomTypeDetail').textContent = room.type;
                 document.getElementById('roomCapacityDetail').textContent = room.capacity;
                 document.getElementById('roomPriceDetail').textContent = room.price;
@@ -126,66 +148,49 @@
                 // Update availability button text
                 document.getElementById('modalAvailableBtn').textContent = "Available " + room.availableCount;
                 
-                // Reset the dropdown to 0
-                document.getElementById('modalRoomSelect').value = "0";
+                // Sync modal select with main page select
+                const mainSelect = roomCard.querySelector('.room-select');
+                if (mainSelect) {
+                    modalRoomSelect.value = mainSelect.value;
+                }
                 
-                // Display modal
+                // Show the modal
                 modalOverlayRoomDetail.style.display = 'flex';
             }
-
-            // Add click event to room headings
-            roomCards.forEach((card, index) => 
-            {
-                const heading = card.querySelector('h2');
-                const roomTypes = ['standard', 'deluxe', 'suite'];
-                
-                heading.style.cursor = 'pointer';
-                heading.addEventListener('click', () => 
-                {
-                    showRoomDetails(roomTypes[index]);
-                });
-            });
 
             // Add to Book button handler
             document.getElementById('modalAddBtn').addEventListener('click', function() 
             {
-                const numRooms = parseInt(document.getElementById('modalRoomSelect').value, 10);
-                if (numRooms > 0) 
-                {
-                    const roomPrice = roomData[currentRoomType].price;
-                    addToBooking(numRooms, roomPrice);
-                    // Optionally close the modal after adding to booking
-                    modalOverlayRoomDetail.style.display = 'none';
+                if (!currentRoomCard) {
+                    console.error('No room card selected');
+                    return;
                 }
-            });
-
-            // Function to update the booking summary
-            function addToBooking(numRooms, roomPrice) 
-            {
-                // Get current totals from the summary
-                const currentRooms = parseInt(totalRoomsEl.textContent, 10);
-                const currentPrice = parseInt(totalPriceEl.textContent, 10);
                 
-                // Add the newly chosen rooms
-                const newRooms = currentRooms + numRooms;
-                // Calculate new price based on specific room price
-                const newPrice = currentPrice + (roomPrice * numRooms);
+                // Get the main page select for this room
+                const mainPageSelect = currentRoomCard.querySelector('.room-select');
+                if (!mainPageSelect) {
+                    console.error('Cannot find select element in room card');
+                    return;
+                }
                 
-                // Update the summary display
-                totalRoomsEl.textContent = newRooms;
-                totalPriceEl.textContent = newPrice;
-            }
-
-            // Close modal handlers
-            closeModalRoomDetail.addEventListener('click', () => 
-            {
+                // Update the main page select with the modal value
+                mainPageSelect.value = modalRoomSelect.value;
+                
+                // Trigger the change event to update totals
+                const changeEvent = new Event('change', { bubbles: true });
+                mainPageSelect.dispatchEvent(changeEvent);
+                
+                // Close the modal
                 modalOverlayRoomDetail.style.display = 'none';
             });
 
-            window.addEventListener('click', (e) => 
-            {
-                if (e.target === modalOverlayRoomDetail) 
-                {
+            // Modal close handlers
+            closeModalRoomDetail.addEventListener('click', () => {
+                modalOverlayRoomDetail.style.display = 'none';
+            });
+            
+            window.addEventListener('click', (e) => {
+                if (e.target === modalOverlayRoomDetail) {
                     modalOverlayRoomDetail.style.display = 'none';
                 }
             });

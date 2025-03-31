@@ -1,230 +1,342 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-    <head>
-        <meta charset="UTF-8" />
-        <title>Booking Page</title>
-        <!-- Include both CSS files -->
-        <link rel="stylesheet" th:href="@{/css/stylesHome.css}" />
-        <link rel="stylesheet" th:href="@{/css/stylesBooking.css}" />
-    </head>
-    <body>
-        <!-- Messages -->
-        <div th:if="${error}" class="alert alert-error" th:text="${error}">
-        </div>
-        <div th:if="${success}" class="alert alert-success" th:text="${success}">
-        </div>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Booking Page</title>
+    <!-- Include both CSS files -->
+    <link rel="stylesheet" th:href="@{/css/stylesHome.css}" />
+    <link rel="stylesheet" th:href="@{/css/stylesBooking.css}" />
+  </head>
+  <body>
+    <!-- Messages -->
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
 
-        <!-- Navbar -->
-        <nav class="navbar">
-            <div class="logo">
-                LOGO
+    <!-- Navbar -->
+    <nav class="navbar">
+      <div class="logo">LOGO</div>
+      <ul class="nav-links">
+        <li><a href="#">Contract</a></li>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">Introduction</a></li>
+        <!-- Show these if user is not logged in -->
+        <li th:if="${session.user == null}"><a href="#" class="btn login-btn">Login</a></li>
+        <li th:if="${session.user == null}"><a href="#" class="btn signup-btn">Sign-up</a></li>
+        <!-- Show these if user is logged in -->
+        <li th:if="${session.user != null}"><span th:text="${session.user.fullName}"></span></li>
+        <li th:if="${session.user != null}">
+          <form action="/auth/logout" method="POST" style="display: inline;">
+            <button type="submit" class="btn">Logout</button>
+          </form>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+      <!-- LEFT COLUMN: Rooms List -->
+      <section class="rooms-section">
+        <!-- Standard Room -->
+        <div class="room-card" data-room-type="standard">
+          <div class="room-image"></div>
+          <div class="room-details">
+            <h2>Standard Room</h2>
+            <div class="bed-price-info">
+              <img src="/img/icon/bedIcon.png" alt="Bed Icon" class="bed-icon" />
+              <span class="beds-count">X2</span>
+              <span class="price-tag">Price: $100</span>
             </div>
-            <ul class="nav-links">
-                <li>
-                    <a href="#">Contract</a>
-                </li>
-                <li>
-                    <a href="#">Home</a>
-                </li>
-                <li>
-                    <a href="#">Introduction</a>
-                </li>
-                <!-- Show these if user is not logged in -->
-                <li th:if="${session.user == null}">
-                    <a href="#" class="btn login-btn">Login</a>
-                </li>
-                <li th:if="${session.user == null}">
-                    <a href="#" class="btn signup-btn">Sign-up</a>
-                </li>
-                <!-- Show these if user is logged in -->
-                <li th:if="${session.user != null}">
-                    <span th:text="${session.user.fullName}"></span>
-                </li>
-                <li th:if="${session.user != null}">
-                    <form action="/auth/logout" method="POST" style="display: inline;">
-                        <button type="submit" class="btn">Logout</button>
-                    </form>
-                </li>
-            </ul>
-        </nav>
+            <div class="room-options">
+              <button class="btn availability-btn">Available 5</button>
+              <select class="room-select" data-room-price="100">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+          </div>
+        </div>
 
-        <!-- Main Content -->
-        <main>
-            <!-- LEFT COLUMN: Rooms List -->
-            <section class="rooms-section">
-                <!-- Standard Room -->
-                <div class="room-card">
-                    <div class="room-image">
-                    </div>
-                    <div class="room-details">
-                        <h2>Standard Room</h2>
-                        <div class="bed-price-info">
-                            <img src="/img/icon/bedIcon.png" alt="Bed Icon" class="bed-icon" />
-                            <span class="beds-count">X2</span>
-                            <span class="price-tag">Price: $100</span>
-                        </div>
-                        <div class="room-options">
-                            <button class="btn availability-btn">Available 5</button>
-                            <select class="room-select">
-                                <option value="0">0</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                            </select>
-                        </div>
-                    </div>
+        <!-- Deluxe Room -->
+        <div class="room-card" data-room-type="deluxe">
+          <div class="room-image"></div>
+          <div class="room-details">
+            <h2>Deluxe Room</h2>
+            <div class="bed-price-info">
+              <img src="/img/icon/bedIcon.png" alt="Bed Icon" class="bed-icon" />
+              <span class="beds-count">X3</span>
+              <span class="price-tag">Price: $150</span>
+            </div>
+            <div class="room-options">
+              <button class="btn availability-btn">Available 5</button>
+              <select class="room-select" data-room-price="150">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Executive Suite -->
+        <div class="room-card" data-room-type="suite">
+          <div class="room-image"></div>
+          <div class="room-details">
+            <h2>Executive Suite</h2>
+            <div class="bed-price-info">
+              <img src="/img/icon/bedIcon.png" alt="Bed Icon" class="bed-icon" />
+              <span class="beds-count">X4</span>
+              <span class="price-tag">Price: $200</span>
+            </div>
+            <div class="room-options">
+              <button class="btn availability-btn">Available 5</button>
+              <select class="room-select" data-room-price="200">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: Phone-like Summary Box -->
+      <section class="summary-section">
+        <div class="phone-mockup">
+          <div class="phone-header"></div>
+          <div class="phone-content">
+            <p>Total Rooms: <span id="totalRooms">0</span></p>
+            <p>Total Price: $<span id="totalPrice">0</span></p>
+            <p>Check-in date:</p>
+            <div class="calendar-icon" id="calendarIcon">📅</div>
+            <input type="date" id="checkInDate" style="display:none;" />
+          </div>
+          <button class="btn book-btn">Book</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Include Auth Modals -->
+    <div th:replace="~{fragments/auth-modals :: loginModal}"></div>
+    <div th:replace="~{fragments/auth-modals :: signupModal}"></div>
+
+    <!-- Room Detail Modal HTML -->
+    <div id="modalOverlayRoomDetail" class="modal-overlay">
+        <div class="modal room-detail-modal">
+            <span id="closeModalRoomDetail" class="close-button">&times;</span>
+            <div class="room-detail-content">
+                <!-- Room Image (placeholder) -->
+                <div class="room-detail-image" id="detailRoomImage">
+                    <!-- Image will be set dynamically -->
+                    <p style="text-align:center;">Room Image</p>
                 </div>
-
-                <!-- Deluxe Room -->
-                <div class="room-card">
-                    <div class="room-image">
-                    </div>
-                    <div class="room-details">
-                        <h2>Deluxe Room</h2>
-                        <div class="bed-price-info">
-                            <img src="/img/icon/bedIcon.png" alt="Bed Icon" class="bed-icon" />
-                            <span class="beds-count">X3</span>
-                            <span class="price-tag">Price: $150</span>
-                        </div>
-                        <div class="room-options">
-                            <button class="btn availability-btn">Available 5</button>
-                            <select class="room-select">
-                                <option value="0">0</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Executive Suite -->
-                <div class="room-card">
-                    <div class="room-image">
-                    </div>
-                    <div class="room-details">
-                        <h2>Executive Suite</h2>
-                        <div class="bed-price-info">
-                            <img src="/img/icon/bedIcon.png" alt="Bed Icon" class="bed-icon" />
-                            <span class="beds-count">X4</span>
-                            <span class="price-tag">Price: $200</span>
-                        </div>
-                        <div class="room-options">
-                            <button class="btn availability-btn">Available 5</button>
-                            <select class="room-select">
-                                <option value="0">0</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- RIGHT COLUMN: Phone-like summary box -->
-            <section class="summary-section">
-                <div class="phone-mockup">
-                    <div class="phone-header">
-                    </div>
-                    <div class="phone-content">
-                        <p>Total Rooms: <span id="totalRooms">0</span></p>
-                        <p>Total Price: $<span id="totalPrice">0</span></p>
-                        <p>Check-in date:</p>
-                        <div class="calendar-icon" id="calendarIcon">
-                            📅
-                        </div>
-                        <input type="date" id="checkInDate" style="display:none;" />
-                    </div>
-                    <button class="btn book-btn">Book</button>
-                </div>
-            </section>
-        </main>
-
-        <!-- Include Auth Modals -->
-        <div th:replace="~{fragments/auth-modals :: loginModal}">
-        </div>
-        <div th:replace="~{fragments/auth-modals :: signupModal}">
-        </div>
-
-        <!-- Include Room Detail Modal -->
-        <div th:replace="~{fragments/room-modals :: roomDetailModal}">
-        </div>
-
-        <!-- Include Modal Scripts -->
-        <div th:replace="~{fragments/auth-modals :: modalScripts}">
-        </div>
-        <div th:replace="~{fragments/room-modals :: roomDetailScripts}">
-        </div>
-
-        <!-- Booking specific scripts -->
-        <script>
-            // Room prices configuration
-            const roomPrices = {
-                "standard": 100,
-                "deluxe": 150,
-                "suite": 200
-            };
-            
-            const roomSelects = document.querySelectorAll('.room-select');
-            const totalRoomsEl = document.getElementById('totalRooms');
-            const totalPriceEl = document.getElementById('totalPrice');
-
-            // Handle room selection from the main page cards
-            roomSelects.forEach((select, index) => 
-            {
-                select.addEventListener('change', function() 
-                {
-                    updateTotals();
-                });
-            });
-
-            // Calculate totals from all selected rooms
-            function updateTotals() 
-            {
-                let totalRooms = 0;
-                let totalPrice = 0;
-                const roomTypes = ['standard', 'deluxe', 'suite'];
                 
-                roomSelects.forEach((select, index) => 
-                {
-                    const selectedRooms = parseInt(select.value, 10);
-                    if (selectedRooms > 0)
-                    {
-                        const roomType = roomTypes[index];
-                        const price = roomPrices[roomType];
-                        
-                        totalRooms += selectedRooms;
-                        totalPrice += selectedRooms * price;
-                    }
-                });
+                <!-- Title -->
+                <h2 class="modal-title" id="detailRoomTitle">Room Details</h2>
                 
-                totalRoomsEl.textContent = totalRooms;
-                totalPriceEl.textContent = totalPrice;
-            }
+                <!-- Basic Info: type, capacity, price, status -->
+                <div class="room-info">
+                    <p class="room-type">Type: <span id="roomTypeDetail"></span></p>
+                    <p class="room-capacity">Capacity: <span id="roomCapacityDetail"></span> persons</p>
+                    <p class="room-price">Price: $<span id="roomPriceDetail"></span> per night</p>
+                    <p class="room-status">Status: <span id="roomStatusDetail"></span></p>
+                </div>
+                
+                <!-- Description -->
+                <div class="room-description">
+                    <h3>Description</h3>
+                    <p id="roomDescriptionDetail"></p>
+                </div>
+                
+                <!-- Amenities -->
+                <div class="room-amenities">
+                    <h3>Amenities</h3>
+                    <ul id="roomAmenitiesList"></ul>
+                </div>
+                
+                <!-- Booking controls (Available, dropdown, Close) -->
+                <div class="modal-booking-controls">
+                    <button class="btn availability-btn" id="modalAvailableBtn">
+                        Available 5
+                    </button>
+                    <select class="modal-room-select" id="modalRoomSelect">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                    <button class="btn modal-add-btn" id="modalAddBtn">
+                        Done
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            // Calendar handling
-            const calendarIcon = document.getElementById('calendarIcon');
-            const checkInDate = document.getElementById('checkInDate');
+    <!-- Include Auth Modal Scripts -->
+    <div th:replace="~{fragments/auth-modals :: modalScripts}"></div>
 
-            calendarIcon.addEventListener('click', () => 
-            {
-                if (checkInDate.showPicker) 
-                {
-                    checkInDate.showPicker();
-                } 
-                else 
-                {
-                    checkInDate.style.display = 'inline-block';
-                    checkInDate.focus();
-                }
+    <!-- Booking specific scripts -->
+    <script>
+      // -- Main Page Booking Script --
+      // Only select room selects in the main rooms section, not in the modal
+      const roomSelects = document.querySelectorAll('.rooms-section .room-select');
+      const totalRoomsEl = document.getElementById('totalRooms');
+      const totalPriceEl = document.getElementById('totalPrice');
+
+      roomSelects.forEach(select => {
+        select.addEventListener('change', calculateTotals);
+      });
+
+      function calculateTotals() {
+        let totalRooms = 0;
+        let totalPrice = 0;
+        roomSelects.forEach(select => {
+          const count = parseInt(select.value, 10) || 0;
+          const price = parseInt(select.dataset.roomPrice, 10) || 0;
+          totalRooms += count;
+          totalPrice += (count * price);
+        });
+        totalRoomsEl.textContent = totalRooms;
+        totalPriceEl.textContent = totalPrice;
+      }
+
+      // Calendar handling
+      const calendarIcon = document.getElementById('calendarIcon');
+      const checkInDate = document.getElementById('checkInDate');
+
+      calendarIcon.addEventListener('click', () => {
+        if (checkInDate.showPicker) {
+          checkInDate.showPicker();
+        } else {
+          checkInDate.style.display = 'inline-block';
+          checkInDate.focus();
+        }
+      });
+
+      // -- Room Detail Modal Script --
+      const modalOverlayRoomDetail = document.getElementById('modalOverlayRoomDetail');
+      const modalRoomSelect = document.getElementById('modalRoomSelect');
+      const closeModalRoomDetail = document.getElementById('closeModalRoomDetail');
+      let currentRoomCard = null; // reference to the room card whose details are being viewed
+
+      // Sample room data (replace with actual backend data if needed)
+      const roomData = {
+        standard: {
+          type: "Standard Room",
+          capacity: 2,
+          price: 100,
+          status: "Available",
+          description: "A comfortable standard room with essential amenities.",
+          amenities: ["Wi-Fi", "TV", "Air Conditioning", "Private Bathroom"],
+          availableCount: 5
+        },
+        deluxe: {
+          type: "Deluxe Room",
+          capacity: 3,
+          price: 150,
+          status: "Available",
+          description: "Spacious deluxe room with premium furnishings and city view.",
+          amenities: ["Wi-Fi", "TV", "Air Conditioning", "Mini Bar", "Safe", "City View"],
+          availableCount: 5
+        },
+        suite: {
+          type: "Executive Suite",
+          capacity: 4,
+          price: 200,
+          status: "Available",
+          description: "Luxurious suite with separate living area and premium amenities.",
+          amenities: ["Wi-Fi", "TV", "Air Conditioning", "Mini Bar", "Safe", "Living Room", "Bathtub", "Ocean View"],
+          availableCount: 5
+        }
+      };
+
+      // Attach click handlers to room headings when the document loads
+      document.addEventListener('DOMContentLoaded', function() {
+        const roomCards = document.querySelectorAll('.room-card');
+        roomCards.forEach(card => {
+          const heading = card.querySelector('h2');
+          if (heading) {
+            heading.style.cursor = 'pointer';
+            heading.addEventListener('click', () => {
+              showRoomDetails(card);
             });
-        </script>
-    </body>
+          }
+        });
+      });
+
+      // Function to display the room detail modal
+      function showRoomDetails(roomCard) {
+        currentRoomCard = roomCard;
+        const roomType = roomCard.dataset.roomType;
+        const room = roomData[roomType];
+        if (!room) {
+          console.error('Room type not found:', roomType);
+          return;
+        }
+        
+        // Populate modal fields with room data
+        document.getElementById('roomTypeDetail').textContent = room.type;
+        document.getElementById('roomCapacityDetail').textContent = room.capacity;
+        document.getElementById('roomPriceDetail').textContent = room.price;
+        document.getElementById('roomStatusDetail').textContent = room.status;
+        document.getElementById('roomDescriptionDetail').textContent = room.description;
+        
+        const amenitiesList = document.getElementById('roomAmenitiesList');
+        amenitiesList.innerHTML = room.amenities.map(amenity => `<li>${amenity}</li>`).join('');
+        
+        document.getElementById('modalAvailableBtn').textContent = "Available " + room.availableCount;
+
+        // Sync modal select with main page select for this room
+        const mainSelect = roomCard.querySelector('.room-select');
+        if (mainSelect) {
+          modalRoomSelect.value = mainSelect.value;
+        } else {
+          modalRoomSelect.value = "0";
+        }
+        
+        // Show the modal
+        modalOverlayRoomDetail.style.display = 'flex';
+      }
+
+      // Modal Room Select change handler - automatically update main page select
+      modalRoomSelect.addEventListener('change', function() {
+        if (currentRoomCard) {
+          const mainPageSelect = currentRoomCard.querySelector('.room-select');
+          if (mainPageSelect) {
+            mainPageSelect.value = this.value;
+            // Trigger change event to update totals
+            mainPageSelect.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        }
+      });
+
+      // "Done" button handler - just closes the modal
+      document.getElementById('modalAddBtn').addEventListener('click', function() {
+        modalOverlayRoomDetail.style.display = 'none';
+      });
+
+      // Modal close handlers
+      closeModalRoomDetail.addEventListener('click', () => {
+        modalOverlayRoomDetail.style.display = 'none';
+      });
+      
+      window.addEventListener('click', (e) => {
+        if (e.target === modalOverlayRoomDetail) {
+          modalOverlayRoomDetail.style.display = 'none';
+        }
+      });
+    </script>
+  </body>
 </html>
