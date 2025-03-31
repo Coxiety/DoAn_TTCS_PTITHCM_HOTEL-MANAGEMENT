@@ -52,12 +52,17 @@
         <main>
             <!-- LEFT COLUMN: Rooms List -->
             <section class="rooms-section">
-                <!-- Example: Room #1 -->
+                <!-- Standard Room -->
                 <div class="room-card">
                     <div class="room-image">
                     </div>
                     <div class="room-details">
                         <h2>Standard Room</h2>
+                        <div class="bed-price-info">
+                            <img src="/img/icon/bedIcon.png" alt="Bed Icon" class="bed-icon" />
+                            <span class="beds-count">X2</span>
+                            <span class="price-tag">Price: $100</span>
+                        </div>
                         <div class="room-options">
                             <button class="btn availability-btn">Available 5</button>
                             <select class="room-select">
@@ -72,12 +77,17 @@
                     </div>
                 </div>
 
-                <!-- Example: Room #2 -->
+                <!-- Deluxe Room -->
                 <div class="room-card">
                     <div class="room-image">
                     </div>
                     <div class="room-details">
                         <h2>Deluxe Room</h2>
+                        <div class="bed-price-info">
+                            <img src="/img/icon/bedIcon.png" alt="Bed Icon" class="bed-icon" />
+                            <span class="beds-count">X3</span>
+                            <span class="price-tag">Price: $150</span>
+                        </div>
                         <div class="room-options">
                             <button class="btn availability-btn">Available 5</button>
                             <select class="room-select">
@@ -92,12 +102,17 @@
                     </div>
                 </div>
 
-                <!-- Example: Room #3 -->
+                <!-- Executive Suite -->
                 <div class="room-card">
                     <div class="room-image">
                     </div>
                     <div class="room-details">
                         <h2>Executive Suite</h2>
+                        <div class="bed-price-info">
+                            <img src="/img/icon/bedIcon.png" alt="Bed Icon" class="bed-icon" />
+                            <span class="beds-count">X4</span>
+                            <span class="price-tag">Price: $200</span>
+                        </div>
                         <div class="room-options">
                             <button class="btn availability-btn">Available 5</button>
                             <select class="room-select">
@@ -120,7 +135,7 @@
                     </div>
                     <div class="phone-content">
                         <p>Total Rooms: <span id="totalRooms">0</span></p>
-                        <p>Total Price: <span id="totalPrice">0</span></p>
+                        <p>Total Price: $<span id="totalPrice">0</span></p>
                         <p>Check-in date:</p>
                         <div class="calendar-icon" id="calendarIcon">
                             📅
@@ -150,27 +165,51 @@
 
         <!-- Booking specific scripts -->
         <script>
-            const ROOM_PRICE = 100;
+            // Room prices configuration
+            const roomPrices = {
+                "standard": 100,
+                "deluxe": 150,
+                "suite": 200
+            };
+            
             const roomSelects = document.querySelectorAll('.room-select');
             const totalRoomsEl = document.getElementById('totalRooms');
             const totalPriceEl = document.getElementById('totalPrice');
 
-            roomSelects.forEach(select => 
+            // Handle room selection from the main page cards
+            roomSelects.forEach((select, index) => 
             {
-                select.addEventListener('change', updateTotals);
+                select.addEventListener('change', function() 
+                {
+                    updateTotals();
+                });
             });
 
+            // Calculate totals from all selected rooms
             function updateTotals() 
             {
                 let totalRooms = 0;
-                roomSelects.forEach(select => 
+                let totalPrice = 0;
+                const roomTypes = ['standard', 'deluxe', 'suite'];
+                
+                roomSelects.forEach((select, index) => 
                 {
-                    totalRooms += parseInt(select.value, 10);
+                    const selectedRooms = parseInt(select.value, 10);
+                    if (selectedRooms > 0)
+                    {
+                        const roomType = roomTypes[index];
+                        const price = roomPrices[roomType];
+                        
+                        totalRooms += selectedRooms;
+                        totalPrice += selectedRooms * price;
+                    }
                 });
+                
                 totalRoomsEl.textContent = totalRooms;
-                totalPriceEl.textContent = totalRooms * ROOM_PRICE;
+                totalPriceEl.textContent = totalPrice;
             }
 
+            // Calendar handling
             const calendarIcon = document.getElementById('calendarIcon');
             const checkInDate = document.getElementById('checkInDate');
 

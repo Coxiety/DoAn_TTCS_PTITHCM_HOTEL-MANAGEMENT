@@ -121,3 +121,72 @@ main
     border-radius: 8px;
     margin-top: 10px;
 }
+
+/* Display bed icon + bed count + price in a row */
+.bed-price-info 
+{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px; /* some spacing before the next element */
+}
+
+.bed-price-info .bed-icon 
+{
+    width: 24px;
+    height: 24px;
+}
+
+.bed-price-info .beds-count 
+{
+    font-size: 1rem;
+    color: #333;
+}
+
+.bed-price-info .price-tag 
+{
+    font-weight: bold;
+    color: #333;
+}
+
+/* ============ ROOM DETAILS MODAL BOOKING CONTROLS ============ */
+.modal-booking-controls 
+{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+}
+
+/* Add to Book button in modal */
+.modal-add-btn 
+{
+    background-color: #00C853;
+    color: #000;
+    font-weight: bold;
+    padding: 8px 16px;
+    border-radius: 4px;
+    flex-grow: 1;
+}
+
+/* Override modal title color for room details */
+.room-detail-modal .modal-title 
+{
+    color: #333;
+}
+
+/* Override close button color for room details */
+.room-detail-modal .close-button 
+{
+    color: #333;
+}
+
+/* Make room title clickable appearance */
+.room-details h2:hover 
+{
+    color: #4CAF50;
+    text-decoration: underline;
+}

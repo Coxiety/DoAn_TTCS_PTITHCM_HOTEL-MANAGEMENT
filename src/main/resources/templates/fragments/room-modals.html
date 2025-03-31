@@ -7,24 +7,51 @@
             <div class="modal room-detail-modal">
                 <span id="closeModalRoomDetail" class="close-button">&times;</span>
                 <div class="room-detail-content">
-                    <div class="room-detail-image">
-                        <!-- Room image will be set dynamically -->
+                    <!-- Room Image (placeholder) -->
+                    <div class="room-detail-image" id="detailRoomImage">
+                        <!-- Image will be set dynamically -->
+                        <p style="text-align:center;">Room Image</p>
                     </div>
-                    <h2 class="modal-title">Room Details</h2>
+                    
+                    <!-- Title -->
+                    <h2 class="modal-title" id="detailRoomTitle">Room Details</h2>
+                    
+                    <!-- Basic Info: type, capacity, price, status -->
                     <div class="room-info">
                         <p class="room-type">Type: <span id="roomTypeDetail"></span></p>
                         <p class="room-capacity">Capacity: <span id="roomCapacityDetail"></span> persons</p>
                         <p class="room-price">Price: $<span id="roomPriceDetail"></span> per night</p>
                         <p class="room-status">Status: <span id="roomStatusDetail"></span></p>
                     </div>
+                    
+                    <!-- Description -->
                     <div class="room-description">
                         <h3>Description</h3>
                         <p id="roomDescriptionDetail"></p>
                     </div>
+                    
+                    <!-- Amenities -->
                     <div class="room-amenities">
                         <h3>Amenities</h3>
-                        <ul id="roomAmenitiesList">
-                        </ul>
+                        <ul id="roomAmenitiesList"></ul>
+                    </div>
+                    
+                    <!-- Booking controls (Available, dropdown, Add to Book) -->
+                    <div class="modal-booking-controls">
+                        <button class="btn availability-btn" id="modalAvailableBtn">
+                            Available 5
+                        </button>
+                        <select class="room-select" id="modalRoomSelect">
+                            <option value="0">0</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                        <button class="btn modal-add-btn" id="modalAddBtn">
+                            Add to Book
+                        </button>
                     </div>
                 </div>
             </div>
@@ -37,6 +64,8 @@
             const roomCards = document.querySelectorAll('.room-card');
             const modalOverlayRoomDetail = document.getElementById('modalOverlayRoomDetail');
             const closeModalRoomDetail = document.getElementById('closeModalRoomDetail');
+            const totalRoomsEl = document.getElementById('totalRooms');
+            const totalPriceEl = document.getElementById('totalPrice');
 
             // Sample room data (replace with actual data from backend)
             const roomData = 
@@ -48,7 +77,8 @@
                     price: 100,
                     status: "Available",
                     description: "A comfortable standard room with essential amenities.",
-                    amenities: ["Wi-Fi", "TV", "Air Conditioning", "Private Bathroom"]
+                    amenities: ["Wi-Fi", "TV", "Air Conditioning", "Private Bathroom"],
+                    availableCount: 5
                 },
                 "deluxe": 
                 {
@@ -57,7 +87,8 @@
                     price: 150,
                     status: "Available",
                     description: "Spacious deluxe room with premium furnishings and city view.",
-                    amenities: ["Wi-Fi", "TV", "Air Conditioning", "Mini Bar", "Safe", "City View"]
+                    amenities: ["Wi-Fi", "TV", "Air Conditioning", "Mini Bar", "Safe", "City View"],
+                    availableCount: 5
                 },
                 "suite": 
                 {
@@ -66,24 +97,39 @@
                     price: 200,
                     status: "Available",
                     description: "Luxurious suite with separate living area and premium amenities.",
-                    amenities: ["Wi-Fi", "TV", "Air Conditioning", "Mini Bar", "Safe", "Living Room", "Bathtub", "Ocean View"]
+                    amenities: ["Wi-Fi", "TV", "Air Conditioning", "Mini Bar", "Safe", "Living Room", "Bathtub", "Ocean View"],
+                    availableCount: 5
                 }
             };
 
+            // Store current room type to use in the Add to Book button
+            let currentRoomType = "";
+
             function showRoomDetails(roomType) 
             {
+                currentRoomType = roomType;
                 const room = roomData[roomType];
+                
+                // Update text fields
                 document.getElementById('roomTypeDetail').textContent = room.type;
                 document.getElementById('roomCapacityDetail').textContent = room.capacity;
                 document.getElementById('roomPriceDetail').textContent = room.price;
                 document.getElementById('roomStatusDetail').textContent = room.status;
                 document.getElementById('roomDescriptionDetail').textContent = room.description;
                 
+                // Update amenities list
                 const amenitiesList = document.getElementById('roomAmenitiesList');
                 amenitiesList.innerHTML = room.amenities
                     .map(amenity => `<li>${amenity}</li>`)
                     .join('');
                 
+                // Update availability button text
+                document.getElementById('modalAvailableBtn').textContent = "Available " + room.availableCount;
+                
+                // Reset the dropdown to 0
+                document.getElementById('modalRoomSelect').value = "0";
+                
+                // Display modal
                 modalOverlayRoomDetail.style.display = 'flex';
             }
 
@@ -99,6 +145,36 @@
                     showRoomDetails(roomTypes[index]);
                 });
             });
+
+            // Add to Book button handler
+            document.getElementById('modalAddBtn').addEventListener('click', function() 
+            {
+                const numRooms = parseInt(document.getElementById('modalRoomSelect').value, 10);
+                if (numRooms > 0) 
+                {
+                    const roomPrice = roomData[currentRoomType].price;
+                    addToBooking(numRooms, roomPrice);
+                    // Optionally close the modal after adding to booking
+                    modalOverlayRoomDetail.style.display = 'none';
+                }
+            });
+
+            // Function to update the booking summary
+            function addToBooking(numRooms, roomPrice) 
+            {
+                // Get current totals from the summary
+                const currentRooms = parseInt(totalRoomsEl.textContent, 10);
+                const currentPrice = parseInt(totalPriceEl.textContent, 10);
+                
+                // Add the newly chosen rooms
+                const newRooms = currentRooms + numRooms;
+                // Calculate new price based on specific room price
+                const newPrice = currentPrice + (roomPrice * numRooms);
+                
+                // Update the summary display
+                totalRoomsEl.textContent = newRooms;
+                totalPriceEl.textContent = newPrice;
+            }
 
             // Close modal handlers
             closeModalRoomDetail.addEventListener('click', () => 
