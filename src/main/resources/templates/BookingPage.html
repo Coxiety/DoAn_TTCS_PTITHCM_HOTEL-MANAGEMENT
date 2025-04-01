@@ -6,8 +6,12 @@
   <title>Book Your Stay - Luxury Hotel</title>
   <link rel="stylesheet" th:href="@{/css/stylesHome.css}" />
   <link rel="stylesheet" th:href="@{/css/stylesBooking.css}" />
+  <!-- Auth modals CSS -->
+  <div th:replace="~{fragments/auth-modals :: authCSS}"></div>
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <!-- Messages -->
@@ -15,24 +19,7 @@
   <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
 
   <!-- Navbar -->
-  <nav class="navbar">
-    <div class="logo">LOGO</div>
-    <ul class="nav-links">
-      <li><a th:href="@{/contract}">Contract</a></li>
-      <li><a th:href="@{/}">Home</a></li>
-      <li><a th:href="@{/intro}">Introduction</a></li>
-      <!-- Show these if user is not logged in -->
-      <li th:if="${session.user == null}"><a href="#" class="btn login-btn">Login</a></li>
-      <li th:if="${session.user == null}"><a href="#" class="btn signup-btn">Sign-up</a></li>
-      <!-- Show these if user is logged in -->
-      <li th:if="${session.user != null}"><span th:text="${session.user.fullName}"></span></li>
-      <li th:if="${session.user != null}">
-        <form action="/auth/logout" method="POST" style="display: inline;">
-          <button type="submit" class="btn">Logout</button>
-        </form>
-      </li>
-    </ul>
-  </nav>
+  <div th:replace="~{fragments/navbar :: navbar('booking')}"></div>
 
   <!-- Header -->
   <div class="booking-header">
@@ -258,6 +245,12 @@
       </div>
     </div>
   </div>
+
+  <!-- Include Modal Scripts -->
+  <div th:replace="~{fragments/auth-modals :: modalScripts}"></div>
+  
+  <!-- Include Navbar Scripts -->
+  <div th:replace="~{fragments/navbar :: navbarScript}"></div>
 
   <!-- Booking specific scripts -->
   <script>

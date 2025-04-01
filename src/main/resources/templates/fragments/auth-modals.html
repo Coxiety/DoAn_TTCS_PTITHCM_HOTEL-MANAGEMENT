@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
+    <!-- Auth CSS Fragment -->
+    <div th:fragment="authCSS">
+        <link rel="stylesheet" th:href="@{/css/stylesAuth.css}">
+    </div>
+
     <!-- Login Modal Fragment -->
     <div th:fragment="loginModal">
         <div id="modalOverlayLogin" class="modal-overlay">

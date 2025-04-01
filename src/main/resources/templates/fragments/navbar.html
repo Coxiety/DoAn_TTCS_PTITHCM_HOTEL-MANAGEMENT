@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Navbar Fragment -->
+    <nav th:fragment="navbar(activeTab)" class="navbar">
+        <div class="logo">LUXURY HOTEL</div>
+        <ul class="nav-links">
+            <li><a th:href="@{/contract}" th:class="${activeTab == 'contract'} ? 'active' : ''">Contract</a></li>
+            <li><a th:href="@{/}" th:class="${activeTab == 'home'} ? 'active' : ''">Home</a></li>
+            <li><a th:href="@{/intro}" th:class="${activeTab == 'intro'} ? 'active' : ''">Introduction</a></li>
+            <!-- Show these if user is not logged in -->
+            <li th:if="${session.user == null}"><a href="#" class="btn login-btn">Login</a></li>
+            <li th:if="${session.user == null}"><a href="#" class="btn signup-btn">Sign-up</a></li>
+            <!-- Show these if user is logged in -->
+            <li th:if="${session.user != null}"><span th:text="${session.user.fullName}"></span></li>
+            <li th:if="${session.user != null}">
+                <form action="/auth/logout" method="POST" style="display: inline;">
+                    <button type="submit" class="btn">Logout</button>
+                </form>
+            </li>
+        </ul>
+        <button class="mobile-menu-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </nav>
+
+    <!-- Navbar Script Fragment -->
+    <div th:fragment="navbarScript">
+        <script>
+            // Mobile menu toggle
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            const navLinks = document.querySelector('.nav-links');
+            
+            mobileMenuBtn?.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+            
+            // Navbar scroll effect
+            window.addEventListener('scroll', () => {
+                const navbar = document.querySelector('.navbar');
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>

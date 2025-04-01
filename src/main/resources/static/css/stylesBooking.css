@@ -270,14 +270,47 @@ main {
 }
 
 /* ============ ROOM DETAILS MODAL ============ */
+/* Make all room detail modal styles more specific to avoid conflicts with auth modals */
+#modalOverlayRoomDetail {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    overflow-y: auto;
+    padding: 20px;
+}
+
 .room-detail-modal {
     max-width: 700px;
     padding: 0;
     border-radius: 12px;
     overflow: hidden;
+    background-color: #fff;
+    position: relative;
+    animation: modalFadeIn 0.3s ease-out;
+    max-height: 90vh;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
-.modal-header {
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Room Detail Modal Header */
+.room-detail-modal .modal-header {
     position: relative;
     height: 250px;
     background-color: #f5f5f5;
@@ -285,19 +318,19 @@ main {
     background-size: cover;
 }
 
-.modal-header.standard {
+.room-detail-modal .modal-header.standard {
     background-image: url('/img/rooms/standard-large.jpg');
 }
 
-.modal-header.deluxe {
+.room-detail-modal .modal-header.deluxe {
     background-image: url('/img/rooms/deluxe-large.jpg');
 }
 
-.modal-header.suite {
+.room-detail-modal .modal-header.suite {
     background-image: url('/img/rooms/suite-large.jpg');
 }
 
-.close-button {
+.room-detail-modal .close-button {
     position: absolute;
     top: 15px;
     right: 15px;
@@ -314,11 +347,12 @@ main {
     transition: background-color 0.3s ease;
 }
 
-.close-button:hover {
+.room-detail-modal .close-button:hover {
     background: rgba(0, 0, 0, 0.5);
 }
 
-.modal-title {
+/* Room detail modal title */
+.room-detail-modal .modal-title {
     position: absolute;
     bottom: 0;
     left: 0;
