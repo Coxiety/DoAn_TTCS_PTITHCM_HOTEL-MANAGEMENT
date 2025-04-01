@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receptionist Dashboard - Luxury Hotel</title>
+    <link rel="stylesheet" th:href="@{/css/stylesHome.css}">
+    <!-- Add specific receptionist page styles -->
+    <link rel="stylesheet" th:href="@{/css/stylesReceptionist.css}">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Messages -->
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+    <!-- Receptionist Header -->
+    <header class="receptionist-header">
+        <div class="receptionist-header-content">
+            <div class="logo">LUXURY HOTEL</div>
+            <div class="user-info">
+                <span th:text="${session.user.fullName}">Receptionist Name</span>
+                <form action="/auth/logout" method="POST">
+                    <button type="submit" class="btn logout-btn">Logout</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="receptionist-container">
+        <!-- Tab Navigation -->
+        <div class="tabs-container">
+            <button class="tab-btn active" data-tab="check-in">Check-In</button>
+            <button class="tab-btn" data-tab="check-out">Check-Out</button>
+            <button class="tab-btn" data-tab="booking">New Booking</button>
+            <button class="tab-btn" data-tab="customers">Customers</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Check-In Tab -->
+            <div class="tab-pane active" id="check-in">
+                <h2>Today's Check-Ins</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Customer</th>
+                                <th>Room</th>
+                                <th>Check-In Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${checkins == null || checkins.empty}">
+                                <td colspan="5">No check-ins scheduled for today</td>
+                            </tr>
+                            <tr th:each="booking : ${checkins}" th:if="${checkins != null}">
+                                <td th:text="${booking.id}">123</td>
+                                <td th:text="${booking.customer.fullName}">John Doe</td>
+                                <td>
+                                    <!-- Using the bookingDetailsMap -->
+                                    <span th:each="detail, detailStat : ${bookingDetailsMap.get(booking.id)}" 
+                                          th:text="${detailStat.count > 1 ? ', ' + detail.room.roomNumber : detail.room.roomNumber}">101</span>
+                                </td>
+                                <td th:text="${#temporals.format(booking.checkInDate, 'HH:mm')}">14:00</td>
+                                <td>
+                                    <form th:action="@{/receptionist/check-in}" method="post">
+                                        <input type="hidden" name="bookingId" th:value="${booking.id}">
+                                        <button type="submit" class="btn btn-primary">Check In</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Check-Out Tab -->
+            <div class="tab-pane" id="check-out">
+                <h2>Occupied Rooms</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Room</th>
+                                <th>Type</th>
+                                <th>Customer</th>
+                                <th>Check-In Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${occupiedRooms == null || occupiedRooms.empty}">
+                                <td colspan="5">No rooms are currently occupied</td>
+                            </tr>
+                            <tr th:each="room : ${occupiedRooms}" th:if="${occupiedRooms != null}">
+                                <td th:text="${room.roomNumber}">101</td>
+                                <td th:text="${room.roomType.name}">Standard</td>
+                                <td>
+                                    <!-- This will need to be handled in the controller -->
+                                    <span>Customer Name</span>
+                                </td>
+                                <td>
+                                    <!-- This will need to be handled in the controller -->
+                                    <span>Check-in Date</span>
+                                </td>
+                                <td>
+                                    <form th:action="@{/receptionist/check-out}" method="post">
+                                        <input type="hidden" name="roomId" th:value="${room.id}">
+                                        <button type="submit" class="btn btn-primary">Check Out</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- New Booking Tab -->
+            <div class="tab-pane" id="booking">
+                <h2>New Booking</h2>
+                <div class="booking-form">
+                    <div class="form-section">
+                        <h3>Customer Information</h3>
+                        <div class="customer-search">
+                            <input type="text" id="customerSearch" placeholder="Search customer by name, phone or email">
+                            <button id="searchBtn" class="btn">Search</button>
+                        </div>
+                        <div id="customerSearchResults" class="search-results"></div>
+
+                        <div class="separator">OR</div>
+
+                        <h4>Create New Customer</h4>
+                        <form id="createCustomerForm" th:action="@{/receptionist/create-customer}" method="post">
+                            <div class="form-group">
+                                <label for="fullName">Full Name</label>
+                                <input type="text" id="fullName" name="fullName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone</label>
+                                <input type="text" id="phone" name="phone" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email">
+                            </div>
+                            <div class="form-group">
+                                <label for="address">Address</label>
+                                <textarea id="address" name="address"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Create Customer</button>
+                        </form>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Room Selection</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Room</th>
+                                        <th>Type</th>
+                                        <th>Price</th>
+                                        <th>Select</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${availableRooms == null || availableRooms.empty}">
+                                        <td colspan="4">No rooms available</td>
+                                    </tr>
+                                    <tr th:each="room : ${availableRooms}" th:if="${availableRooms != null}">
+                                        <td th:text="${room.roomNumber}">101</td>
+                                        <td th:text="${room.roomType.name}">Standard</td>
+                                        <td th:text="${'$' + room.price}">$100.00</td>
+                                        <td>
+                                            <input type="radio" name="selectedRoom" th:value="${room.id}" th:data-room-number="${room.roomNumber}">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Booking Details</h3>
+                        <form id="createBookingForm" th:action="@{/receptionist/create-booking}" method="post">
+                            <input type="hidden" id="customerId" name="customerId">
+                            <input type="hidden" id="roomId" name="roomId">
+                            
+                            <div class="form-group">
+                                <label for="checkInDate">Check-In Date</label>
+                                <input type="date" id="checkInDate" name="checkInDate" required>
+                            </div>
+                            
+                            <div class="booking-summary">
+                                <p>Selected Customer: <span id="selectedCustomer">None</span></p>
+                                <p>Selected Room: <span id="selectedRoom">None</span></p>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" id="createBookingBtn" disabled>Create Booking</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customers Tab -->
+            <div class="tab-pane" id="customers">
+                <h2>Customer Management</h2>
+                <div class="customer-search">
+                    <input type="text" id="customerListSearch" placeholder="Search customers">
+                    <button id="customerListSearchBtn" class="btn">Search</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Email</th>
+                                <th>Booking History</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customerListBody">
+                            <!-- Customer list will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Tab switching
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+            
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const targetTab = this.getAttribute('data-tab');
+                    
+                    // Update active button
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update active tab
+                    tabPanes.forEach(pane => {
+                        pane.classList.remove('active');
+                        if (pane.id === targetTab) {
+                            pane.classList.add('active');
+                        }
+                    });
+                });
+            });
+            
+            // Customer search
+            const searchBtn = document.getElementById('searchBtn');
+            if (searchBtn) {
+                searchBtn.addEventListener('click', function() {
+                    const query = document.getElementById('customerSearch').value;
+                    if (query.trim().length > 0) {
+                        fetch(`/receptionist/search-customer?query=${encodeURIComponent(query)}`)
+                            .then(response => response.text())
+                            .then(html => {
+                                document.getElementById('customerSearchResults').innerHTML = html;
+                            });
+                    }
+                });
+            }
+            
+            // Room selection
+            const roomRadios = document.querySelectorAll('input[name="selectedRoom"]');
+            roomRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    document.getElementById('roomId').value = this.value;
+                    document.getElementById('selectedRoom').textContent = this.getAttribute('data-room-number');
+                    checkBookingForm();
+                });
+            });
+            
+            // Set current date for check-in
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('checkInDate').min = today;
+            document.getElementById('checkInDate').value = today;
+            
+            // Check form validity and enable/disable submit button
+            function checkBookingForm() {
+                const customerId = document.getElementById('customerId').value;
+                const roomId = document.getElementById('roomId').value;
+                
+                if (customerId && roomId) {
+                    document.getElementById('createBookingBtn').disabled = false;
+                } else {
+                    document.getElementById('createBookingBtn').disabled = true;
+                }
+            }
+            
+            // Handle customer selection
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.classList.contains('select-customer-btn')) {
+                    const customerId = e.target.getAttribute('data-id');
+                    const customerName = e.target.getAttribute('data-name');
+                    document.getElementById('customerId').value = customerId;
+                    document.getElementById('selectedCustomer').textContent = customerName;
+                    checkBookingForm();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

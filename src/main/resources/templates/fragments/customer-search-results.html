@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Customer search results fragment -->
+    <div th:fragment="results">
+        <div th:if="${customers == null || customers.isEmpty()}" class="no-results">
+            <p>No customers found. Try a different search term or create a new customer.</p>
+        </div>
+        
+        <div th:if="${customers != null && !customers.isEmpty()}" class="search-results-container">
+            <div th:each="customer : ${customers}" class="customer-card">
+                <div class="customer-info">
+                    <div class="customer-name" th:text="${customer.fullName}">John Doe</div>
+                    <div class="customer-contact">
+                        <span th:text="${customer.phone}">123-456-7890</span>
+                        <span th:if="${customer.email}" th:text="${'| ' + customer.email}">john@example.com</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary select-customer-btn"
+                        th:data-id="${customer.id}"
+                        th:data-name="${customer.fullName}">
+                    Select
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
