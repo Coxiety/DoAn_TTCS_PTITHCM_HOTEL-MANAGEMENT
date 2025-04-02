@@ -1,13 +1,13 @@
 package com.HotelManagement.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.HotelManagement.models.Room;
 import com.HotelManagement.models.RoomType;
+import com.HotelManagement.repository.BookingDetailRepository;
 import com.HotelManagement.repository.RoomRepository;
 import com.HotelManagement.repository.RoomTypeRepository;
 
@@ -21,6 +21,9 @@ public class RoomService {
     
     @Autowired
     private RoomTypeRepository roomTypeRepository;
+    
+    @Autowired
+    private BookingDetailRepository bookingDetailRepository;
     
     // ================== Room Methods ==================
     
@@ -37,14 +40,16 @@ public class RoomService {
     }
     
     public List<Room> getAvailableRoomsByType(Integer typeId) {
-        return roomRepository.findByStatus("AVAILABLE").stream()
-                .filter(room -> room.getRoomType().getId().equals(typeId))
-                .collect(Collectors.toList());
+        return roomRepository.findByRoomTypeIdAndStatus(typeId, "AVAILABLE");
     }
     
     public Room getRoomById(Integer id) {
         return roomRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Room not found with id: " + id));
+    }
+    
+    public Room getRoomByRoomNumber(String roomNumber) {
+        return roomRepository.findByRoomNumber(roomNumber);
     }
     
     public Room saveRoom(Room room) {
@@ -65,16 +70,28 @@ public class RoomService {
         Room room = getRoomById(id);
         
         // Check if room has active bookings
-        if (room.getBookingDetails() != null && !room.getBookingDetails().isEmpty()) {
-            boolean hasActiveBooking = room.getBookingDetails().stream()
-                    .anyMatch(bd -> bd.getStatus().equals("CONFIRMED") || bd.getStatus().equals("OCCUPIED"));
-            
-            if (hasActiveBooking) {
-                throw new RuntimeException("Cannot delete room with active bookings");
-            }
+        boolean hasActiveBookings = bookingDetailRepository.findAll().stream()
+                .filter(bd -> bd.getRoom().getId().equals(id))
+                .anyMatch(bd -> bd.getStatus().equals("CONFIRMED") || bd.getStatus().equals("OCCUPIED"));
+        
+        if (hasActiveBookings) {
+            throw new RuntimeException("Cannot delete room with active bookings");
         }
         
         roomRepository.deleteById(id);
+    }
+    
+    /**
+     * Check if a room is currently in use (has active bookings).
+     * 
+     * @param roomId the ID of the room to check
+     * @return true if the room is in use, false otherwise
+     */
+    public boolean isRoomInUse(Integer roomId) {
+        // Check if the room has active bookings
+        return bookingDetailRepository.findAll().stream()
+                .filter(bd -> bd.getRoom().getId().equals(roomId))
+                .anyMatch(bd -> bd.getStatus().equals("CONFIRMED") || bd.getStatus().equals("OCCUPIED"));
     }
     
     // ================== Room Type Methods ==================
@@ -106,10 +123,24 @@ public class RoomService {
         RoomType roomType = getRoomTypeById(id);
         
         // Check if there are rooms associated with this type
-        if (roomType.getRooms() != null && !roomType.getRooms().isEmpty()) {
+        boolean hasRooms = roomRepository.findAll().stream()
+                .anyMatch(room -> room.getRoomType().getId().equals(id));
+        
+        if (hasRooms) {
             throw new RuntimeException("Cannot delete room type that has rooms associated with it");
         }
         
         roomTypeRepository.deleteById(id);
+    }
+    
+    /**
+     * Check if a room type is in use (has rooms assigned to it).
+     * 
+     * @param roomTypeId the ID of the room type to check
+     * @return true if the room type is in use, false otherwise
+     */
+    public boolean isRoomTypeInUse(Integer roomTypeId) {
+        return roomRepository.findAll().stream()
+                .anyMatch(room -> room.getRoomType().getId().equals(roomTypeId));
     }
 }

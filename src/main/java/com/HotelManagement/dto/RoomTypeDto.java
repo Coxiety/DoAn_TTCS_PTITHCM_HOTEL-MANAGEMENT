@@ -1,6 +1,9 @@
 package com.HotelManagement.dto;
 
 import java.math.BigDecimal;
+import java.util.List;
+
+import com.HotelManagement.models.Room;
 
 public class RoomTypeDto {
     private Integer id;
@@ -10,6 +13,13 @@ public class RoomTypeDto {
     private BigDecimal price;
     private String amenities;
     private String imagePath;
+    
+    // Additional fields for the UI
+    private String bedType;
+    private String size;
+    private List<RoomTypeAmenityDto> amenityList;
+    private List<Room> availableRooms;
+    private Integer availableCount;
 
     // Constructors
     public RoomTypeDto() {
@@ -80,5 +90,46 @@ public class RoomTypeDto {
 
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
+    }
+
+    // Additional getters and setters for UI fields
+    public String getBedType() {
+        return bedType;
+    }
+
+    public void setBedType(String bedType) {
+        this.bedType = bedType;
+    }
+
+    public String getSize() {
+        return size;
+    }
+
+    public void setSize(String size) {
+        this.size = size;
+    }
+
+    public List<RoomTypeAmenityDto> getAmenityList() {
+        return amenityList;
+    }
+
+    public void setAmenityList(List<RoomTypeAmenityDto> amenityList) {
+        this.amenityList = amenityList;
+    }
+
+    public List<Room> getAvailableRooms() {
+        return availableRooms;
+    }
+
+    public void setAvailableRooms(List<Room> availableRooms) {
+        this.availableRooms = availableRooms;
+    }
+
+    public Integer getAvailableCount() {
+        return availableCount;
+    }
+
+    public void setAvailableCount(Integer availableCount) {
+        this.availableCount = availableCount;
     }
 }

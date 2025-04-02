@@ -1,6 +1,7 @@
 package com.HotelManagement.controller;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.HotelManagement.dto.BookingRequestDto;
-import com.HotelManagement.dto.RoomSelectionDto;
 import com.HotelManagement.dto.RoomTypeAmenityDto;
 import com.HotelManagement.dto.RoomTypeDto;
 import com.HotelManagement.models.Booking;
@@ -58,14 +58,10 @@ public class ReceptionistController {
     @Autowired
     private RoomTypeRepository roomTypeRepository;
     
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    
     @GetMapping("")
-    public String dashboard(
-            @RequestParam(required = false) Boolean bookingSuccess,
-            @RequestParam(required = false) Integer bookingId,
-            Model model, 
-            HttpSession session,
-            RedirectAttributes redirectAttributes) {
-        
+    public String dashboard(Model model, HttpSession session) {
         // Check if user is logged in and has receptionist role
         User user = (User) session.getAttribute("user");
         Integer userRole = (Integer) session.getAttribute("userRole");
@@ -74,32 +70,12 @@ public class ReceptionistController {
             return "redirect:/";
         }
         
-        // Handle booking success message
-        if (bookingSuccess != null && bookingSuccess && bookingId != null) {
-            redirectAttributes.addFlashAttribute("success", 
-                    "Booking #" + bookingId + " created successfully!");
-        }
-        
-        // Get today's bookings for check-in
-        List<Booking> todaysCheckins = bookingService.getTodaysCheckins();
-        
-        // For each booking, fetch its details and add them to the model
-        Map<Integer, List<BookingDetail>> bookingDetailsMap = new HashMap<>();
-        for (Booking booking : todaysCheckins) {
-            List<BookingDetail> details = bookingDetailRepository.findByBookingId(booking.getId());
-            bookingDetailsMap.put(booking.getId(), details);
-        }
-        
-        model.addAttribute("checkins", todaysCheckins);
-        model.addAttribute("bookingDetailsMap", bookingDetailsMap);
-        
-        // Get occupied rooms for check-out
-        List<Room> occupiedRooms = roomService.getOccupiedRooms();
-        model.addAttribute("occupiedRooms", occupiedRooms);
-        
-        // Get available rooms
+        // Get all rooms for availability display
         List<Room> availableRooms = roomService.getAvailableRooms();
         model.addAttribute("availableRooms", availableRooms);
+        
+        List<Room> occupiedRooms = roomService.getOccupiedRooms();
+        model.addAttribute("occupiedRooms", occupiedRooms);
         
         return "ReceptionistPage";
     }
@@ -108,46 +84,6 @@ public class ReceptionistController {
     @ResponseBody
     public List<Customer> getAllCustomers() {
         return customerService.getAllCustomers();
-    }
-    
-    @GetMapping("/search-booking-by-phone")
-    public String searchBookingByPhone(@RequestParam String phone, Model model) {
-        List<Booking> bookings = bookingService.getBookingsByCustomerPhone(phone);
-        
-        // For each booking, fetch its details
-        Map<Integer, List<BookingDetail>> bookingDetailsMap = new HashMap<>();
-        for (Booking booking : bookings) {
-            List<BookingDetail> details = bookingDetailRepository.findByBookingId(booking.getId());
-            bookingDetailsMap.put(booking.getId(), details);
-        }
-        
-        model.addAttribute("searchResults", bookings);
-        model.addAttribute("bookingDetailsMap", bookingDetailsMap);
-        model.addAttribute("searchPhone", phone);
-        
-        return "fragments/booking-search-results :: results";
-    }
-    
-    @PostMapping("/check-in")
-    public String checkIn(@RequestParam Integer bookingId, RedirectAttributes redirectAttributes) {
-        try {
-            bookingService.checkInBooking(bookingId);
-            redirectAttributes.addFlashAttribute("success", "Check-in successful!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Check-in failed: " + e.getMessage());
-        }
-        return "redirect:/receptionist";
-    }
-    
-    @PostMapping("/check-out")
-    public String checkOut(@RequestParam Integer roomId, RedirectAttributes redirectAttributes) {
-        try {
-            bookingService.checkOutRoom(roomId);
-            redirectAttributes.addFlashAttribute("success", "Check-out successful!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Check-out failed: " + e.getMessage());
-        }
-        return "redirect:/receptionist";
     }
     
     @PostMapping("/create-customer")
@@ -175,26 +111,6 @@ public class ReceptionistController {
         return "redirect:/receptionist";
     }
     
-    @PostMapping("/create-booking")
-    public String createBooking(
-            @RequestParam Integer customerId,
-            @RequestParam Integer roomId,
-            @RequestParam String checkInDate,
-            HttpSession session,
-            RedirectAttributes redirectAttributes) {
-        
-        try {
-            User user = (User) session.getAttribute("user");
-            
-            bookingService.createBookingByReceptionist(customerId, roomId, checkInDate, user.getId());
-            redirectAttributes.addFlashAttribute("success", "Booking created successfully!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Failed to create booking: " + e.getMessage());
-        }
-        
-        return "redirect:/receptionist";
-    }
-    
     @GetMapping("/search-customer")
     public String searchCustomer(@RequestParam String query, Model model) {
         List<Customer> customers = customerService.searchCustomers(query);
@@ -203,7 +119,7 @@ public class ReceptionistController {
     }
     
     /**
-     * Show the new booking page similar to customer booking page, but for receptionists
+     * Show the new booking page for receptionists 
      */
     @GetMapping("/book/{customerId}")
     public String showBookingPage(@PathVariable Integer customerId, Model model, HttpSession session) {
@@ -233,6 +149,7 @@ public class ReceptionistController {
             dto.setName(roomType.getName());
             dto.setDescription(roomType.getDescription());
             dto.setCapacity(roomType.getCapacity());
+            dto.setPrice(roomType.getPrice());  // Get price directly from room type
             
             // Set bed type based on capacity (this is a simplified example)
             switch (roomType.getCapacity()) {
@@ -253,35 +170,30 @@ public class ReceptionistController {
                     dto.setSize("25");
             }
             
-            // Get room price from the first room of this type (assuming all rooms of same type have same price)
+            // Get available rooms of this type
             List<Room> rooms = roomService.getAvailableRoomsByType(roomType.getId());
             dto.setAvailableRooms(rooms);
             dto.setAvailableCount(rooms.size());
             
-            if (!rooms.isEmpty()) {
-                dto.setPrice(rooms.get(0).getPrice().intValue());
-            } else {
-                dto.setPrice(100); // Default price if no rooms available
-            }
-            
-            // Add sample amenities
+            // Add amenities
             List<RoomTypeAmenityDto> amenities = new ArrayList<>();
-            amenities.add(new RoomTypeAmenityDto("fas fa-wifi", "Free Wi-Fi"));
-            amenities.add(new RoomTypeAmenityDto("fas fa-tv", "Flat-screen TV"));
-            amenities.add(new RoomTypeAmenityDto("fas fa-snowflake", "Air Conditioning"));
-            amenities.add(new RoomTypeAmenityDto("fas fa-shower", "Private Bathroom"));
             
-            if (roomType.getCapacity() > 2) {
-                amenities.add(new RoomTypeAmenityDto("fas fa-coffee", "Premium Coffee Machine"));
-                amenities.add(new RoomTypeAmenityDto("fas fa-bath", "Bathtub"));
+            // If roomType has amenities string, parse it and add to amenities list
+            if (roomType.getAmenities() != null && !roomType.getAmenities().isEmpty()) {
+                String[] amenityList = roomType.getAmenities().split(",");
+                for (String amenity : amenityList) {
+                    String icon = getIconForAmenity(amenity.trim());
+                    amenities.add(new RoomTypeAmenityDto(icon, amenity.trim()));
+                }
+            } else {
+                // Default amenities if none are specified
+                amenities.add(new RoomTypeAmenityDto("fas fa-wifi", "Free Wi-Fi"));
+                amenities.add(new RoomTypeAmenityDto("fas fa-tv", "Flat-screen TV"));
+                amenities.add(new RoomTypeAmenityDto("fas fa-snowflake", "Air Conditioning"));
+                amenities.add(new RoomTypeAmenityDto("fas fa-shower", "Private Bathroom"));
             }
             
-            if (roomType.getCapacity() == 4) {
-                amenities.add(new RoomTypeAmenityDto("fas fa-couch", "Separate Living Room"));
-                amenities.add(new RoomTypeAmenityDto("fas fa-concierge-bell", "Butler Service"));
-            }
-            
-            dto.setAmenities(amenities);
+            dto.setAmenityList(amenities);
             roomTypeDtos.add(dto);
         }
         
@@ -307,7 +219,28 @@ public class ReceptionistController {
     }
     
     /**
-     * Process a full booking with multiple rooms
+     * Helper method to get Font Awesome icon for an amenity
+     */
+    private String getIconForAmenity(String amenity) {
+        amenity = amenity.toLowerCase();
+        
+        if (amenity.contains("wifi")) return "fas fa-wifi";
+        if (amenity.contains("tv")) return "fas fa-tv";
+        if (amenity.contains("air")) return "fas fa-snowflake";
+        if (amenity.contains("bath")) return "fas fa-bath";
+        if (amenity.contains("shower")) return "fas fa-shower";
+        if (amenity.contains("coffee")) return "fas fa-coffee";
+        if (amenity.contains("kitchen")) return "fas fa-utensils";
+        if (amenity.contains("living")) return "fas fa-couch";
+        if (amenity.contains("service")) return "fas fa-concierge-bell";
+        if (amenity.contains("mini")) return "fas fa-glass-whiskey";
+        
+        // Default icon
+        return "fas fa-check";
+    }
+    
+    /**
+     * Process a booking with the updated structure
      */
     @PostMapping("/create-booking-full")
     @ResponseBody
@@ -315,24 +248,13 @@ public class ReceptionistController {
         try {
             User user = (User) session.getAttribute("user");
             
-            // Extract booking data
-            Integer customerId = bookingRequest.getCustomerId();
-            String checkInDateStr = bookingRequest.getCheckInDate();
-            String checkOutDateStr = bookingRequest.getCheckOutDate();
-            List<RoomSelectionDto> roomSelections = bookingRequest.getRoomSelections();
-            
-            // Create the booking
-            Integer bookingId = bookingService.createFullBooking(
-                    customerId, 
-                    LocalDate.parse(checkInDateStr),
-                    LocalDate.parse(checkOutDateStr), 
-                    roomSelections, 
-                    user.getId());
+            // Create the booking using our updated BookingService
+            Booking booking = bookingService.createBooking(bookingRequest, user);
             
             // Return success response
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("bookingId", bookingId);
+            response.put("bookingId", booking.getId());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();

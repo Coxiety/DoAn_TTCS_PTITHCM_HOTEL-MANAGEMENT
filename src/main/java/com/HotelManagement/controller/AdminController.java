@@ -85,6 +85,8 @@ public class AdminController {
                 .collect(Collectors.toList());
         
         model.addAttribute("staffMembers", staffMembers);
+        // Pass the current user's ID to the template so we can disable role editing for self
+        model.addAttribute("currentUserId", user.getId());
         
         return "admin/StaffManagement";
     }
@@ -148,6 +150,7 @@ public class AdminController {
             @RequestParam String phone,
             @RequestParam String email,
             @RequestParam Integer roleId,
+            HttpSession session,
             RedirectAttributes redirectAttributes) {
         
         try {
@@ -159,6 +162,14 @@ public class AdminController {
             User user = userService.getUserById(id);
             if (user == null) {
                 throw new RuntimeException("User not found");
+            }
+            
+            // Get current logged-in user
+            User currentUser = (User) session.getAttribute("user");
+            
+            // Prevent admins from demoting themselves to non-admin roles
+            if (currentUser.getId().equals(id) && user.getRoleId() == 3 && roleId != 3) {
+                throw new RuntimeException("Administrators cannot demote themselves to non-admin roles");
             }
             
             // Check if username already exists (but not for the current user)
@@ -181,8 +192,8 @@ public class AdminController {
                 }
             }
             
-            // Check if trying to update the last admin
-            if (user.getRoleId() == 3 && roleId != 3) {
+            // Check if trying to update the last admin (but not for the current user)
+            if (!currentUser.getId().equals(id) && user.getRoleId() == 3 && roleId != 3) {
                 long adminCount = userService.countUsersByRole(3);
                 if (adminCount <= 1) {
                     throw new RuntimeException("Cannot change role of the last administrator");
@@ -196,7 +207,13 @@ public class AdminController {
             user.setFullName(fullName);
             user.setPhone(phone);
             user.setEmail(email);
-            user.setRoleId(roleId);
+            // Only update role if not editing self
+            if (!currentUser.getId().equals(id)) {
+                user.setRoleId(roleId);
+            } else if (user.getRoleId() != roleId) {
+                // If trying to change own role, show warning but keep admin role
+                redirectAttributes.addFlashAttribute("warning", "You cannot change your own role. Your admin role has been maintained.");
+            }
             
             userService.saveUser(user);
             redirectAttributes.addFlashAttribute("success", "Staff member updated successfully!");
@@ -208,11 +225,22 @@ public class AdminController {
     }
     
     @PostMapping("/staff/delete")
-    public String deleteStaff(@RequestParam Integer id, RedirectAttributes redirectAttributes) {
+    public String deleteStaff(
+            @RequestParam Integer id, 
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
         try {
             User user = userService.getUserById(id);
             if (user == null) {
                 throw new RuntimeException("User not found");
+            }
+            
+            // Get current logged-in user
+            User currentUser = (User) session.getAttribute("user");
+            
+            // Prevent admins from deleting themselves
+            if (currentUser.getId().equals(id)) {
+                throw new RuntimeException("Administrators cannot delete their own accounts");
             }
             
             // Don't allow deletion if this is the last admin
@@ -247,6 +275,9 @@ public class AdminController {
         // Get all users for the user management page
         List<User> users = userService.getAllUsers();
         model.addAttribute("users", users);
+        
+        // Pass the current user's ID to the template so we can disable role editing for self
+        model.addAttribute("currentUserId", user.getId());
         
         // For the role dropdown in the create/edit form
         Map<Integer, String> roles = new HashMap<>();
@@ -312,12 +343,21 @@ public class AdminController {
             @RequestParam String phone,
             @RequestParam String email,
             @RequestParam Integer roleId,
+            HttpSession session,
             RedirectAttributes redirectAttributes) {
         
         try {
             User user = userService.getUserById(id);
             if (user == null) {
                 throw new RuntimeException("User not found");
+            }
+            
+            // Get current logged-in user
+            User currentUser = (User) session.getAttribute("user");
+            
+            // Prevent admins from demoting themselves
+            if (currentUser.getId().equals(id) && user.getRoleId() == 3 && roleId != 3) {
+                throw new RuntimeException("Administrators cannot demote themselves to non-admin roles");
             }
             
             // Check if username already exists (but not for the current user)
@@ -340,8 +380,8 @@ public class AdminController {
                 }
             }
             
-            // Check if trying to update the last admin
-            if (user.getRoleId() == 3 && roleId != 3) {
+            // Check if trying to update the last admin (but not for the current user)
+            if (!currentUser.getId().equals(id) && user.getRoleId() == 3 && roleId != 3) {
                 long adminCount = userService.countUsersByRole(3);
                 if (adminCount <= 1) {
                     throw new RuntimeException("Cannot change role of the last administrator");
@@ -355,7 +395,14 @@ public class AdminController {
             user.setFullName(fullName);
             user.setPhone(phone);
             user.setEmail(email);
-            user.setRoleId(roleId);
+            
+            // Only update role if not editing self or not changing from admin
+            if (!currentUser.getId().equals(id) || (currentUser.getId().equals(id) && user.getRoleId() == 3 && roleId == 3)) {
+                user.setRoleId(roleId);
+            } else if (user.getRoleId() != roleId) {
+                // If trying to change own role from admin, show warning but keep admin role
+                redirectAttributes.addFlashAttribute("warning", "You cannot change your own admin role. Your admin privileges have been maintained.");
+            }
             
             userService.saveUser(user);
             redirectAttributes.addFlashAttribute("success", "User updated successfully!");
@@ -367,11 +414,22 @@ public class AdminController {
     }
     
     @PostMapping("/users/delete")
-    public String deleteUser(@RequestParam Integer id, RedirectAttributes redirectAttributes) {
+    public String deleteUser(
+            @RequestParam Integer id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
         try {
             User user = userService.getUserById(id);
             if (user == null) {
                 throw new RuntimeException("User not found");
+            }
+            
+            // Get current logged-in user
+            User currentUser = (User) session.getAttribute("user");
+            
+            // Prevent admins from deleting themselves
+            if (currentUser.getId().equals(id)) {
+                throw new RuntimeException("Administrators cannot delete their own accounts");
             }
             
             // Don't allow deletion if this is the last admin
