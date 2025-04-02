@@ -36,8 +36,8 @@
         <div class="tabs-container">
             <button class="tab-btn active" data-tab="check-in">Check-In</button>
             <button class="tab-btn" data-tab="check-out">Check-Out</button>
-            <button class="tab-btn" data-tab="booking">New Booking</button>
             <button class="tab-btn" data-tab="customers">Customers</button>
+            <a href="/hotelmanagement/booking" class="tab-btn booking-tab">New Booking</a>
         </div>
 
         <!-- Tab Content -->
@@ -45,6 +45,17 @@
             <!-- Check-In Tab -->
             <div class="tab-pane active" id="check-in">
                 <h2>Today's Check-Ins</h2>
+                
+                <!-- Phone number search box -->
+                <div class="phone-search-container">
+                    <h3>Search Booking by Phone Number</h3>
+                    <div class="phone-search">
+                        <input type="text" id="phoneSearch" placeholder="Enter customer phone number">
+                        <button id="phoneSearchBtn" class="btn btn-primary">Search</button>
+                    </div>
+                    <div id="bookingSearchResults" class="search-results"></div>
+                </div>
+                
                 <div class="table-container">
                     <table>
                         <thead>
@@ -122,100 +133,43 @@
                 </div>
             </div>
 
-            <!-- New Booking Tab -->
-            <div class="tab-pane" id="booking">
-                <h2>New Booking</h2>
-                <div class="booking-form">
-                    <div class="form-section">
-                        <h3>Customer Information</h3>
-                        <div class="customer-search">
-                            <input type="text" id="customerSearch" placeholder="Search customer by name, phone or email">
-                            <button id="searchBtn" class="btn">Search</button>
-                        </div>
-                        <div id="customerSearchResults" class="search-results"></div>
-
-                        <div class="separator">OR</div>
-
-                        <h4>Create New Customer</h4>
-                        <form id="createCustomerForm" th:action="@{/receptionist/create-customer}" method="post">
-                            <div class="form-group">
-                                <label for="fullName">Full Name</label>
-                                <input type="text" id="fullName" name="fullName" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="phone">Phone</label>
-                                <input type="text" id="phone" name="phone" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="email">Email</label>
-                                <input type="email" id="email" name="email">
-                            </div>
-                            <div class="form-group">
-                                <label for="address">Address</label>
-                                <textarea id="address" name="address"></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Create Customer</button>
-                        </form>
-                    </div>
-
-                    <div class="form-section">
-                        <h3>Room Selection</h3>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Room</th>
-                                        <th>Type</th>
-                                        <th>Price</th>
-                                        <th>Select</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:if="${availableRooms == null || availableRooms.empty}">
-                                        <td colspan="4">No rooms available</td>
-                                    </tr>
-                                    <tr th:each="room : ${availableRooms}" th:if="${availableRooms != null}">
-                                        <td th:text="${room.roomNumber}">101</td>
-                                        <td th:text="${room.roomType.name}">Standard</td>
-                                        <td th:text="${'$' + room.price}">$100.00</td>
-                                        <td>
-                                            <input type="radio" name="selectedRoom" th:value="${room.id}" th:data-room-number="${room.roomNumber}">
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <h3>Booking Details</h3>
-                        <form id="createBookingForm" th:action="@{/receptionist/create-booking}" method="post">
-                            <input type="hidden" id="customerId" name="customerId">
-                            <input type="hidden" id="roomId" name="roomId">
-                            
-                            <div class="form-group">
-                                <label for="checkInDate">Check-In Date</label>
-                                <input type="date" id="checkInDate" name="checkInDate" required>
-                            </div>
-                            
-                            <div class="booking-summary">
-                                <p>Selected Customer: <span id="selectedCustomer">None</span></p>
-                                <p>Selected Room: <span id="selectedRoom">None</span></p>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary" id="createBookingBtn" disabled>Create Booking</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
             <!-- Customers Tab -->
             <div class="tab-pane" id="customers">
                 <h2>Customer Management</h2>
                 <div class="customer-search">
-                    <input type="text" id="customerListSearch" placeholder="Search customers">
-                    <button id="customerListSearchBtn" class="btn">Search</button>
+                    <input type="text" id="customerSearch" placeholder="Search customer by name, phone or email">
+                    <button id="searchBtn" class="btn">Search</button>
                 </div>
+                <div id="customerSearchResults" class="search-results"></div>
+
+                <div class="separator">OR</div>
+
+                <h3>Create New Customer</h3>
+                <form id="createCustomerForm" th:action="@{/receptionist/create-customer}" method="post">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fullName">Full Name</label>
+                            <input type="text" id="fullName" name="fullName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone</label>
+                            <input type="text" id="phone" name="phone" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email">
+                        </div>
+                        <div class="form-group">
+                            <label for="address">Address</label>
+                            <textarea id="address" name="address"></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Customer</button>
+                </form>
+                
+                <h3 class="mt-5">Customer List</h3>
                 <div class="table-container">
                     <table>
                         <thead>
@@ -224,7 +178,7 @@
                                 <th>Name</th>
                                 <th>Phone</th>
                                 <th>Email</th>
-                                <th>Booking History</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="customerListBody">
@@ -240,7 +194,7 @@
     <script>
         // Tab switching
         document.addEventListener('DOMContentLoaded', function() {
-            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabBtns = document.querySelectorAll('.tab-btn:not(.booking-tab)');
             const tabPanes = document.querySelectorAll('.tab-pane');
             
             tabBtns.forEach(btn => {
@@ -249,6 +203,7 @@
                     
                     // Update active button
                     tabBtns.forEach(b => b.classList.remove('active'));
+                    document.querySelector('.booking-tab').classList.remove('active');
                     this.classList.add('active');
                     
                     // Update active tab
@@ -260,6 +215,21 @@
                     });
                 });
             });
+            
+            // Phone search for bookings
+            const phoneSearchBtn = document.getElementById('phoneSearchBtn');
+            if (phoneSearchBtn) {
+                phoneSearchBtn.addEventListener('click', function() {
+                    const phone = document.getElementById('phoneSearch').value;
+                    if (phone.trim().length > 0) {
+                        fetch(`/receptionist/search-booking-by-phone?phone=${encodeURIComponent(phone)}`)
+                            .then(response => response.text())
+                            .then(html => {
+                                document.getElementById('bookingSearchResults').innerHTML = html;
+                            });
+                    }
+                });
+            }
             
             // Customer search
             const searchBtn = document.getElementById('searchBtn');
@@ -276,43 +246,56 @@
                 });
             }
             
-            // Room selection
-            const roomRadios = document.querySelectorAll('input[name="selectedRoom"]');
-            roomRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    document.getElementById('roomId').value = this.value;
-                    document.getElementById('selectedRoom').textContent = this.getAttribute('data-room-number');
-                    checkBookingForm();
+            // Add enter key support for phone search
+            const phoneSearchInput = document.getElementById('phoneSearch');
+            if (phoneSearchInput) {
+                phoneSearchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        phoneSearchBtn.click();
+                    }
                 });
-            });
-            
-            // Set current date for check-in
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('checkInDate').min = today;
-            document.getElementById('checkInDate').value = today;
-            
-            // Check form validity and enable/disable submit button
-            function checkBookingForm() {
-                const customerId = document.getElementById('customerId').value;
-                const roomId = document.getElementById('roomId').value;
-                
-                if (customerId && roomId) {
-                    document.getElementById('createBookingBtn').disabled = false;
-                } else {
-                    document.getElementById('createBookingBtn').disabled = true;
-                }
             }
             
-            // Handle customer selection
-            document.addEventListener('click', function(e) {
-                if (e.target && e.target.classList.contains('select-customer-btn')) {
-                    const customerId = e.target.getAttribute('data-id');
-                    const customerName = e.target.getAttribute('data-name');
-                    document.getElementById('customerId').value = customerId;
-                    document.getElementById('selectedCustomer').textContent = customerName;
-                    checkBookingForm();
-                }
-            });
+            // Load customer list
+            function loadCustomerList() {
+                fetch('/receptionist/get-all-customers')
+                    .then(response => response.json())
+                    .then(customers => {
+                        const customerListBody = document.getElementById('customerListBody');
+                        if (!customerListBody) return;
+                        
+                        if (!customers.length) {
+                            customerListBody.innerHTML = '<tr><td colspan="5">No customers found</td></tr>';
+                            return;
+                        }
+                        
+                        let html = '';
+                        customers.forEach(customer => {
+                            html += `
+                            <tr>
+                                <td>${customer.id}</td>
+                                <td>${customer.fullName}</td>
+                                <td>${customer.phone || 'N/A'}</td>
+                                <td>${customer.email || 'N/A'}</td>
+                                <td>
+                                    <a href="/receptionist/book/${customer.id}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-book"></i> Book Room
+                                    </a>
+                                </td>
+                            </tr>
+                            `;
+                        });
+                        
+                        customerListBody.innerHTML = html;
+                    })
+                    .catch(error => console.error('Error loading customers:', error));
+            }
+            
+            // Initial load
+            if (document.getElementById('customerListBody')) {
+                loadCustomerList();
+            }
         });
     </script>
 </body>

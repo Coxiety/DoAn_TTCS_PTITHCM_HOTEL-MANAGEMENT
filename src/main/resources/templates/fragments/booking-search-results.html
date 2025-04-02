@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Booking search results fragment -->
+    <div th:fragment="results">
+        <div th:if="${searchResults == null || searchResults.isEmpty()}" class="no-results">
+            <p>No bookings found for phone number: <span th:text="${searchPhone}">Phone</span></p>
+        </div>
+        
+        <div th:if="${searchResults != null && !searchResults.isEmpty()}" class="search-results-container">
+            <h4 class="search-results-title">Found <span th:text="${searchResults.size()}">0</span> bookings for phone number: <span th:text="${searchPhone}">Phone</span></h4>
+            
+            <table class="search-results-table">
+                <thead>
+                    <tr>
+                        <th>Booking ID</th>
+                        <th>Customer</th>
+                        <th>Room</th>
+                        <th>Check-In Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="booking : ${searchResults}">
+                        <td th:text="${booking.id}">123</td>
+                        <td th:text="${booking.customer.fullName}">John Doe</td>
+                        <td>
+                            <span th:each="detail, detailStat : ${bookingDetailsMap.get(booking.id)}" 
+                                  th:text="${detailStat.count > 1 ? ', ' + detail.room.roomNumber : detail.room.roomNumber}">101</span>
+                        </td>
+                        <td th:text="${#temporals.format(booking.checkInDate, 'dd MMM yyyy HH:mm')}">01 Apr 2025 14:00</td>
+                        <td>
+                            <form th:action="@{/receptionist/check-in}" method="post">
+                                <input type="hidden" name="bookingId" th:value="${booking.id}">
+                                <button type="submit" class="btn btn-primary">Check In</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

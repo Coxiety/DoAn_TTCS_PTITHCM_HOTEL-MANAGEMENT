@@ -11,8 +11,8 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "Room_Types")
-public class RoomType 
-{
+public class RoomType {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -20,11 +20,12 @@ public class RoomType
     @Column(nullable = false, length = 100)
     private String name;
     
-    @Column(columnDefinition = "text")
+    @Column(columnDefinition = "TEXT")
     private String description;
     
+    @Column
     private Integer capacity;
     
-    @Column(columnDefinition = "text")
+    @Column(columnDefinition = "TEXT")
     private String amenities;
 }

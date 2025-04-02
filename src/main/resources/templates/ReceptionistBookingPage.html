@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Room - Receptionist</title>
+    <link rel="stylesheet" th:href="@{/css/stylesHome.css}">
+    <link rel="stylesheet" th:href="@{/css/stylesBooking.css}">
+    <link rel="stylesheet" th:href="@{/css/stylesReceptionist.css}">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Messages -->
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+    <!-- Receptionist Header -->
+    <header class="receptionist-header">
+        <div class="receptionist-header-content">
+            <div class="logo">LUXURY HOTEL</div>
+            <div class="user-info">
+                <span th:text="${session.user.fullName}">Receptionist Name</span>
+                <a href="/receptionist" class="btn back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <form action="/auth/logout" method="POST">
+                    <button type="submit" class="btn logout-btn">Logout</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <!-- Selected Customer Info -->
+    <div class="selected-customer-banner" th:if="${selectedCustomer != null}">
+        <div class="selected-customer-content">
+            <h3>Selected Customer:</h3>
+            <div class="selected-customer-details">
+                <div class="customer-name" th:text="${selectedCustomer.fullName}">John Doe</div>
+                <div class="customer-phone" th:text="${selectedCustomer.phone}">123-456-7890</div>
+                <input type="hidden" id="selectedCustomerId" th:value="${selectedCustomer.id}">
+            </div>
+        </div>
+    </div>
+    <div class="select-customer-prompt" th:unless="${selectedCustomer != null}">
+        <div class="prompt-content">
+            <p>Please <a href="/receptionist" class="text-link">return to dashboard</a> and select a customer first.</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="receptionist-booking-main">
+        <!-- LEFT COLUMN: Rooms List -->
+        <section class="rooms-section">
+            <div th:each="roomType : ${roomTypes}" class="room-card" th:data-room-type="${roomType.name.toLowerCase()}">
+                <div class="room-image" th:classappend="${roomType.name.toLowerCase()}"></div>
+                <div class="room-details">
+                    <h2 th:text="${roomType.name}">Room Type</h2>
+                    
+                    <div class="room-meta">
+                        <div class="meta-item"><i class="fas fa-user"></i> <span th:text="'Up to ' + ${roomType.capacity} + ' guests'">Capacity</span></div>
+                        <div class="meta-item"><i class="fas fa-bed"></i> <span th:text="${roomType.bedType}">Bed Type</span></div>
+                        <div class="meta-item"><i class="fas fa-ruler-combined"></i> <span th:text="${roomType.size + ' m²'}">Size</span></div>
+                    </div>
+                    
+                    <p class="room-description" th:text="${roomType.description}">Room description</p>
+                    
+                    <div class="bed-price-info">
+                        <i class="fas fa-bed bed-icon"></i>
+                        <span class="beds-count" th:text="${roomType.bedType}">Bed Type</span>
+                        <span class="price-tag" th:text="'$' + ${roomType.price} + ' per night'">Price</span>
+                    </div>
+                    
+                    <div class="room-options">
+                        <div class="availability-btn">
+                            <i class="fas fa-check-circle"></i> 
+                            Available <span th:text="${roomType.availableRooms.size()}">0</span>
+                        </div>
+                        <select class="room-select" th:data-room-price="${roomType.price}" th:data-room-type-id="${roomType.id}">
+                            <option value="0">0 Rooms</option>
+                            <option th:each="i : ${#numbers.sequence(1, roomType.availableRooms.size())}" 
+                                    th:value="${i}" th:text="${i + ' Room' + (i > 1 ? 's' : '')}">1 Room</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT COLUMN: Booking Summary -->
+        <section class="summary-section">
+            <div class="summary-card">
+                <div class="summary-header">
+                    <h3>Booking Summary</h3>
+                </div>
+                
+                <div class="summary-content">
+                    <div class="summary-item">
+                        <span>Total Rooms</span>
+                        <span id="totalRooms">0</span>
+                    </div>
+                    
+                    <div class="date-picker">
+                        <label>Select Dates</label>
+                        <div class="date-inputs">
+                            <input type="date" id="checkInDate" placeholder="Check-in">
+                            <input type="date" id="checkOutDate" placeholder="Check-out">
+                        </div>
+                    </div>
+                    
+                    <div class="summary-item total">
+                        <span>Total Price</span>
+                        <span>$<span id="totalPrice">0</span></span>
+                    </div>
+                    
+                    <div id="roomSelectionsSummary" class="room-selections-summary"></div>
+                    
+                    <button id="completeBookingBtn" class="book-btn" th:disabled="${selectedCustomer == null}">
+                        <i class="fas fa-check-circle"></i> Complete Booking
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Room Detail Modal HTML -->
+    <div id="modalOverlayRoomDetail" class="modal-overlay">
+        <div class="modal room-detail-modal">
+            <div id="modalHeader" class="modal-header">
+                <span id="closeModalRoomDetail" class="close-button">&times;</span>
+                <h2 id="detailRoomTitle" class="modal-title">Room Details</h2>
+            </div>
+            
+            <div class="room-detail-content">
+                <!-- Room Info -->
+                <div class="room-info">
+                    <div class="info-item">
+                        <i class="fas fa-user"></i>
+                        <span>Capacity: <span id="roomCapacityDetail">2</span> persons</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-bed"></i>
+                        <span>Bed Type: <span id="roomBedTypeDetail">Queen</span></span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-ruler-combined"></i>
+                        <span>Size: <span id="roomSizeDetail">28</span> m²</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-tag"></i>
+                        <span>Price: $<span id="roomPriceDetail">100</span>/night</span>
+                    </div>
+                </div>
+                
+                <!-- Description -->
+                <div class="room-description">
+                    <h3>Description</h3>
+                    <p id="roomDescriptionDetail"></p>
+                </div>
+                
+                <!-- Amenities -->
+                <div class="room-amenities">
+                    <h3>Amenities</h3>
+                    <ul id="roomAmenitiesList"></ul>
+                </div>
+                
+                <!-- Booking controls -->
+                <div class="modal-booking-controls">
+                    <div class="availability-btn" id="modalAvailableBtn">
+                        <i class="fas fa-check-circle"></i> Available 5
+                    </div>
+                    <select class="modal-room-select" id="modalRoomSelect">
+                        <option value="0">0 Rooms</option>
+                        <option value="1">1 Room</option>
+                        <option value="2">2 Rooms</option>
+                        <option value="3">3 Rooms</option>
+                        <option value="4">4 Rooms</option>
+                        <option value="5">5 Rooms</option>
+                    </select>
+                    <button class="modal-add-btn" id="modalAddBtn">
+                        <i class="fas fa-check"></i> Done
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script th:inline="javascript">
+        // Get room type data from the server
+        const roomData = /*[[${roomTypesJson}]]*/ {};
+        const selectedCustomer = /*[[${selectedCustomer}]]*/ null;
+        
+        // Main Page Booking Script
+        document.addEventListener('DOMContentLoaded', function() {
+            const roomSelects = document.querySelectorAll('.rooms-section .room-select');
+            const totalRoomsEl = document.getElementById('totalRooms');
+            const totalPriceEl = document.getElementById('totalPrice');
+            const checkInDate = document.getElementById('checkInDate');
+            const checkOutDate = document.getElementById('checkOutDate');
+            const completeBookingBtn = document.getElementById('completeBookingBtn');
+            const roomSelectionsSummary = document.getElementById('roomSelectionsSummary');
+            
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            checkInDate.min = today;
+            checkOutDate.min = today;
+            checkInDate.value = today;
+            
+            // Update checkout min date when checkin changes
+            checkInDate.addEventListener('change', function() {
+                checkOutDate.min = this.value;
+                if (checkOutDate.value && checkOutDate.value < this.value) {
+                    checkOutDate.value = this.value;
+                }
+                calculateTotals();
+            });
+            
+            checkOutDate.addEventListener('change', calculateTotals);
+            
+            // Listen for room selection changes
+            roomSelects.forEach(select => {
+                select.addEventListener('change', calculateTotals);
+            });
+            
+            // Calculate total rooms and price
+            function calculateTotals() {
+                let totalRooms = 0;
+                let totalPrice = 0;
+                let selections = [];
+                
+                // Get selected dates
+                const startDate = new Date(checkInDate.value);
+                const endDate = checkOutDate.value ? new Date(checkOutDate.value) : new Date(startDate);
+                endDate.setDate(endDate.getDate() + 1); // Default to 1 night if no checkout date
+                
+                // Calculate number of nights
+                let nights = 1;
+                if (checkInDate.value && checkOutDate.value) {
+                    nights = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24));
+                    nights = nights || 1; // Ensure at least 1 night
+                }
+                
+                // Calculate totals
+                roomSelects.forEach(select => {
+                    const count = parseInt(select.value, 10) || 0;
+                    const price = parseInt(select.dataset.roomPrice, 10) || 0;
+                    const roomTypeId = select.dataset.roomTypeId;
+                    const roomTypeElement = select.closest('.room-card').querySelector('h2');
+                    const roomTypeName = roomTypeElement ? roomTypeElement.textContent : 'Room';
+                    
+                    if (count > 0) {
+                        selections.push({
+                            roomTypeId: roomTypeId,
+                            name: roomTypeName,
+                            count: count,
+                            price: price,
+                            total: count * price * nights
+                        });
+                    }
+                    
+                    totalRooms += count;
+                    totalPrice += (count * price * nights);
+                });
+                
+                totalRoomsEl.textContent = totalRooms;
+                totalPriceEl.textContent = totalPrice;
+                
+                // Update selections summary
+                updateSelectionsSummary(selections, nights);
+                
+                // Enable/disable book button
+                completeBookingBtn.disabled = totalRooms === 0 || !selectedCustomer;
+            }
+            
+            // Update the selections summary section
+            function updateSelectionsSummary(selections, nights) {
+                if (selections.length === 0) {
+                    roomSelectionsSummary.innerHTML = '<p class="no-selections">No rooms selected</p>';
+                    return;
+                }
+                
+                let html = `<div class="selections-header">Selected Rooms (${nights} night${nights > 1 ? 's' : ''})</div>`;
+                
+                selections.forEach(selection => {
+                    html += `
+                    <div class="selection-item">
+                        <div class="selection-details">
+                            <span class="selection-name">${selection.name}</span>
+                            <span class="selection-count">x${selection.count}</span>
+                        </div>
+                        <div class="selection-price">$${selection.total}</div>
+                    </div>
+                    `;
+                });
+                
+                roomSelectionsSummary.innerHTML = html;
+            }
+            
+            // Complete booking button click
+            completeBookingBtn.addEventListener('click', function() {
+                if (this.disabled) return;
+                
+                // Collect selected room types and counts
+                const selections = [];
+                roomSelects.forEach(select => {
+                    const count = parseInt(select.value, 10) || 0;
+                    if (count > 0) {
+                        selections.push({
+                            roomTypeId: select.dataset.roomTypeId,
+                            count: count
+                        });
+                    }
+                });
+                
+                // Check if we have a customer and dates
+                const customerId = document.getElementById('selectedCustomerId')?.value;
+                if (!customerId || !checkInDate.value) {
+                    alert('Please select a customer and check-in date');
+                    return;
+                }
+                
+                // Prepare the booking data
+                const bookingData = {
+                    customerId: customerId,
+                    checkInDate: checkInDate.value,
+                    checkOutDate: checkOutDate.value || checkInDate.value,
+                    roomSelections: selections
+                };
+                
+                // Send the booking request
+                fetch('/receptionist/create-booking-full', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(bookingData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text) });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Handle success
+                    window.location.href = '/receptionist?bookingSuccess=true&bookingId=' + data.bookingId;
+                })
+                .catch(error => {
+                    alert('Error creating booking: ' + error.message);
+                });
+            });
+            
+            // Set up room headings click event
+            const roomCards = document.querySelectorAll('.room-card');
+            roomCards.forEach(card => {
+                const heading = card.querySelector('h2');
+                if (heading) {
+                    heading.style.cursor = 'pointer';
+                    heading.addEventListener('click', () => {
+                        showRoomDetails(card);
+                    });
+                }
+            });
+            
+            // Initialize totals on page load
+            calculateTotals();
+        });
+        
+        // -- Room Detail Modal Script --
+        let currentRoomCard = null;
+        
+        // Show room details modal
+        function showRoomDetails(roomCard) {
+            currentRoomCard = roomCard;
+            const roomType = roomCard.dataset.roomType;
+            const room = roomData[roomType];
+            
+            if (!room) return;
+            
+            const modalOverlayRoomDetail = document.getElementById('modalOverlayRoomDetail');
+            const modalHeader = document.getElementById('modalHeader');
+            
+            // Update modal header class for different background images
+            modalHeader.className = 'modal-header';
+            modalHeader.classList.add(roomType);
+            
+            // Update modal content
+            document.getElementById('detailRoomTitle').textContent = room.name;
+            document.getElementById('roomCapacityDetail').textContent = room.capacity;
+            document.getElementById('roomBedTypeDetail').textContent = room.bedType;
+            document.getElementById('roomSizeDetail').textContent = room.size;
+            document.getElementById('roomPriceDetail').textContent = room.price;
+            document.getElementById('roomDescriptionDetail').textContent = room.description;
+            
+            // Update amenities with icons
+            const amenitiesList = document.getElementById('roomAmenitiesList');
+            amenitiesList.innerHTML = room.amenities
+                .map(amenity => `<li><i class="${amenity.icon}"></i> ${amenity.name}</li>`)
+                .join('');
+            
+            // Update availability button
+            document.getElementById('modalAvailableBtn').innerHTML = 
+                `<i class="fas fa-check-circle"></i> Available ${room.availableCount}`;
+            
+            // Sync dropdown with main page
+            const mainSelect = roomCard.querySelector('.room-select');
+            const modalRoomSelect = document.getElementById('modalRoomSelect');
+            
+            // Update modal select options based on available count
+            modalRoomSelect.innerHTML = '<option value="0">0 Rooms</option>';
+            for (let i = 1; i <= room.availableCount; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i + ' Room' + (i > 1 ? 's' : '');
+                modalRoomSelect.appendChild(option);
+            }
+            
+            if (mainSelect) {
+                modalRoomSelect.value = mainSelect.value;
+            }
+            
+            // Show modal
+            modalOverlayRoomDetail.style.display = 'flex';
+            
+            // Modal room select change syncs with main page
+            modalRoomSelect.onchange = function() {
+                if (currentRoomCard) {
+                    const mainPageSelect = currentRoomCard.querySelector('.room-select');
+                    if (mainPageSelect) {
+                        mainPageSelect.value = this.value;
+                        mainPageSelect.dispatchEvent(new Event('change'));
+                    }
+                }
+            };
+        }
+        
+        // Modal done button just closes modal
+        document.getElementById('modalAddBtn').addEventListener('click', function() {
+            document.getElementById('modalOverlayRoomDetail').style.display = 'none';
+        });
+        
+        // Close modal handlers
+        document.getElementById('closeModalRoomDetail').addEventListener('click', () => {
+            document.getElementById('modalOverlayRoomDetail').style.display = 'none';
+        });
+        
+        window.addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modalOverlayRoomDetail')) {
+                document.getElementById('modalOverlayRoomDetail').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

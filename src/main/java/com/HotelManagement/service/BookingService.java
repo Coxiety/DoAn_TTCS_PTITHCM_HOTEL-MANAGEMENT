@@ -1,24 +1,29 @@
 package com.HotelManagement.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.HotelManagement.dto.RoomSelectionDto;
 import com.HotelManagement.models.Booking;
 import com.HotelManagement.models.BookingDetail;
 import com.HotelManagement.models.Customer;
 import com.HotelManagement.models.Room;
+import com.HotelManagement.models.RoomType;
 import com.HotelManagement.models.User;
 import com.HotelManagement.repository.BookingDetailRepository;
 import com.HotelManagement.repository.BookingRepository;
 import com.HotelManagement.repository.CustomerRepository;
 import com.HotelManagement.repository.RoomRepository;
+import com.HotelManagement.repository.RoomTypeRepository;
 import com.HotelManagement.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
@@ -39,13 +44,26 @@ public class BookingService {
     private RoomRepository roomRepository;
     
     @Autowired
+    private RoomTypeRepository roomTypeRepository;
+    
+    @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private RoomService roomService;
     
     public List<Booking> getTodaysCheckins() {
         LocalDateTime startOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MIN);
         LocalDateTime endOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MAX);
         
         return bookingRepository.findByCheckInDateBetweenAndStatus(startOfDay, endOfDay, "CONFIRMED");
+    }
+    
+    public List<Booking> getBookingsByCustomerPhone(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            return List.of(); // Return empty list if phone is empty
+        }
+        return bookingRepository.findByCustomerPhoneAndStatus(phone, "CONFIRMED");
     }
     
     @Transactional
@@ -148,5 +166,85 @@ public class BookingService {
         roomRepository.save(room);
         
         return booking;
+    }
+    
+    @Transactional
+    public Integer createFullBooking(
+            Integer customerId, 
+            LocalDate checkInDate,
+            LocalDate checkOutDate, 
+            List<RoomSelectionDto> roomSelections, 
+            Integer userId) {
+        
+        // Validate inputs
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new RuntimeException("Customer not found"));
+        
+        User receptionist = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        if (roomSelections == null || roomSelections.isEmpty()) {
+            throw new RuntimeException("No rooms selected");
+        }
+        
+        // Create the booking
+        LocalDateTime checkInDateTime = LocalDateTime.of(checkInDate, LocalTime.of(14, 0)); // Check-in at 2 PM
+        
+        Booking booking = new Booking();
+        booking.setCustomer(customer);
+        booking.setCheckInDate(checkInDateTime);
+        booking.setStatus("CONFIRMED");
+        booking.setUser(receptionist);
+        booking = bookingRepository.save(booking);
+        
+        // Process each room selection
+        List<BookingDetail> details = new ArrayList<>();
+        int totalRooms = 0;
+        
+        for (RoomSelectionDto selection : roomSelections) {
+            Integer roomTypeId = selection.getRoomTypeId();
+            Integer count = selection.getCount();
+            
+            if (count <= 0) continue;
+            
+            // Get room type
+            RoomType roomType = roomTypeRepository.findById(roomTypeId)
+                    .orElseThrow(() -> new RuntimeException("Room type not found"));
+            
+            // Get available rooms of this type
+            List<Room> availableRooms = roomService.getAvailableRoomsByType(roomTypeId);
+            
+            if (availableRooms.size() < count) {
+                throw new RuntimeException("Not enough available rooms of type: " + roomType.getName());
+            }
+            
+            // Book the rooms
+            for (int i = 0; i < count; i++) {
+                Room room = availableRooms.get(i);
+                
+                BookingDetail detail = new BookingDetail();
+                detail.setBooking(booking);
+                detail.setRoom(room);
+                detail.setCheckInDate(checkInDateTime);
+                detail.setPrice(room.getPrice());
+                detail.setStatus("CONFIRMED");
+                bookingDetailRepository.save(detail);
+                details.add(detail);
+                
+                // Update room status
+                room.setStatus("BOOKED");
+                roomRepository.save(room);
+                
+                totalRooms++;
+            }
+        }
+        
+        // If no rooms were actually booked, delete the booking
+        if (totalRooms == 0) {
+            bookingRepository.delete(booking);
+            throw new RuntimeException("No rooms were booked");
+        }
+        
+        return booking.getId();
     }
 }
