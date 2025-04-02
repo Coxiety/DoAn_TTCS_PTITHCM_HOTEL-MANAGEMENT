@@ -185,18 +185,43 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script type="text/javascript" th:inline="javascript">
+    <!-- Additional CSS for role badges -->
+    <style>
+        .role-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .role-receptionist {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .role-customer {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .role-admin {
+            background-color: #4338ca;
+            color: white;
+        }
+        
+        .inline-form {
+            display: inline;
+        }
+    </style>
+
+    <!-- Scripts - Moved outside of Thymeleaf processing -->
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize DataTables
+            // Initialize DataTables with simple configuration
             $(document).ready(function() {
-                $('#usersTable').DataTable({
-                    pageLength: 10,
-                    order: [[0, 'asc']],
-                    columnDefs: [
-                        { orderable: false, targets: 6 } // Disable sorting on Actions column
-                    ]
-                });
+                $('#usersTable').DataTable();
                 
                 // Create User Modal
                 $('#createUserBtn').on('click', function() {
@@ -242,36 +267,5 @@
             });
         });
     </script>
-    
-    <!-- Additional CSS for role badges -->
-    <style>
-        .role-badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .role-receptionist {
-            background-color: #10b981;
-            color: white;
-        }
-        
-        .role-customer {
-            background-color: #3b82f6;
-            color: white;
-        }
-        
-        .role-admin {
-            background-color: #4338ca;
-            color: white;
-        }
-        
-        .inline-form {
-            display: inline;
-        }
-    </style>
 </body>
 </html>

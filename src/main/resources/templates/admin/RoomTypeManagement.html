@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Type Management - Luxury Hotel</title>
+    <link rel="stylesheet" th:href="@{/css/stylesUniversal.css}">
+    <link rel="stylesheet" th:href="@{/css/stylesAdmin.css}">
+    <!-- DataTables for advanced table functionality -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Messages -->
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+    <!-- Include Universal Header -->
+    <header th:replace="fragments/header :: header"></header>
+    
+    <!-- Include Admin Navigation -->
+    <nav th:replace="fragments/header :: adminNav('roomtypes')"></nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-title">
+            <h1>Room Type Management</h1>
+            <p>Manage hotel room categories and amenities</p>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button id="createRoomTypeBtn" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Room Type
+            </button>
+        </div>
+
+        <!-- Room Types Table -->
+        <div class="table-container">
+            <table id="roomTypesTable" class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Capacity</th>
+                        <th>Price</th>
+                        <th>Amenities</th>
+                        <th>Image</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="roomType : ${roomTypes}">
+                        <td th:text="${roomType.id}">1</td>
+                        <td th:text="${roomType.name}">Standard</td>
+                        <td th:text="${roomType.description != null && roomType.description.length() > 50 ? roomType.description.substring(0, 50) + '...' : roomType.description}">Comfortable standard room with basic amenities.</td>
+                        <td th:text="${roomType.capacity}">2</td>
+                        <td th:text="${'$' + roomType.price}">$100.00</td>
+                        <td th:text="${roomType.amenities != null && roomType.amenities.length() > 50 ? roomType.amenities.substring(0, 50) + '...' : roomType.amenities}">WiFi, TV, Air Conditioning</td>
+                        <td>
+                            <div class="thumbnail-container" th:if="${roomType.imagePath != null}">
+                                <img th:src="@{${roomType.imagePath}}" alt="Room Type Image" class="thumbnail-image">
+                            </div>
+                            <span th:unless="${roomType.imagePath != null}" class="no-image">No Image</span>
+                        </td>
+                        <td class="action-cell">
+                            <button th:attr="data-id=${roomType.id}" class="btn btn-sm btn-secondary edit-roomtype-btn">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <form th:action="@{/admin/roomtypes/delete}" method="post" class="inline-form" onsubmit="return confirm('Are you sure you want to delete this room type? This may affect existing rooms.')">
+                                <input type="hidden" name="id" th:value="${roomType.id}">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="universal-footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Luxury Hotel - Admin Dashboard</p>
+        </div>
+    </footer>
+
+    <!-- Create Room Type Modal -->
+    <div id="createRoomTypeModal" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Room Type</h3>
+                <button class="close-button">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="createRoomTypeForm" th:action="@{/admin/roomtypes/create}" method="post" enctype="multipart/form-data">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="name">Name*</label>
+                            <input type="text" id="name" name="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="capacity">Capacity* (persons)</label>
+                            <input type="number" id="capacity" name="capacity" class="form-control" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="price">Price* ($)</label>
+                            <input type="number" id="price" name="price" class="form-control" step="0.01" min="0" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description*</label>
+                        <textarea id="description" name="description" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="amenities">Amenities* (comma separated)</label>
+                        <textarea id="amenities" name="amenities" class="form-control" rows="3" required></textarea>
+                        <small class="form-text">E.g., WiFi, TV, Air Conditioning, Mini Bar</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="image">Room Type Image</label>
+                        <input type="file" id="image" name="image" class="form-control" accept="image/*">
+                        <small class="form-text">Optional. Maximum size: 5MB</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Preview:</label>
+                        <div class="image-preview" id="imagePreview">
+                            <img src="/img/rooms/default-room.jpg" alt="Room Type Preview">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary cancel-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Room Type</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Room Type Modal -->
+    <div id="editRoomTypeModal" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Room Type</h3>
+                <button class="close-button">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editRoomTypeForm" th:action="@{/admin/roomtypes/update}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" id="editId" name="id">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="editName">Name*</label>
+                            <input type="text" id="editName" name="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editCapacity">Capacity* (persons)</label>
+                            <input type="number" id="editCapacity" name="capacity" class="form-control" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editPrice">Price* ($)</label>
+                            <input type="number" id="editPrice" name="price" class="form-control" step="0.01" min="0" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDescription">Description*</label>
+                        <textarea id="editDescription" name="description" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editAmenities">Amenities* (comma separated)</label>
+                        <textarea id="editAmenities" name="amenities" class="form-control" rows="3" required></textarea>
+                        <small class="form-text">E.g., WiFi, TV, Air Conditioning, Mini Bar</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="editImage">Room Type Image</label>
+                        <input type="file" id="editImage" name="image" class="form-control" accept="image/*">
+                        <small class="form-text">Optional. Leave empty to keep current image.</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Current Image:</label>
+                        <div class="image-preview" id="editImagePreview">
+                            <img id="currentRoomTypeImage" src="/img/rooms/default-room.jpg" alt="Room Type Image">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary cancel-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Room Type</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTables
+            $('#roomTypesTable').DataTable();
+            
+            // Create Room Type Modal
+            $('#createRoomTypeBtn').on('click', function() {
+                $('#createRoomTypeModal').fadeIn(300);
+            });
+            
+            // Edit Room Type Modal
+            $('.edit-roomtype-btn').on('click', function() {
+                const roomTypeId = $(this).attr('data-id');
+                
+                // Fetch room type data from server
+                $.ajax({
+                    url: '/admin/roomtypes/' + roomTypeId,
+                    type: 'GET',
+                    success: function(roomType) {
+                        $('#editId').val(roomType.id);
+                        $('#editName').val(roomType.name);
+                        $('#editCapacity').val(roomType.capacity);
+                        $('#editPrice').val(roomType.price);
+                        $('#editDescription').val(roomType.description);
+                        $('#editAmenities').val(roomType.amenities);
+                        
+                        // Update image preview if available
+                        if (roomType.imagePath) {
+                            $('#currentRoomTypeImage').attr('src', roomType.imagePath);
+                        } else {
+                            $('#currentRoomTypeImage').attr('src', '/img/rooms/default-room.jpg');
+                        }
+                        
+                        // Show modal
+                        $('#editRoomTypeModal').fadeIn(300);
+                    },
+                    error: function(xhr) {
+                        alert('Failed to load room type data: ' + xhr.responseText);
+                    }
+                });
+            });
+            
+            // Close modals
+            $('.close-button, .cancel-btn').on('click', function() {
+                $('.modal-overlay').fadeOut(300);
+            });
+            
+            // Close modal when clicking outside
+            $('.modal-overlay').on('click', function(e) {
+                if ($(e.target).hasClass('modal-overlay')) {
+                    $(this).fadeOut(300);
+                }
+            });
+            
+            // Image preview for new room type
+            $('#image').on('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#imagePreview img').attr('src', e.target.result);
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Image preview for edit room type
+            $('#editImage').on('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#currentRoomTypeImage').attr('src', e.target.result);
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+    </script>
+    
+    <!-- Additional CSS for thumbnail images -->
+    <style>
+        .thumbnail-container {
+            width: 80px;
+            height: 60px;
+            overflow: hidden;
+            border-radius: 4px;
+            background-color: #f5f5f5;
+        }
+        
+        .thumbnail-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .no-image {
+            display: inline-block;
+            font-style: italic;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        .image-preview {
+            margin-top: 10px;
+            width: 100%;
+            max-width: 300px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .image-preview img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+    </style>
+</body>
+</html>

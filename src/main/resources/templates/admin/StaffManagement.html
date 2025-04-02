@@ -193,18 +193,12 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script type="text/javascript" th:inline="javascript">
+    <!-- Scripts - Moved outside of Thymeleaf processing -->
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize DataTables
+            // Initialize DataTables with simple configuration
             $(document).ready(function() {
-                $('#staffTable').DataTable({
-                    pageLength: 10,
-                    order: [[0, 'asc']],
-                    columnDefs: [
-                        { orderable: false, targets: 6 } // Disable sorting on Actions column
-                    ]
-                });
+                $('#staffTable').DataTable();
                 
                 // Create Staff Modal
                 $('#createStaffBtn').on('click', function() {
