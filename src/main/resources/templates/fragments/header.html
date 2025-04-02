@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <!-- Universal Header Fragment -->
+    <header th:fragment="header" class="universal-header">
+        <div class="header-content">
+            <div class="logo">LUXURY HOTEL</div>
+            <div class="user-info">
+                <span class="user-name" th:text="${session.user.fullName}">User Name</span>
+                <form action="/auth/logout" method="POST">
+                    <button type="submit" class="btn logout-btn">Logout</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <!-- Admin Navigation Fragment -->
+    <nav th:fragment="adminNav(activeTab)" class="universal-nav admin-nav">
+        <div class="nav-container">
+            <a href="/admin" th:class="${activeTab == 'dashboard'} ? 'nav-item active' : 'nav-item'">
+                <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
+            </a>
+            <a href="/admin/staff" th:class="${activeTab == 'staff'} ? 'nav-item active' : 'nav-item'">
+                <i class="fas fa-user-tie"></i> <span>Staff</span>
+            </a>
+            <a href="/admin/users" th:class="${activeTab == 'users'} ? 'nav-item active' : 'nav-item'">
+                <i class="fas fa-users"></i> <span>Users</span>
+            </a>
+            <a href="/admin/rooms" th:class="${activeTab == 'rooms'} ? 'nav-item active' : 'nav-item'">
+                <i class="fas fa-bed"></i> <span>Rooms</span>
+            </a>
+            <a href="/admin/roomtypes" th:class="${activeTab == 'roomtypes'} ? 'nav-item active' : 'nav-item'">
+                <i class="fas fa-door-open"></i> <span>Room Types</span>
+            </a>
+            <a href="/admin/revenue" th:class="${activeTab == 'revenue'} ? 'nav-item active' : 'nav-item'">
+                <i class="fas fa-chart-line"></i> <span>Revenue</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Receptionist Navigation Fragment -->
+    <nav th:fragment="receptionistNav(activeTab)" class="universal-nav receptionist-nav">
+        <div class="nav-container">
+            <button class="tab-btn" th:classappend="${activeTab == 'checkin'} ? 'active'" data-tab="check-in">
+                <i class="fas fa-sign-in-alt"></i> <span>Check-In</span>
+            </button>
+            <button class="tab-btn" th:classappend="${activeTab == 'checkout'} ? 'active'" data-tab="check-out">
+                <i class="fas fa-sign-out-alt"></i> <span>Check-Out</span>
+            </button>
+            <button class="tab-btn" th:classappend="${activeTab == 'customers'} ? 'active'" data-tab="customers">
+                <i class="fas fa-users"></i> <span>Customers</span>
+            </button>
+            <a href="/hotelmanagement/booking" class="tab-btn booking-tab">
+                <i class="fas fa-calendar-plus"></i> <span>New Booking</span>
+            </a>
+        </div>
+    </nav>
+</body>
+</html>

@@ -7,5 +7,5 @@ import com.HotelManagement.models.RoomType;
 
 @Repository
 public interface RoomTypeRepository extends JpaRepository<RoomType, Integer> {
-    
+    RoomType findByName(String name);
 }

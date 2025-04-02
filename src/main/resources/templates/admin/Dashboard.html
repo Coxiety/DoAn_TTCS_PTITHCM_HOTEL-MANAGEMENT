@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Luxury Hotel</title>
+    <link rel="stylesheet" th:href="@{/css/stylesUniversal.css}">
+    <link rel="stylesheet" th:href="@{/css/stylesAdmin.css}">
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Messages -->
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+    <!-- Include Universal Header -->
+    <header th:replace="fragments/header :: header"></header>
+    
+    <!-- Include Admin Navigation -->
+    <nav th:replace="fragments/header :: adminNav('dashboard')"></nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-title">
+            <h1>Dashboard</h1>
+            <p>Welcome back! Here's an overview of your hotel.</p>
+        </div>
+
+        <div class="dashboard-stats">
+            <!-- User Stats -->
+            <div class="stat-card">
+                <div class="stat-icon users">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="stat-details">
+                    <h3>Staff</h3>
+                    <div class="stat-numbers">
+                        <div class="stat-number">
+                            <span class="number" th:text="${dashboardData.receptionistCount}">10</span>
+                            <span class="label">Receptionists</span>
+                        </div>
+                        <div class="stat-number">
+                            <span class="number" th:text="${dashboardData.adminCount}">2</span>
+                            <span class="label">Admins</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Stats -->
+            <div class="stat-card">
+                <div class="stat-icon customers">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-details">
+                    <h3>Customers</h3>
+                    <div class="stat-numbers">
+                        <div class="stat-number">
+                            <span class="number" th:text="${dashboardData.customerCount}">246</span>
+                            <span class="label">Registered</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Room Stats -->
+            <div class="stat-card">
+                <div class="stat-icon rooms">
+                    <i class="fas fa-bed"></i>
+                </div>
+                <div class="stat-details">
+                    <h3>Rooms</h3>
+                    <div class="stat-numbers">
+                        <div class="stat-number">
+                            <span class="number" th:text="${dashboardData.totalRooms}">50</span>
+                            <span class="label">Total</span>
+                        </div>
+                        <div class="stat-number">
+                            <span class="number" th:text="${dashboardData.availableRooms}">32</span>
+                            <span class="label">Available</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Occupancy Stats -->
+            <div class="stat-card">
+                <div class="stat-icon occupancy">
+                    <i class="fas fa-door-closed"></i>
+                </div>
+                <div class="stat-details">
+                    <h3>Occupancy</h3>
+                    <div class="stat-numbers">
+                        <div class="stat-number">
+                            <span class="number" th:text="${dashboardData.occupiedRooms}">12</span>
+                            <span class="label">Occupied</span>
+                        </div>
+                        <div class="stat-number">
+                            <span class="number" th:text="${dashboardData.bookedRooms}">6</span>
+                            <span class="label">Booked</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-charts">
+            <!-- Room Occupancy Chart -->
+            <div class="chart-container">
+                <h2>Room Occupancy</h2>
+                <canvas id="occupancyChart"></canvas>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="activity-container">
+                <h2>Quick Actions</h2>
+                <div class="quick-actions">
+                    <a href="/admin/users" class="quick-action">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Add New Staff</span>
+                    </a>
+                    <a href="/admin/rooms" class="quick-action">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Add New Room</span>
+                    </a>
+                    <a href="/admin/roomtypes" class="quick-action">
+                        <i class="fas fa-th-large"></i>
+                        <span>Manage Room Types</span>
+                    </a>
+                    <a href="/admin/revenue" class="quick-action">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        <span>View Revenue Report</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="universal-footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Luxury Hotel - Admin Dashboard</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script th:inline="javascript">
+        // Get data from model
+        const dashboardData = /*[[${dashboardData}]]*/ {
+            totalRooms: 50,
+            availableRooms: 32,
+            occupiedRooms: 12,
+            bookedRooms: 6
+        };
+
+        // Create occupancy chart
+        document.addEventListener('DOMContentLoaded', function() {
+            const occupancyCtx = document.getElementById('occupancyChart').getContext('2d');
+            
+            new Chart(occupancyCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Available', 'Occupied', 'Booked'],
+                    datasets: [{
+                        data: [
+                            dashboardData.availableRooms, 
+                            dashboardData.occupiedRooms, 
+                            dashboardData.bookedRooms
+                        ],
+                        backgroundColor: [
+                            '#4CAF50',  // Green - Available
+                            '#F44336',  // Red - Occupied
+                            '#FFC107'   // Amber - Booked
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Current Room Status'
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

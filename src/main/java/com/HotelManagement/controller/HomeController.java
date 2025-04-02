@@ -11,12 +11,17 @@ public class HomeController
     @GetMapping({"/", "/hotelmanagement/home"})
     public String homePage(HttpSession session) 
     {
-        // Check if user is logged in and has receptionist role
+        // Check if user is logged in
         Integer userRole = (Integer) session.getAttribute("userRole");
         
         // If user is logged in as receptionist (role_id = 1), redirect to receptionist page
         if (userRole != null && userRole == 1) {
             return "redirect:/receptionist";
+        }
+        
+        // If user is logged in as admin (role_id = 3), redirect to admin page
+        if (userRole != null && userRole == 3) {
+            return "redirect:/admin";
         }
         
         // Otherwise show regular home page
@@ -26,12 +31,17 @@ public class HomeController
     @GetMapping("/booking")
     public String bookingPage(HttpSession session) 
     {
-        // Check if user is logged in and has receptionist role
+        // Check if user is logged in
         Integer userRole = (Integer) session.getAttribute("userRole");
         
         // If user is logged in as receptionist, redirect to receptionist page
         if (userRole != null && userRole == 1) {
             return "redirect:/receptionist";
+        }
+        
+        // If user is logged in as admin (role_id = 3), redirect to admin page
+        if (userRole != null && userRole == 3) {
+            return "redirect:/admin";
         }
         
         return "BookingPage";
@@ -40,12 +50,17 @@ public class HomeController
     @GetMapping("/contract")
     public String contractPage(HttpSession session) 
     {
-        // Check if user is logged in and has receptionist role
+        // Check if user is logged in
         Integer userRole = (Integer) session.getAttribute("userRole");
         
         // If user is logged in as receptionist, redirect to receptionist page
         if (userRole != null && userRole == 1) {
             return "redirect:/receptionist";
+        }
+        
+        // If user is logged in as admin (role_id = 3), redirect to admin page
+        if (userRole != null && userRole == 3) {
+            return "redirect:/admin";
         }
         
         return "ContractPage";
@@ -54,12 +69,17 @@ public class HomeController
     @GetMapping("/intro")
     public String introductionPage(HttpSession session) 
     {
-        // Check if user is logged in and has receptionist role
+        // Check if user is logged in
         Integer userRole = (Integer) session.getAttribute("userRole");
         
         // If user is logged in as receptionist, redirect to receptionist page
         if (userRole != null && userRole == 1) {
             return "redirect:/receptionist";
+        }
+        
+        // If user is logged in as admin (role_id = 3), redirect to admin page
+        if (userRole != null && userRole == 3) {
+            return "redirect:/admin";
         }
         
         return "IntroductionPage";

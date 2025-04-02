@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Receptionist Dashboard - Luxury Hotel</title>
-    <link rel="stylesheet" th:href="@{/css/stylesHome.css}">
-    <!-- Add specific receptionist page styles -->
+    <link rel="stylesheet" th:href="@{/css/stylesUniversal.css}">
     <link rel="stylesheet" th:href="@{/css/stylesReceptionist.css}">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
@@ -17,29 +16,14 @@
     <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
     <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
 
-    <!-- Receptionist Header -->
-    <header class="receptionist-header">
-        <div class="receptionist-header-content">
-            <div class="logo">LUXURY HOTEL</div>
-            <div class="user-info">
-                <span th:text="${session.user.fullName}">Receptionist Name</span>
-                <form action="/auth/logout" method="POST">
-                    <button type="submit" class="btn logout-btn">Logout</button>
-                </form>
-            </div>
-        </div>
-    </header>
+    <!-- Include Universal Header -->
+    <header th:replace="fragments/header :: header"></header>
+    
+    <!-- Include Receptionist Navigation -->
+    <nav th:replace="fragments/header :: receptionistNav('checkin')"></nav>
 
     <!-- Main Content -->
-    <div class="receptionist-container">
-        <!-- Tab Navigation -->
-        <div class="tabs-container">
-            <button class="tab-btn active" data-tab="check-in">Check-In</button>
-            <button class="tab-btn" data-tab="check-out">Check-Out</button>
-            <button class="tab-btn" data-tab="customers">Customers</button>
-            <a href="/hotelmanagement/booking" class="tab-btn booking-tab">New Booking</a>
-        </div>
-
+    <main class="main-content">
         <!-- Tab Content -->
         <div class="tab-content">
             <!-- Check-In Tab -->
@@ -188,7 +172,14 @@
                 </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="universal-footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Luxury Hotel - Receptionist Dashboard</p>
+        </div>
+    </footer>
 
     <!-- Scripts -->
     <script>

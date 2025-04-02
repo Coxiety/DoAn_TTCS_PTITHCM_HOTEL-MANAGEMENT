@@ -1,10 +1,13 @@
 package com.HotelManagement.models;
 
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -28,4 +31,18 @@ public class RoomType {
     
     @Column(columnDefinition = "TEXT")
     private String amenities;
+    
+    @Column(name = "image_path")
+    private String imagePath;
+    
+    @OneToMany(mappedBy = "roomType")
+    private List<Room> rooms;
+    
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+    
+    public String getImagePath() {
+        return this.imagePath;
+    }
 }

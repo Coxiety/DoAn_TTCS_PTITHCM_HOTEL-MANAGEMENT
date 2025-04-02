@@ -10,4 +10,6 @@ import com.HotelManagement.models.Room;
 @Repository
 public interface RoomRepository extends JpaRepository<Room, Integer> {
     List<Room> findByStatus(String status);
+    
+    Room findByRoomNumber(String roomNumber);
 }
