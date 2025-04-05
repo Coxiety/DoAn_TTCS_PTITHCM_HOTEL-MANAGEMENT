@@ -482,7 +482,6 @@ public class AdminController {
     public String createRoom(
             @RequestParam String roomNumber,
             @RequestParam Integer typeId,
-            @RequestParam(required = false) MultipartFile image,
             RedirectAttributes redirectAttributes) {
         
         try {
@@ -502,12 +501,6 @@ public class AdminController {
             
             newRoom.setStatus("AVAILABLE");
             
-            // Handle image upload if provided
-            if (image != null && !image.isEmpty()) {
-                String imagePath = adminService.saveRoomImage(image);
-                newRoom.setImagePath(imagePath);
-            }
-            
             roomService.saveRoom(newRoom);
             redirectAttributes.addFlashAttribute("success", "Room created successfully!");
         } catch (Exception e) {
@@ -523,7 +516,6 @@ public class AdminController {
             @RequestParam String roomNumber,
             @RequestParam Integer typeId,
             @RequestParam String status,
-            @RequestParam(required = false) MultipartFile image,
             RedirectAttributes redirectAttributes) {
         
         try {
@@ -550,12 +542,6 @@ public class AdminController {
             room.setRoomType(roomType);
             
             room.setStatus(status);
-            
-            // Handle image upload if provided
-            if (image != null && !image.isEmpty()) {
-                String imagePath = adminService.saveRoomImage(image);
-                room.setImagePath(imagePath);
-            }
             
             roomService.saveRoom(room);
             redirectAttributes.addFlashAttribute("success", "Room updated successfully!");

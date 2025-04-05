@@ -74,27 +74,6 @@ public class AdminService {
     }
     
     /**
-     * Save a room image to the uploads directory
-     */
-    public String saveRoomImage(MultipartFile file) throws IOException {
-        // Create directory if it doesn't exist
-        Path uploadPath = Paths.get(UPLOAD_DIR + "rooms");
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-        
-        // Generate a unique file name
-        String filename = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-        Path filePath = uploadPath.resolve(filename);
-        
-        // Save the file
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-        
-        // Return the relative path
-        return "/uploads/rooms/" + filename;
-    }
-    
-    /**
      * Save a room type image to the uploads directory
      */
     public String saveRoomTypeImage(MultipartFile file) throws IOException {

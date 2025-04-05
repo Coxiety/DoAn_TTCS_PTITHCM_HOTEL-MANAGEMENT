@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "Rooms")
@@ -25,9 +26,6 @@ public class Room {
     
     @Column(nullable = false, length = 50)
     private String status;
-    
-    @Column(name = "image_path")
-    private String imagePath;
     
     // Constructors
     public Room() {
@@ -72,11 +70,14 @@ public class Room {
         this.status = status;
     }
     
+    /**
+     * Gets the image path from the room type.
+     * Using @Transient to indicate this is not a database column.
+     * 
+     * @return the image path from the room type
+     */
+    @Transient
     public String getImagePath() {
-        return imagePath;
-    }
-    
-    public void setImagePath(String imagePath) {
-        this.imagePath = imagePath;
+        return roomType != null ? roomType.getImagePath() : null;
     }
 }
