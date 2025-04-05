@@ -1,5 +1,10 @@
 package com.HotelManagement.service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +22,31 @@ public class AuthService
     @Autowired
     private CustomerRepository customerRepository;
     
+    /**
+     * Hash a password using SHA-256
+     */
+    private String hashPassword(String password) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Error hashing password", e);
+        }
+    }
+    
+    /**
+     * Verify a password against a hash
+     */
+    private boolean verifyPassword(String password, String hash) {
+        return hashPassword(password).equals(hash);
+    }
+    
     public User login(String username, String password) 
     {
         User user = userRepository.findByUsername(username);
-        if (user != null && user.getPassword().equals(password)) 
+        if (user != null && verifyPassword(password, user.getPassword())) 
         {
-            // Note: Should use password hashing in production
             return user;
         }
         return null;
@@ -49,7 +73,7 @@ public class AuthService
         // Create new user
         User newUser = new User();
         newUser.setUsername(username);
-        newUser.setPassword(password); // Note: Should hash password in production
+        newUser.setPassword(hashPassword(password)); // Hash password for security
         newUser.setEmail(email);
         newUser.setFullName(fullName);
         newUser.setPhone(phone);
@@ -64,6 +88,7 @@ public class AuthService
             customer.setFullName(fullName);
             customer.setPhone(phone);
             customer.setEmail(email);
+            customer.setUser(newUser); // Link customer to user
             customerRepository.save(customer);
         }
         

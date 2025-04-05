@@ -47,7 +47,7 @@
             <div class="meta-item">
               <i class="fas fa-bed"></i>
               <span th:text="${roomType.amenities}">Bed Type</span>
-            </div>
+      </div>
           </div>
           
           <p class="room-description" th:text="${roomType.description}">
@@ -308,7 +308,7 @@
           }
         }
       });
-      
+
       // Open modal when clicking room card title
       roomCards.forEach(card => {
         const roomTitle = card.querySelector('h2');

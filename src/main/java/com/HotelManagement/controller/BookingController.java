@@ -1,6 +1,7 @@
 package com.HotelManagement.controller;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,8 +48,21 @@ public class BookingController {
         }
         
         try {
+            // Validate input
+            if (bookingRequest == null) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Booking data is required"));
+            }
+            
+            if (bookingRequest.getCheckInDate() == null || bookingRequest.getCheckInDate().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Check-in date is required"));
+            }
+            
+            if (bookingRequest.getRoomSelections() == null || bookingRequest.getRoomSelections().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "At least one room selection is required"));
+            }
+            
             // Find customer by phone number
-            Customer customer = customerRepository.findByPhone(user.getPhone());
+            Customer customer = customerRepository.findByPhone(user.getPhone()).orElse(null);
             
             if (customer == null) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Customer record not found. Please contact reception."));
@@ -58,10 +72,12 @@ public class BookingController {
             bookingRequest.setCustomerId(customer.getId());
             
             Booking booking = bookingService.createBooking(bookingRequest, user);
-            return ResponseEntity.ok(Map.of(
-                "bookingId", booking.getId(),
-                "message", "Booking created successfully"
-            ));
+            Map<String, Object> response = new HashMap<>();
+            response.put("bookingId", booking.getId());
+            response.put("message", "Booking created successfully");
+            response.put("redirectUrl", "/booking/confirmation/" + booking.getId());
+            
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
@@ -72,7 +88,8 @@ public class BookingController {
         // Get the booking
         Booking booking = bookingService.getBookingById(bookingId);
         if (booking == null) {
-            return "redirect:/booking?error=Booking not found";
+            model.addAttribute("error", "Booking not found");
+            return "Error";
         }
 
         // Get booking details
