@@ -5,7 +5,6 @@ import java.util.List;
 public class BookingRequestDto {
     private Integer customerId;
     private String checkInDate;
-    private String checkOutDate;
     private List<RoomSelectionDto> roomSelections;
     
     public Integer getCustomerId() {
@@ -22,14 +21,6 @@ public class BookingRequestDto {
     
     public void setCheckInDate(String checkInDate) {
         this.checkInDate = checkInDate;
-    }
-    
-    public String getCheckOutDate() {
-        return checkOutDate;
-    }
-    
-    public void setCheckOutDate(String checkOutDate) {
-        this.checkOutDate = checkOutDate;
     }
     
     public List<RoomSelectionDto> getRoomSelections() {

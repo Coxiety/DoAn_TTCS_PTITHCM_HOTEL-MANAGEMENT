@@ -10,6 +10,8 @@
   <div th:replace="~{fragments/auth-modals :: authCSS}"></div>
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  <!-- Flatpickr Date Picker CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -160,10 +162,9 @@
           </div>
           
           <div class="date-picker">
-            <label>Select Dates</label>
+            <label>Select Check-in Date</label>
             <div class="date-inputs">
-              <input type="date" id="checkInDate" placeholder="Check-in">
-              <input type="date" id="checkOutDate" placeholder="Check-out">
+              <input type="text" id="checkInDate" placeholder="Select a date" readonly>
             </div>
           </div>
           
@@ -251,139 +252,132 @@
   
   <!-- Include Navbar Scripts -->
   <div th:replace="~{fragments/navbar :: navbarScript}"></div>
+  
+  <!-- Flatpickr Date Picker JS -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
   <!-- Booking specific scripts -->
   <script>
     // -- Main Page Booking Script --
-    const roomSelects = document.querySelectorAll('.rooms-section .room-select');
-    const totalRoomsEl = document.getElementById('totalRooms');
-    const totalPriceEl = document.getElementById('totalPrice');
-    const checkInDate = document.getElementById('checkInDate');
-    const checkOutDate = document.getElementById('checkOutDate');
-
-    // Set minimum date to today
-    const today = new Date().toISOString().split('T')[0];
-    checkInDate.min = today;
-    checkOutDate.min = today;
-
-    // Update checkout min date when checkin changes
-    checkInDate.addEventListener('change', function() {
-      checkOutDate.min = this.value;
-      if (checkOutDate.value && checkOutDate.value < this.value) {
-        checkOutDate.value = this.value;
-      }
-      calculateTotals();
-    });
-
-    checkOutDate.addEventListener('change', calculateTotals);
-
-    // Listen for room selection changes
-    roomSelects.forEach(select => {
-      select.addEventListener('change', calculateTotals);
-    });
-
-    // Calculate total rooms and price
-    function calculateTotals() {
-      let totalRooms = 0;
-      let totalPrice = 0;
-      
-      // Get selected dates
-      const startDate = new Date(checkInDate.value);
-      const endDate = new Date(checkOutDate.value);
-      
-      // Calculate number of nights
-      let nights = 1; // Default to 1 night if dates not selected
-      if (checkInDate.value && checkOutDate.value) {
-        nights = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24));
-        nights = nights || 1; // Ensure at least 1 night
-      }
-      
-      // Calculate totals
-      roomSelects.forEach(select => {
-        const count = parseInt(select.value, 10) || 0;
-        const price = parseInt(select.dataset.roomPrice, 10) || 0;
-        
-        totalRooms += count;
-        totalPrice += (count * price * nights);
-      });
-      
-      totalRoomsEl.textContent = totalRooms;
-      totalPriceEl.textContent = totalPrice;
-    }
-
-    // -- Room Detail Modal Script --
-    const modalOverlayRoomDetail = document.getElementById('modalOverlayRoomDetail');
-    const modalRoomSelect = document.getElementById('modalRoomSelect');
-    const closeModalRoomDetail = document.getElementById('closeModalRoomDetail');
-    const modalHeader = document.getElementById('modalHeader');
-    let currentRoomCard = null;
-
-    // Sample room data
-    const roomData = {
-      standard: {
-        type: "Standard Room",
-        capacity: 2,
-        bedType: "Queen Bed",
-        size: "28",
-        price: 100,
-        status: "Available",
-        description: "Experience comfort in our Standard Room, featuring a plush queen bed, modern bathroom, and all essential amenities. The room is designed with neutral tones and contemporary furnishings to create a relaxing atmosphere. Enjoy amenities including complimentary Wi-Fi, flat-screen TV, and workspace.",
-        amenities: [
-          {icon: "fas fa-wifi", name: "Free Wi-Fi"},
-          {icon: "fas fa-tv", name: "Flat-screen TV"},
-          {icon: "fas fa-snowflake", name: "Air Conditioning"},
-          {icon: "fas fa-shower", name: "Private Bathroom"},
-          {icon: "fas fa-coffee", name: "Coffee Maker"},
-          {icon: "fas fa-phone", name: "Telephone"}
-        ],
-        availableCount: 5
-      },
-      deluxe: {
-        type: "Deluxe Room",
-        capacity: 3,
-        bedType: "King Bed",
-        size: "35",
-        price: 150,
-        status: "Available",
-        description: "Upgrade your experience with our Deluxe Room featuring a luxurious king bed, sitting area, and premium amenities. Enjoy city views from large windows that let in abundant natural light. The spacious bathroom includes a walk-in shower and premium toiletries.",
-        amenities: [
-          {icon: "fas fa-wifi", name: "High-speed Wi-Fi"},
-          {icon: "fas fa-tv", name: "55\" Smart TV"},
-          {icon: "fas fa-snowflake", name: "Climate Control"},
-          {icon: "fas fa-shower", name: "Rainfall Shower"},
-          {icon: "fas fa-glass-martini-alt", name: "Mini Bar"},
-          {icon: "fas fa-lock", name: "In-room Safe"},
-          {icon: "fas fa-city", name: "City View"},
-          {icon: "fas fa-coffee", name: "Espresso Machine"}
-        ],
-        availableCount: 5
-      },
-      suite: {
-        type: "Executive Suite",
-        capacity: 4,
-        bedType: "King Bed + Sofa Bed",
-        size: "50",
-        price: 200,
-        status: "Available",
-        description: "Indulge in luxury in our Executive Suite featuring a separate bedroom with king bed and spacious living area with a comfortable sofa bed. Perfect for families or those seeking extra space. Enjoy spectacular views, premium amenities, and exclusive access to the Executive Lounge.",
-        amenities: [
-          {icon: "fas fa-wifi", name: "Premium Wi-Fi"},
-          {icon: "fas fa-tv", name: "Two 65\" Smart TVs"},
-          {icon: "fas fa-snowflake", name: "Climate Control"},
-          {icon: "fas fa-glass-martini-alt", name: "Complimentary Mini Bar"},
-          {icon: "fas fa-lock", name: "Digital Safe"},
-          {icon: "fas fa-couch", name: "Separate Living Room"},
-          {icon: "fas fa-bath", name: "Bathtub & Shower"},
-          {icon: "fas fa-water", name: "Ocean View"},
-          {icon: "fas fa-concierge-bell", name: "Butler Service"},
-          {icon: "fas fa-utensils", name: "Dining Area"}
-        ],
-        availableCount: 5
-      }
-    };
-
-    // Set up room headings click event
     document.addEventListener('DOMContentLoaded', function() {
+      const roomSelects = document.querySelectorAll('.rooms-section .room-select');
+      const totalRoomsEl = document.getElementById('totalRooms');
+      const totalPriceEl = document.getElementById('totalPrice');
+      const checkInDateInput = document.getElementById('checkInDate');
+
+      // Initialize Flatpickr date picker
+      const today = new Date();
+      const checkInPicker = flatpickr("#checkInDate", {
+        dateFormat: "Y-m-d",
+        minDate: today,
+        disableMobile: "true",  // Use the calendar picker on all devices
+        altInput: true,         // Shows the date in a more readable format
+        altFormat: "F j, Y",    // Format for the display (e.g., "April 5, 2025")
+        defaultDate: today,     // Set default to today
+        onChange: function(selectedDates, dateStr, instance) {
+          calculateTotals();    // Recalculate when date changes
+        }
+      });
+
+      // Listen for room selection changes
+      roomSelects.forEach(select => {
+        select.addEventListener('change', calculateTotals);
+      });
+
+      // Calculate total rooms and price
+      function calculateTotals() {
+        let totalRooms = 0;
+        let totalPrice = 0;
+        
+        // Always calculate for 1 night (no checkout date)
+        // Price is per night, so use 1 as multiplier
+        let nights = 1;
+        
+        // Calculate totals
+        roomSelects.forEach(select => {
+          const count = parseInt(select.value, 10) || 0;
+          const price = parseInt(select.dataset.roomPrice, 10) || 0;
+          
+          totalRooms += count;
+          totalPrice += (count * price * nights);
+        });
+        
+        totalRoomsEl.textContent = totalRooms;
+        totalPriceEl.textContent = totalPrice;
+      }
+
+      // -- Room Detail Modal Script --
+      const modalOverlayRoomDetail = document.getElementById('modalOverlayRoomDetail');
+      const modalRoomSelect = document.getElementById('modalRoomSelect');
+      const closeModalRoomDetail = document.getElementById('closeModalRoomDetail');
+      const modalHeader = document.getElementById('modalHeader');
+      let currentRoomCard = null;
+
+      // Sample room data
+      const roomData = {
+        standard: {
+          type: "Standard Room",
+          capacity: 2,
+          bedType: "Queen Bed",
+          size: "28",
+          price: 100,
+          status: "Available",
+          description: "Experience comfort in our Standard Room, featuring a plush queen bed, modern bathroom, and all essential amenities. The room is designed with neutral tones and contemporary furnishings to create a relaxing atmosphere. Enjoy amenities including complimentary Wi-Fi, flat-screen TV, and workspace.",
+          amenities: [
+            {icon: "fas fa-wifi", name: "Free Wi-Fi"},
+            {icon: "fas fa-tv", name: "Flat-screen TV"},
+            {icon: "fas fa-snowflake", name: "Air Conditioning"},
+            {icon: "fas fa-shower", name: "Private Bathroom"},
+            {icon: "fas fa-coffee", name: "Coffee Maker"},
+            {icon: "fas fa-phone", name: "Telephone"}
+          ],
+          availableCount: 5
+        },
+        deluxe: {
+          type: "Deluxe Room",
+          capacity: 3,
+          bedType: "King Bed",
+          size: "35",
+          price: 150,
+          status: "Available",
+          description: "Upgrade your experience with our Deluxe Room featuring a luxurious king bed, sitting area, and premium amenities. Enjoy city views from large windows that let in abundant natural light. The spacious bathroom includes a walk-in shower and premium toiletries.",
+          amenities: [
+            {icon: "fas fa-wifi", name: "High-speed Wi-Fi"},
+            {icon: "fas fa-tv", name: "55\" Smart TV"},
+            {icon: "fas fa-snowflake", name: "Climate Control"},
+            {icon: "fas fa-shower", name: "Rainfall Shower"},
+            {icon: "fas fa-glass-martini-alt", name: "Mini Bar"},
+            {icon: "fas fa-lock", name: "In-room Safe"},
+            {icon: "fas fa-city", name: "City View"},
+            {icon: "fas fa-coffee", name: "Espresso Machine"}
+          ],
+          availableCount: 5
+        },
+        suite: {
+          type: "Executive Suite",
+          capacity: 4,
+          bedType: "King Bed + Sofa Bed",
+          size: "50",
+          price: 200,
+          status: "Available",
+          description: "Indulge in luxury in our Executive Suite featuring a separate bedroom with king bed and spacious living area with a comfortable sofa bed. Perfect for families or those seeking extra space. Enjoy spectacular views, premium amenities, and exclusive access to the Executive Lounge.",
+          amenities: [
+            {icon: "fas fa-wifi", name: "Premium Wi-Fi"},
+            {icon: "fas fa-tv", name: "Two 65\" Smart TVs"},
+            {icon: "fas fa-snowflake", name: "Climate Control"},
+            {icon: "fas fa-glass-martini-alt", name: "Complimentary Mini Bar"},
+            {icon: "fas fa-lock", name: "Digital Safe"},
+            {icon: "fas fa-couch", name: "Separate Living Room"},
+            {icon: "fas fa-bath", name: "Bathtub & Shower"},
+            {icon: "fas fa-water", name: "Ocean View"},
+            {icon: "fas fa-concierge-bell", name: "Butler Service"},
+            {icon: "fas fa-utensils", name: "Dining Area"}
+          ],
+          availableCount: 5
+        }
+      };
+
+      // Set up room headings click event
       const roomCards = document.querySelectorAll('.room-card');
       roomCards.forEach(card => {
         const heading = card.querySelector('h2');
@@ -394,77 +388,77 @@
           });
         }
       });
-    });
+      
+      // Initialize totals on page load
+      calculateTotals();
 
-    // Show room details modal
-    function showRoomDetails(roomCard) {
-      currentRoomCard = roomCard;
-      const roomType = roomCard.dataset.roomType;
-      const room = roomData[roomType];
-      
-      if (!room) return;
-      
-      // Update modal header class for different background images
-      modalHeader.className = 'modal-header';
-      modalHeader.classList.add(roomType);
-      
-      // Update modal content
-      document.getElementById('detailRoomTitle').textContent = room.type;
-      document.getElementById('roomCapacityDetail').textContent = room.capacity;
-      document.getElementById('roomBedTypeDetail').textContent = room.bedType;
-      document.getElementById('roomSizeDetail').textContent = room.size;
-      document.getElementById('roomPriceDetail').textContent = room.price;
-      document.getElementById('roomDescriptionDetail').textContent = room.description;
-      
-      // Update amenities with icons
-      const amenitiesList = document.getElementById('roomAmenitiesList');
-      amenitiesList.innerHTML = room.amenities
-        .map(amenity => `<li><i class="${amenity.icon}"></i> ${amenity.name}</li>`)
-        .join('');
-      
-      // Update availability button
-      document.getElementById('modalAvailableBtn').innerHTML = 
-        `<i class="fas fa-check-circle"></i> Available ${room.availableCount}`;
+      // Show room details modal
+      function showRoomDetails(roomCard) {
+        currentRoomCard = roomCard;
+        const roomType = roomCard.dataset.roomType;
+        const room = roomData[roomType];
+        
+        if (!room) return;
+        
+        // Update modal header class for different background images
+        modalHeader.className = 'modal-header';
+        modalHeader.classList.add(roomType);
+        
+        // Update modal content
+        document.getElementById('detailRoomTitle').textContent = room.type;
+        document.getElementById('roomCapacityDetail').textContent = room.capacity;
+        document.getElementById('roomBedTypeDetail').textContent = room.bedType;
+        document.getElementById('roomSizeDetail').textContent = room.size;
+        document.getElementById('roomPriceDetail').textContent = room.price;
+        document.getElementById('roomDescriptionDetail').textContent = room.description;
+        
+        // Update amenities with icons
+        const amenitiesList = document.getElementById('roomAmenitiesList');
+        amenitiesList.innerHTML = room.amenities
+          .map(amenity => `<li><i class="${amenity.icon}"></i> ${amenity.name}</li>`)
+          .join('');
+        
+        // Update availability button
+        document.getElementById('modalAvailableBtn').innerHTML = 
+          `<i class="fas fa-check-circle"></i> Available ${room.availableCount}`;
 
-      // Sync dropdown with main page
-      const mainSelect = roomCard.querySelector('.room-select');
-      if (mainSelect) {
-        modalRoomSelect.value = mainSelect.value;
-      }
-      
-      // Show modal
-      modalOverlayRoomDetail.style.display = 'flex';
-    }
-
-    // Modal room select change syncs with main page
-    modalRoomSelect.addEventListener('change', function() {
-      if (currentRoomCard) {
-        const mainPageSelect = currentRoomCard.querySelector('.room-select');
-        if (mainPageSelect) {
-          mainPageSelect.value = this.value;
-          mainPageSelect.dispatchEvent(new Event('change'));
+        // Sync dropdown with main page
+        const mainSelect = roomCard.querySelector('.room-select');
+        if (mainSelect) {
+          modalRoomSelect.value = mainSelect.value;
         }
+        
+        // Show modal
+        modalOverlayRoomDetail.style.display = 'flex';
       }
-    });
 
-    // Modal done button just closes modal
-    document.getElementById('modalAddBtn').addEventListener('click', function() {
-      modalOverlayRoomDetail.style.display = 'none';
-    });
+      // Modal room select change syncs with main page
+      modalRoomSelect.addEventListener('change', function() {
+        if (currentRoomCard) {
+          const mainPageSelect = currentRoomCard.querySelector('.room-select');
+          if (mainPageSelect) {
+            mainPageSelect.value = this.value;
+            mainPageSelect.dispatchEvent(new Event('change'));
+          }
+        }
+      });
 
-    // Close modal handlers
-    closeModalRoomDetail.addEventListener('click', () => {
-      modalOverlayRoomDetail.style.display = 'none';
-    });
-    
-    window.addEventListener('click', (e) => {
-      if (e.target === modalOverlayRoomDetail) {
+      // Modal done button just closes modal
+      document.getElementById('modalAddBtn').addEventListener('click', function() {
         modalOverlayRoomDetail.style.display = 'none';
-      }
-    });
+      });
 
-    // Initialize totals on page load
-    calculateTotals();
+      // Close modal handlers
+      closeModalRoomDetail.addEventListener('click', () => {
+        modalOverlayRoomDetail.style.display = 'none';
+      });
+      
+      window.addEventListener('click', (e) => {
+        if (e.target === modalOverlayRoomDetail) {
+          modalOverlayRoomDetail.style.display = 'none';
+        }
+      });
+    });
   </script>
 </body>
 </html>

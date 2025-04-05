@@ -9,6 +9,8 @@
     <link rel="stylesheet" th:href="@{/css/stylesReceptionist.css}">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <!-- Flatpickr Date Picker CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -102,10 +104,9 @@
                     </div>
                     
                     <div class="date-picker">
-                        <label>Select Dates</label>
+                        <label>Select Check-in Date</label>
                         <div class="date-inputs">
-                            <input type="date" id="checkInDate" placeholder="Check-in">
-                            <input type="date" id="checkOutDate" placeholder="Check-out">
+                            <input type="text" id="checkInDate" placeholder="Select a date" readonly>
                         </div>
                     </div>
                     
@@ -186,6 +187,9 @@
         </div>
     </div>
 
+    <!-- Flatpickr Date Picker JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
     <!-- Scripts -->
     <script th:inline="javascript">
         // Get room type data from the server
@@ -197,27 +201,23 @@
             const roomSelects = document.querySelectorAll('.rooms-section .room-select');
             const totalRoomsEl = document.getElementById('totalRooms');
             const totalPriceEl = document.getElementById('totalPrice');
-            const checkInDate = document.getElementById('checkInDate');
-            const checkOutDate = document.getElementById('checkOutDate');
+            const checkInDateInput = document.getElementById('checkInDate');
             const completeBookingBtn = document.getElementById('completeBookingBtn');
             const roomSelectionsSummary = document.getElementById('roomSelectionsSummary');
             
-            // Set minimum date to today
-            const today = new Date().toISOString().split('T')[0];
-            checkInDate.min = today;
-            checkOutDate.min = today;
-            checkInDate.value = today;
-            
-            // Update checkout min date when checkin changes
-            checkInDate.addEventListener('change', function() {
-                checkOutDate.min = this.value;
-                if (checkOutDate.value && checkOutDate.value < this.value) {
-                    checkOutDate.value = this.value;
+            // Initialize Flatpickr date picker
+            const today = new Date();
+            const checkInPicker = flatpickr("#checkInDate", {
+                dateFormat: "Y-m-d",
+                minDate: today,
+                disableMobile: "true",  // Use the calendar picker on all devices
+                altInput: true,         // Shows the date in a more readable format
+                altFormat: "F j, Y",    // Format for the display (e.g., "April 5, 2025")
+                defaultDate: today,     // Set default to today
+                onChange: function(selectedDates, dateStr, instance) {
+                    calculateTotals();  // Recalculate when date changes
                 }
-                calculateTotals();
             });
-            
-            checkOutDate.addEventListener('change', calculateTotals);
             
             // Listen for room selection changes
             roomSelects.forEach(select => {
@@ -230,17 +230,9 @@
                 let totalPrice = 0;
                 let selections = [];
                 
-                // Get selected dates
-                const startDate = new Date(checkInDate.value);
-                const endDate = checkOutDate.value ? new Date(checkOutDate.value) : new Date(startDate);
-                endDate.setDate(endDate.getDate() + 1); // Default to 1 night if no checkout date
-                
-                // Calculate number of nights
+                // Always calculate for 1 night (no checkout date)
+                // Price is per night, so use 1 as multiplier
                 let nights = 1;
-                if (checkInDate.value && checkOutDate.value) {
-                    nights = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24));
-                    nights = nights || 1; // Ensure at least 1 night
-                }
                 
                 // Calculate totals
                 roomSelects.forEach(select => {
@@ -316,7 +308,7 @@
                 
                 // Check if we have a customer and dates
                 const customerId = document.getElementById('selectedCustomerId')?.value;
-                if (!customerId || !checkInDate.value) {
+                if (!customerId || !checkInDateInput.value) {
                     alert('Please select a customer and check-in date');
                     return;
                 }
@@ -324,8 +316,7 @@
                 // Prepare the booking data
                 const bookingData = {
                     customerId: customerId,
-                    checkInDate: checkInDate.value,
-                    checkOutDate: checkOutDate.value || checkInDate.value,
+                    checkInDate: checkInDateInput.value,
                     roomSelections: selections
                 };
                 
