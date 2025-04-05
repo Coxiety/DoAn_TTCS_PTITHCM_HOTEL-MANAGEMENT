@@ -3,7 +3,9 @@ package com.HotelManagement.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.HotelManagement.models.Customer;
 import com.HotelManagement.models.User;
+import com.HotelManagement.repository.CustomerRepository;
 import com.HotelManagement.repository.UserRepository;
 
 @Service
@@ -11,6 +13,9 @@ public class AuthService
 {
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private CustomerRepository customerRepository;
     
     public User login(String username, String password) 
     {
@@ -50,6 +55,18 @@ public class AuthService
         newUser.setPhone(phone);
         newUser.setRoleId(2); // 2 for customer role
         
-        return userRepository.save(newUser);
+        // Save the user first to get the ID
+        newUser = userRepository.save(newUser);
+        
+        // If this is a customer (roleId = 2), create a customer record
+        if (newUser.getRoleId() == 2) {
+            Customer customer = new Customer();
+            customer.setFullName(fullName);
+            customer.setPhone(phone);
+            customer.setEmail(email);
+            customerRepository.save(customer);
+        }
+        
+        return newUser;
     }
 }

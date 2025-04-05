@@ -25,7 +25,6 @@ import com.HotelManagement.dto.BookingRequestDto;
 import com.HotelManagement.dto.RoomTypeAmenityDto;
 import com.HotelManagement.dto.RoomTypeDto;
 import com.HotelManagement.models.Booking;
-import com.HotelManagement.models.BookingDetail;
 import com.HotelManagement.models.Customer;
 import com.HotelManagement.models.Room;
 import com.HotelManagement.models.RoomType;
@@ -262,5 +261,27 @@ public class ReceptionistController {
             response.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    @GetMapping("/receptionist")
+    public String showDashboard(Model model) {
+        // Get today's bookings
+        List<Booking> todayBookings = bookingService.getBookingsByDate(LocalDate.now());
+        model.addAttribute("bookings", todayBookings);
+        return "ReceptionistDashboard";
+    }
+    
+    @GetMapping("/receptionist/search")
+    public String searchBookings(@RequestParam(required = false) String phone, Model model) {
+        List<Booking> bookings;
+        if (phone != null && !phone.trim().isEmpty()) {
+            // Search bookings by phone number
+            bookings = bookingService.getBookingsByCustomerPhone(phone);
+        } else {
+            // If no phone number provided, show today's bookings
+            bookings = bookingService.getBookingsByDate(LocalDate.now());
+        }
+        model.addAttribute("bookings", bookings);
+        return "ReceptionistDashboard";
     }
 }

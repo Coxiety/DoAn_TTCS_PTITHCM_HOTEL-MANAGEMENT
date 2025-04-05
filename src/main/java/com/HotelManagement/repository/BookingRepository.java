@@ -1,6 +1,6 @@
 package com.HotelManagement.repository;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,8 +12,10 @@ import com.HotelManagement.models.Booking;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Integer> {
-    List<Booking> findByCheckInDateBetweenAndStatus(LocalDateTime startDate, LocalDateTime endDate, String status);
     
-    @Query("SELECT b FROM Booking b JOIN b.customer c WHERE c.phone = :phone AND b.status = :status")
-    List<Booking> findByCustomerPhoneAndStatus(@Param("phone") String phone, @Param("status") String status);
+    @Query("SELECT b FROM Booking b WHERE DATE(b.checkInDate) = :date")
+    List<Booking> findByCheckInDate(@Param("date") LocalDate date);
+    
+    @Query("SELECT b FROM Booking b JOIN b.customer c WHERE c.phone = :phone")
+    List<Booking> findByCustomerPhone(@Param("phone") String phone);
 }

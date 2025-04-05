@@ -33,128 +33,54 @@
   <main>
     <!-- LEFT COLUMN: Rooms List -->
     <section class="rooms-section">
-      <!-- Standard Room -->
-      <div class="room-card" data-room-type="standard">
-        <div class="room-image standard"></div>
+      <!-- Dynamic Room Cards -->
+      <div th:each="roomType : ${roomTypes}" class="room-card" th:data-room-type="${roomType.id}">
+        <div class="room-image" th:style="${roomType.imagePath != null} ? 'background-image: url(' + @{${roomType.imagePath}} + ')' : 'background-image: url(/img/rooms/default-room.jpg)'"></div>
         <div class="room-details">
-          <h2>Standard Room</h2>
+          <h2 th:text="${roomType.name}">Room Type Name</h2>
           
           <div class="room-meta">
-            <div class="meta-item"><i class="fas fa-user"></i> <span>Up to 2 guests</span></div>
-            <div class="meta-item"><i class="fas fa-bed"></i> <span>1 Queen Bed</span></div>
-            <div class="meta-item"><i class="fas fa-ruler-combined"></i> <span>28 m²</span></div>
+            <div class="meta-item">
+              <i class="fas fa-user"></i>
+              <span>Up to <span th:text="${roomType.capacity}">2</span> guests</span>
+            </div>
+            <div class="meta-item">
+              <i class="fas fa-bed"></i>
+              <span th:text="${roomType.amenities}">Bed Type</span>
+            </div>
           </div>
           
-          <p class="room-description">
-            Cozy and comfortable standard room with all essential amenities for a relaxing stay. Perfect for solo travelers or couples.
+          <p class="room-description" th:text="${roomType.description}">
+            Room description here.
           </p>
           
           <div class="bed-price-info">
-            <i class="fas fa-bed bed-icon"></i>
-            <span class="beds-count">Queen Bed</span>
-            <span class="price-tag">$100 per night</span>
+            <div class="price-tag">
+              $<span th:text="${#numbers.formatDecimal(roomType.price, 1, 2)}">100.00</span>/night
+            </div>
           </div>
           
           <div class="room-options">
             <div class="availability-btn">
-              <i class="fas fa-check-circle"></i> Available 5
+              <i class="fas fa-check-circle"></i>
+              Available <span th:text="${availableRoomCounts[roomType.id] ?: 0}">5</span>
             </div>
-            <select class="room-select" data-room-price="100">
+            <select class="room-select" th:data-room-price="${roomType.price}">
               <option value="0">0 Rooms</option>
-              <option value="1">1 Room</option>
-              <option value="2">2 Rooms</option>
-              <option value="3">3 Rooms</option>
-              <option value="4">4 Rooms</option>
-              <option value="5">5 Rooms</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- Deluxe Room -->
-      <div class="room-card" data-room-type="deluxe">
-        <div class="room-image deluxe"></div>
-        <div class="room-details">
-          <h2>Deluxe Room</h2>
-          
-          <div class="room-meta">
-            <div class="meta-item"><i class="fas fa-user"></i> <span>Up to 3 guests</span></div>
-            <div class="meta-item"><i class="fas fa-bed"></i> <span>1 King Bed</span></div>
-            <div class="meta-item"><i class="fas fa-ruler-combined"></i> <span>35 m²</span></div>
-          </div>
-          
-          <p class="room-description">
-            Spacious deluxe room featuring premium furnishings, city views, and enhanced amenities for a superior experience.
-          </p>
-          
-          <div class="bed-price-info">
-            <i class="fas fa-bed bed-icon"></i>
-            <span class="beds-count">King Bed</span>
-            <span class="price-tag">$150 per night</span>
-          </div>
-          
-          <div class="room-options">
-            <div class="availability-btn">
-              <i class="fas fa-check-circle"></i> Available 5
-            </div>
-            <select class="room-select" data-room-price="150">
-              <option value="0">0 Rooms</option>
-              <option value="1">1 Room</option>
-              <option value="2">2 Rooms</option>
-              <option value="3">3 Rooms</option>
-              <option value="4">4 Rooms</option>
-              <option value="5">5 Rooms</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- Executive Suite -->
-      <div class="room-card" data-room-type="suite">
-        <div class="room-image suite"></div>
-        <div class="room-details">
-          <h2>Executive Suite</h2>
-          
-          <div class="room-meta">
-            <div class="meta-item"><i class="fas fa-user"></i> <span>Up to 4 guests</span></div>
-            <div class="meta-item"><i class="fas fa-bed"></i> <span>1 King Bed + Sofa</span></div>
-            <div class="meta-item"><i class="fas fa-ruler-combined"></i> <span>50 m²</span></div>
-          </div>
-          
-          <p class="room-description">
-            Luxurious suite with separate living area, premium amenities, and stunning views. Our most spacious accommodation option.
-          </p>
-          
-          <div class="bed-price-info">
-            <i class="fas fa-bed bed-icon"></i>
-            <span class="beds-count">King + Sofa Bed</span>
-            <span class="price-tag">$200 per night</span>
-          </div>
-          
-          <div class="room-options">
-            <div class="availability-btn">
-              <i class="fas fa-check-circle"></i> Available 5
-            </div>
-            <select class="room-select" data-room-price="200">
-              <option value="0">0 Rooms</option>
-              <option value="1">1 Room</option>
-              <option value="2">2 Rooms</option>
-              <option value="3">3 Rooms</option>
-              <option value="4">4 Rooms</option>
-              <option value="5">5 Rooms</option>
+              <option th:each="i : ${#numbers.sequence(1, availableRoomCounts[roomType.id] ?: 0)}" 
+                      th:value="${i}" th:text="${i + ' Room' + (i > 1 ? 's' : '')}">1 Room</option>
             </select>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- RIGHT COLUMN: Booking Summary -->
+    <!-- RIGHT COLUMN: BOOKING SUMMARY -->
     <section class="summary-section">
       <div class="summary-card">
         <div class="summary-header">
           <h3>Booking Summary</h3>
         </div>
-        
         <div class="summary-content">
           <div class="summary-item">
             <span>Total Rooms</span>
@@ -173,9 +99,12 @@
             <span>$<span id="totalPrice">0</span></span>
           </div>
           
-          <button class="book-btn">
+          <button id="completeBookingBtn" class="book-btn" th:disabled="${session.user == null}">
             <i class="fas fa-check-circle"></i> Complete Booking
           </button>
+          <p th:if="${session.user == null}" class="login-prompt">
+            Please <a href="javascript:void(0)" onclick="openLoginModal()">login</a> to complete your booking
+          </p>
         </div>
       </div>
     </section>
@@ -257,25 +186,25 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
   <!-- Booking specific scripts -->
-  <script>
-    // -- Main Page Booking Script --
+  <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
       const roomSelects = document.querySelectorAll('.rooms-section .room-select');
       const totalRoomsEl = document.getElementById('totalRooms');
       const totalPriceEl = document.getElementById('totalPrice');
       const checkInDateInput = document.getElementById('checkInDate');
+      const completeBookingBtn = document.getElementById('completeBookingBtn');
 
       // Initialize Flatpickr date picker
       const today = new Date();
       const checkInPicker = flatpickr("#checkInDate", {
         dateFormat: "Y-m-d",
         minDate: today,
-        disableMobile: "true",  // Use the calendar picker on all devices
-        altInput: true,         // Shows the date in a more readable format
-        altFormat: "F j, Y",    // Format for the display (e.g., "April 5, 2025")
-        defaultDate: today,     // Set default to today
+        disableMobile: "true",
+        altInput: true,
+        altFormat: "F j, Y",
+        defaultDate: today,
         onChange: function(selectedDates, dateStr, instance) {
-          calculateTotals();    // Recalculate when date changes
+          calculateTotals();
         }
       });
 
@@ -289,173 +218,167 @@
         let totalRooms = 0;
         let totalPrice = 0;
         
-        // Always calculate for 1 night (no checkout date)
-        // Price is per night, so use 1 as multiplier
-        let nights = 1;
-        
-        // Calculate totals
         roomSelects.forEach(select => {
           const count = parseInt(select.value, 10) || 0;
-          const price = parseInt(select.dataset.roomPrice, 10) || 0;
+          const price = parseFloat(select.getAttribute('data-room-price')) || 0;
           
           totalRooms += count;
-          totalPrice += (count * price * nights);
+          totalPrice += (count * price);
         });
         
         totalRoomsEl.textContent = totalRooms;
-        totalPriceEl.textContent = totalPrice;
+        totalPriceEl.textContent = totalPrice.toFixed(2);
+        
+        // Enable/disable booking button based on selection
+        completeBookingBtn.disabled = totalRooms === 0 || !checkInDateInput.value;
       }
 
-      // -- Room Detail Modal Script --
-      const modalOverlayRoomDetail = document.getElementById('modalOverlayRoomDetail');
-      const modalRoomSelect = document.getElementById('modalRoomSelect');
-      const closeModalRoomDetail = document.getElementById('closeModalRoomDetail');
-      const modalHeader = document.getElementById('modalHeader');
-      let currentRoomCard = null;
+      // Handle booking submission
+      completeBookingBtn.addEventListener('click', async function() {
+        const selectedRooms = [];
+        roomSelects.forEach(select => {
+          const roomCount = parseInt(select.value, 10);
+          if (roomCount > 0) {
+            selectedRooms.push({
+              roomTypeId: select.closest('.room-card').getAttribute('data-room-type'),
+              count: roomCount
+            });
+          }
+        });
 
-      // Sample room data
-      const roomData = {
-        standard: {
-          type: "Standard Room",
-          capacity: 2,
-          bedType: "Queen Bed",
-          size: "28",
-          price: 100,
-          status: "Available",
-          description: "Experience comfort in our Standard Room, featuring a plush queen bed, modern bathroom, and all essential amenities. The room is designed with neutral tones and contemporary furnishings to create a relaxing atmosphere. Enjoy amenities including complimentary Wi-Fi, flat-screen TV, and workspace.",
-          amenities: [
-            {icon: "fas fa-wifi", name: "Free Wi-Fi"},
-            {icon: "fas fa-tv", name: "Flat-screen TV"},
-            {icon: "fas fa-snowflake", name: "Air Conditioning"},
-            {icon: "fas fa-shower", name: "Private Bathroom"},
-            {icon: "fas fa-coffee", name: "Coffee Maker"},
-            {icon: "fas fa-phone", name: "Telephone"}
-          ],
-          availableCount: 5
-        },
-        deluxe: {
-          type: "Deluxe Room",
-          capacity: 3,
-          bedType: "King Bed",
-          size: "35",
-          price: 150,
-          status: "Available",
-          description: "Upgrade your experience with our Deluxe Room featuring a luxurious king bed, sitting area, and premium amenities. Enjoy city views from large windows that let in abundant natural light. The spacious bathroom includes a walk-in shower and premium toiletries.",
-          amenities: [
-            {icon: "fas fa-wifi", name: "High-speed Wi-Fi"},
-            {icon: "fas fa-tv", name: "55\" Smart TV"},
-            {icon: "fas fa-snowflake", name: "Climate Control"},
-            {icon: "fas fa-shower", name: "Rainfall Shower"},
-            {icon: "fas fa-glass-martini-alt", name: "Mini Bar"},
-            {icon: "fas fa-lock", name: "In-room Safe"},
-            {icon: "fas fa-city", name: "City View"},
-            {icon: "fas fa-coffee", name: "Espresso Machine"}
-          ],
-          availableCount: 5
-        },
-        suite: {
-          type: "Executive Suite",
-          capacity: 4,
-          bedType: "King Bed + Sofa Bed",
-          size: "50",
-          price: 200,
-          status: "Available",
-          description: "Indulge in luxury in our Executive Suite featuring a separate bedroom with king bed and spacious living area with a comfortable sofa bed. Perfect for families or those seeking extra space. Enjoy spectacular views, premium amenities, and exclusive access to the Executive Lounge.",
-          amenities: [
-            {icon: "fas fa-wifi", name: "Premium Wi-Fi"},
-            {icon: "fas fa-tv", name: "Two 65\" Smart TVs"},
-            {icon: "fas fa-snowflake", name: "Climate Control"},
-            {icon: "fas fa-glass-martini-alt", name: "Complimentary Mini Bar"},
-            {icon: "fas fa-lock", name: "Digital Safe"},
-            {icon: "fas fa-couch", name: "Separate Living Room"},
-            {icon: "fas fa-bath", name: "Bathtub & Shower"},
-            {icon: "fas fa-water", name: "Ocean View"},
-            {icon: "fas fa-concierge-bell", name: "Butler Service"},
-            {icon: "fas fa-utensils", name: "Dining Area"}
-          ],
-          availableCount: 5
+        if (selectedRooms.length === 0) {
+          alert('Please select at least one room');
+          return;
         }
-      };
 
-      // Set up room headings click event
-      const roomCards = document.querySelectorAll('.room-card');
-      roomCards.forEach(card => {
-        const heading = card.querySelector('h2');
-        if (heading) {
-          heading.style.cursor = 'pointer';
-          heading.addEventListener('click', () => {
-            showRoomDetails(card);
+        if (!checkInDateInput.value) {
+          alert('Please select a check-in date');
+          return;
+        }
+
+        const bookingData = {
+          checkInDate: checkInDateInput.value,
+          roomSelections: selectedRooms
+        };
+
+        try {
+          const response = await fetch('/api/booking/create', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(bookingData)
           });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            alert('Booking successful!');
+            window.location.href = '/booking/confirmation/' + result.bookingId;
+          } else {
+            alert('Booking failed: ' + (result.message || 'Please try again'));
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('An error occurred while processing your booking. Please try again.');
+        }
+      });
+
+      // Room Detail Modal Functionality
+      const modalOverlay = document.getElementById('modalOverlayRoomDetail');
+      const closeModalBtn = document.getElementById('closeModalRoomDetail');
+      const roomCards = document.querySelectorAll('.room-card');
+      let currentSelectedCard = null;
+      
+      // Close modal when clicking the close button or outside the modal
+      closeModalBtn.addEventListener('click', () => {
+        modalOverlay.style.display = 'none';
+        if (currentSelectedCard) {
+          currentSelectedCard.querySelector('h2').classList.remove('selected-room');
+          currentSelectedCard = null;
         }
       });
       
-      // Initialize totals on page load
-      calculateTotals();
-
-      // Show room details modal
-      function showRoomDetails(roomCard) {
-        currentRoomCard = roomCard;
-        const roomType = roomCard.dataset.roomType;
-        const room = roomData[roomType];
-        
-        if (!room) return;
-        
-        // Update modal header class for different background images
-        modalHeader.className = 'modal-header';
-        modalHeader.classList.add(roomType);
-        
-        // Update modal content
-        document.getElementById('detailRoomTitle').textContent = room.type;
-        document.getElementById('roomCapacityDetail').textContent = room.capacity;
-        document.getElementById('roomBedTypeDetail').textContent = room.bedType;
-        document.getElementById('roomSizeDetail').textContent = room.size;
-        document.getElementById('roomPriceDetail').textContent = room.price;
-        document.getElementById('roomDescriptionDetail').textContent = room.description;
-        
-        // Update amenities with icons
-        const amenitiesList = document.getElementById('roomAmenitiesList');
-        amenitiesList.innerHTML = room.amenities
-          .map(amenity => `<li><i class="${amenity.icon}"></i> ${amenity.name}</li>`)
-          .join('');
-        
-        // Update availability button
-        document.getElementById('modalAvailableBtn').innerHTML = 
-          `<i class="fas fa-check-circle"></i> Available ${room.availableCount}`;
-
-        // Sync dropdown with main page
-        const mainSelect = roomCard.querySelector('.room-select');
-        if (mainSelect) {
-          modalRoomSelect.value = mainSelect.value;
-        }
-        
-        // Show modal
-        modalOverlayRoomDetail.style.display = 'flex';
-      }
-
-      // Modal room select change syncs with main page
-      modalRoomSelect.addEventListener('change', function() {
-        if (currentRoomCard) {
-          const mainPageSelect = currentRoomCard.querySelector('.room-select');
-          if (mainPageSelect) {
-            mainPageSelect.value = this.value;
-            mainPageSelect.dispatchEvent(new Event('change'));
+      modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+          modalOverlay.style.display = 'none';
+          if (currentSelectedCard) {
+            currentSelectedCard.querySelector('h2').classList.remove('selected-room');
+            currentSelectedCard = null;
           }
         }
       });
-
-      // Modal done button just closes modal
-      document.getElementById('modalAddBtn').addEventListener('click', function() {
-        modalOverlayRoomDetail.style.display = 'none';
-      });
-
-      // Close modal handlers
-      closeModalRoomDetail.addEventListener('click', () => {
-        modalOverlayRoomDetail.style.display = 'none';
+      
+      // Open modal when clicking room card title
+      roomCards.forEach(card => {
+        const roomTitle = card.querySelector('h2');
+        roomTitle.style.cursor = 'pointer';
+        
+        roomTitle.addEventListener('click', () => {
+          // Clear previous selection
+          if (currentSelectedCard) {
+            currentSelectedCard.querySelector('h2').classList.remove('selected-room');
+          }
+          
+          // Set current selection
+          currentSelectedCard = card;
+          roomTitle.classList.add('selected-room');
+          
+          const roomType = {
+            name: card.querySelector('h2').textContent,
+            capacity: card.querySelector('.meta-item span span').textContent,
+            amenities: card.querySelector('.meta-item:nth-child(2) span').textContent,
+            description: card.querySelector('.room-description').textContent,
+            price: card.querySelector('.room-select').getAttribute('data-room-price'),
+            availableRooms: card.querySelector('.availability-btn span').textContent
+          };
+          
+          // Update modal content
+          document.getElementById('detailRoomTitle').textContent = roomType.name;
+          document.getElementById('roomCapacityDetail').textContent = roomType.capacity;
+          document.getElementById('roomDescriptionDetail').textContent = roomType.description;
+          document.getElementById('roomPriceDetail').textContent = roomType.price;
+          
+          // Update amenities list
+          const amenitiesList = document.getElementById('roomAmenitiesList');
+          amenitiesList.innerHTML = '';
+          const amenities = roomType.amenities.split(',');
+          amenities.forEach(amenity => {
+            const li = document.createElement('li');
+            li.innerHTML = `<i class="fas fa-check"></i> ${amenity.trim()}`;
+            amenitiesList.appendChild(li);
+          });
+          
+          // Update availability in modal
+          document.getElementById('modalAvailableBtn').innerHTML = 
+            `<i class="fas fa-check-circle"></i> Available ${roomType.availableRooms}`;
+          
+          // Update room select options in modal
+          const modalSelect = document.getElementById('modalRoomSelect');
+          modalSelect.innerHTML = '<option value="0">0 Rooms</option>';
+          for (let i = 1; i <= roomType.availableRooms; i++) {
+            modalSelect.innerHTML += `<option value="${i}">${i} Room${i > 1 ? 's' : ''}</option>`;
+          }
+          
+          // Set the modal select to match the main select
+          const mainSelect = card.querySelector('.room-select');
+          modalSelect.value = mainSelect.value;
+          
+          // Show modal
+          modalOverlay.style.display = 'flex';
+        });
       });
       
-      window.addEventListener('click', (e) => {
-        if (e.target === modalOverlayRoomDetail) {
-          modalOverlayRoomDetail.style.display = 'none';
+      // Handle "Done" button in modal
+      document.getElementById('modalAddBtn').addEventListener('click', () => {
+        if (currentSelectedCard) {
+          const mainSelect = currentSelectedCard.querySelector('.room-select');
+          const modalSelect = document.getElementById('modalRoomSelect');
+          mainSelect.value = modalSelect.value;
+          mainSelect.dispatchEvent(new Event('change'));
+          modalOverlay.style.display = 'none';
+          currentSelectedCard.querySelector('h2').classList.remove('selected-room');
+          currentSelectedCard = null;
         }
       });
     });

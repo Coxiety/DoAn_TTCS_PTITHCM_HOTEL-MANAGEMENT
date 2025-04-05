@@ -236,6 +236,7 @@ main {
     margin-bottom: 8px;
     color: #666;
     font-weight: 500;
+    font-size: 0.95rem;
 }
 
 .date-picker .date-inputs {
@@ -243,12 +244,71 @@ main {
     gap: 10px;
 }
 
-.date-picker input[type="date"] {
-    flex: 1;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+/* Flatpickr custom styling */
+.flatpickr-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
     font-size: 1rem;
+    color: #333;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.flatpickr-input:hover {
+    border-color: #4CAF50;
+    box-shadow: 0 2px 8px rgba(76,175,80,0.1);
+}
+
+.flatpickr-input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 2px 12px rgba(76,175,80,0.15);
+}
+
+/* Style the calendar icon */
+.flatpickr-input::-webkit-calendar-picker-indicator {
+    display: none;
+}
+
+/* Add a custom calendar icon */
+.date-inputs {
+    position: relative;
+}
+
+.date-inputs::after {
+    content: '\f133';
+    font-family: 'Font Awesome 5 Free';
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #4CAF50;
+    pointer-events: none;
+}
+
+/* Flatpickr calendar customization */
+.flatpickr-calendar {
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border: none;
+}
+
+.flatpickr-day.selected {
+    background: #4CAF50 !important;
+    border-color: #4CAF50 !important;
+}
+
+.flatpickr-day:hover {
+    background: #E8F5E9 !important;
+    border-color: #A5D6A7 !important;
+}
+
+.flatpickr-day.today {
+    border-color: #4CAF50 !important;
 }
 
 .book-btn {

@@ -238,4 +238,12 @@ public class BookingService {
         Room room = roomRepository.findById(roomId).orElse(null);
         return room != null && "AVAILABLE".equals(room.getStatus());
     }
+
+    public List<Booking> getBookingsByDate(LocalDate date) {
+        return bookingRepository.findByCheckInDate(date);
+    }
+
+    public List<Booking> getBookingsByCustomerPhone(String phone) {
+        return bookingRepository.findByCustomerPhone(phone);
+    }
 }
