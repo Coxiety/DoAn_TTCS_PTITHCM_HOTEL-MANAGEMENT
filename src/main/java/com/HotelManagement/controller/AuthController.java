@@ -36,7 +36,17 @@ public class AuthController
                 session.setAttribute("userId", user.getId());
                 session.setAttribute("userRole", user.getRoleId());
                 
-                return "redirect:/"; // Redirect to home page after successful login
+                // Redirect based on user role
+                if (user.getRoleId() == 1) {
+                    // Admin role (1)
+                    return "redirect:/admin";
+                } else if (user.getRoleId() == 2) {
+                    // Receptionist role (2)
+                    return "redirect:/receptionist";
+                } else {
+                    // Customer (0) or other roles
+                    return "redirect:/";
+                }
             } 
             else 
             {

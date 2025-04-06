@@ -297,25 +297,45 @@
         }
         
         .no-image {
-            display: inline-block;
-            font-style: italic;
-            color: #94a3b8;
-            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #aaa;
+            font-size: 0.8rem;
+        }
+
+        /* Modal scrolling fixes */
+        .modal-overlay {
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+        
+        .modal {
+            max-height: 90vh;
+            overflow-y: auto;
+            margin: 20px auto;
         }
         
         .image-preview {
-            margin-top: 10px;
-            width: 100%;
-            max-width: 300px;
-            border-radius: 8px;
+            max-height: 200px;
             overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
         }
         
         .image-preview img {
-            width: 100%;
-            height: auto;
-            display: block;
+            max-width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+        }
+        
+        .modal-footer {
+            position: sticky;
+            bottom: 0;
+            background-color: white;
+            padding: 15px 0;
+            margin-top: 15px;
+            border-top: 1px solid #e5e5e5;
         }
     </style>
 </body>

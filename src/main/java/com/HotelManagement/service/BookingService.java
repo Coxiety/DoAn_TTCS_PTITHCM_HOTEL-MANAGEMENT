@@ -85,7 +85,8 @@ public class BookingService {
         
         // Validate check-in date
         LocalDateTime checkInDate = LocalDate.parse(bookingRequest.getCheckInDate(), DATE_FORMATTER).atStartOfDay();
-        if (checkInDate.isBefore(LocalDateTime.now())) {
+        // Compare dates only, not time
+        if (checkInDate.toLocalDate().isBefore(LocalDate.now())) {
             LOGGER.warning("Attempt to create booking with past date: " + checkInDate);
             throw new IllegalArgumentException("Check-in date cannot be in the past");
         }
@@ -109,6 +110,12 @@ public class BookingService {
         booking.setCustomer(customer); // Use entity reference
         booking.setCheckInDate(checkInDate);
         booking.setStatus("CONFIRMED");
+        booking.setPaymentStatus("PENDING"); // Set payment status to prevent NULL constraint error
+        
+        // Initialize total amount to zero
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        booking.setTotalAmount(totalAmount); // Set initial amount (will be updated later)
+        
         booking.setUser(user); // Use entity reference
         bookingRepository.save(booking);
         LOGGER.info("Created booking with id: " + booking.getId());
@@ -151,8 +158,16 @@ public class BookingService {
                 room.setStatus("BOOKED");
                 roomRepository.save(room);
                 LOGGER.fine("Updated room status to BOOKED for room: " + room.getRoomNumber());
+                
+                // Add this room's price to the total amount
+                totalAmount = totalAmount.add(roomType.getPrice());
             }
         }
+        
+        // Update the booking with the final total amount
+        booking.setTotalAmount(totalAmount);
+        bookingRepository.save(booking);
+        LOGGER.info("Updated booking with total amount: " + totalAmount);
 
         LOGGER.info("Booking creation completed successfully for booking id: " + booking.getId());
         return booking;
@@ -396,9 +411,10 @@ public class BookingService {
             throw new RuntimeException("Booking must be in CONFIRMED status to check in");
         }
 
-        LocalDateTime now = LocalDateTime.now();
-        if (now.isBefore(booking.getCheckInDate().minusHours(24))) {
-            throw new RuntimeException("Cannot check in more than 24 hours before the scheduled check-in time");
+        // Allow check-in on or after the check-in date, regardless of time
+        LocalDate now = LocalDate.now();
+        if (now.isBefore(booking.getCheckInDate().toLocalDate())) {
+            throw new RuntimeException("Cannot check in before the scheduled check-in date");
         }
 
         return updateBookingStatus(bookingId, "CHECKED_IN");

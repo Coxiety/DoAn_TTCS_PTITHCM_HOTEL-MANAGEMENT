@@ -65,7 +65,7 @@ public class ReceptionistController {
         User user = (User) session.getAttribute("user");
         Integer userRole = (Integer) session.getAttribute("userRole");
         
-        if (user == null || userRole == null || userRole != 1) {
+        if (user == null || userRole == null || userRole != 2) {
             return "redirect:/";
         }
         
@@ -75,6 +75,20 @@ public class ReceptionistController {
         
         List<Room> occupiedRooms = roomService.getOccupiedRooms();
         model.addAttribute("occupiedRooms", occupiedRooms);
+        
+        // Get today's check-ins - use the getTodayCheckIns method
+        List<Booking> todayCheckIns = bookingService.getTodayCheckIns();
+        model.addAttribute("checkins", todayCheckIns);
+        
+        // Create a map of booking IDs to their details for room information
+        if (!todayCheckIns.isEmpty()) {
+            Map<Integer, List<com.HotelManagement.models.BookingDetail>> bookingDetailsMap = new HashMap<>();
+            for (Booking booking : todayCheckIns) {
+                List<com.HotelManagement.models.BookingDetail> details = bookingDetailRepository.findByBookingId(booking.getId());
+                bookingDetailsMap.put(booking.getId(), details);
+            }
+            model.addAttribute("bookingDetailsMap", bookingDetailsMap);
+        }
         
         return "ReceptionistPage";
     }
@@ -118,6 +132,29 @@ public class ReceptionistController {
     }
     
     /**
+     * Search for bookings by phone number
+     */
+    @GetMapping("/search-booking-by-phone")
+    public String searchBookingByPhone(@RequestParam String phone, Model model) {
+        if (phone != null && !phone.trim().isEmpty()) {
+            List<Booking> bookings = bookingService.getBookingsByCustomerPhone(phone);
+            model.addAttribute("bookings", bookings);
+            
+            // Create booking details map for displaying room numbers
+            if (!bookings.isEmpty()) {
+                Map<Integer, List<com.HotelManagement.models.BookingDetail>> bookingDetailsMap = new HashMap<>();
+                for (Booking booking : bookings) {
+                    List<com.HotelManagement.models.BookingDetail> details = bookingDetailRepository.findByBookingId(booking.getId());
+                    bookingDetailsMap.put(booking.getId(), details);
+                }
+                model.addAttribute("bookingDetailsMap", bookingDetailsMap);
+            }
+        }
+        
+        return "fragments/booking-search-results :: results";
+    }
+    
+    /**
      * Show the new booking page for receptionists 
      */
     @GetMapping("/book/{customerId}")
@@ -126,7 +163,7 @@ public class ReceptionistController {
         User user = (User) session.getAttribute("user");
         Integer userRole = (Integer) session.getAttribute("userRole");
         
-        if (user == null || userRole == null || userRole != 1) {
+        if (user == null || userRole == null || userRole != 2) {
             return "redirect:/";
         }
         
@@ -283,5 +320,72 @@ public class ReceptionistController {
         }
         model.addAttribute("bookings", bookings);
         return "ReceptionistDashboard";
+    }
+    
+    /**
+     * Handle booking cancellation by receptionist
+     */
+    @PostMapping("/cancel-booking")
+    public String cancelBooking(@RequestParam Integer bookingId, RedirectAttributes redirectAttributes) {
+        try {
+            // Get the booking to check its status
+            Booking booking = bookingService.getBookingById(bookingId);
+            
+            if (booking == null) {
+                redirectAttributes.addFlashAttribute("error", "Booking not found");
+                return "redirect:/receptionist";
+            }
+            
+            // Can only cancel if status is CONFIRMED
+            if (!"CONFIRMED".equals(booking.getStatus())) {
+                redirectAttributes.addFlashAttribute("error", 
+                    "Cannot cancel booking with status: " + booking.getStatus() + 
+                    ". Only CONFIRMED bookings can be cancelled.");
+                return "redirect:/receptionist";
+            }
+            
+            // Process the cancellation
+            bookingService.cancelBooking(bookingId);
+            
+            redirectAttributes.addFlashAttribute("success", "Booking #" + bookingId + " has been cancelled successfully");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to cancel booking: " + e.getMessage());
+        }
+        
+        return "redirect:/receptionist";
+    }
+    
+    /**
+     * Handle check-in by receptionist
+     */
+    @PostMapping("/check-in")
+    public String checkInBooking(@RequestParam Integer bookingId, RedirectAttributes redirectAttributes) {
+        try {
+            // Process the check-in
+            bookingService.checkIn(bookingId);
+            
+            redirectAttributes.addFlashAttribute("success", "Booking #" + bookingId + " has been checked in successfully");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to check in: " + e.getMessage());
+        }
+        
+        return "redirect:/receptionist";
+    }
+    
+    /**
+     * Handle check-out by receptionist
+     */
+    @PostMapping("/check-out")
+    public String checkOutBooking(@RequestParam Integer bookingId, RedirectAttributes redirectAttributes) {
+        try {
+            // Process the check-out
+            bookingService.checkOut(bookingId);
+            
+            redirectAttributes.addFlashAttribute("success", "Booking #" + bookingId + " has been checked out successfully");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to check out: " + e.getMessage());
+        }
+        
+        return "redirect:/receptionist";
     }
 }

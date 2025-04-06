@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,24 +73,39 @@ public class AdminService {
     }
     
     /**
-     * Save a room type image to the uploads directory
+     * Save a room type image to the img/rooms directory
      */
-    public String saveRoomTypeImage(MultipartFile file) throws IOException {
+    public String saveRoomTypeImage(MultipartFile file, String roomTypeName, Integer roomTypeId) throws IOException {
         // Create directory if it doesn't exist
-        Path uploadPath = Paths.get(UPLOAD_DIR + "roomtypes");
+        Path uploadPath = Paths.get("src/main/resources/static/img/rooms");
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
         
-        // Generate a unique file name
-        String filename = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+        // Generate a filename based on room type
+        String extension = getFileExtension(file.getOriginalFilename());
+        String filename = "roomtype-" + roomTypeId + "-" + roomTypeName.replaceAll("\\s+", "-").toLowerCase() + extension;
         Path filePath = uploadPath.resolve(filename);
         
         // Save the file
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
         
         // Return the relative path
-        return "/uploads/roomtypes/" + filename;
+        return "/img/rooms/" + filename;
+    }
+    
+    /**
+     * Get file extension from filename
+     */
+    private String getFileExtension(String filename) {
+        if (filename == null) {
+            return "";
+        }
+        int lastDotIndex = filename.lastIndexOf(".");
+        if (lastDotIndex == -1) {
+            return ""; // No extension
+        }
+        return filename.substring(lastDotIndex);
     }
     
     /**

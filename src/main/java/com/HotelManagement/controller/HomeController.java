@@ -26,13 +26,13 @@ public class HomeController
         // Check if user is logged in
         Integer userRole = (Integer) session.getAttribute("userRole");
         
-        // If user is logged in as receptionist (role_id = 1), redirect to receptionist page
-        if (userRole != null && userRole == 1) {
+        // If user is logged in as receptionist (role_id = 2), redirect to receptionist page
+        if (userRole != null && userRole == 2) {
             return "redirect:/receptionist";
         }
         
-        // If user is logged in as admin (role_id = 3), redirect to admin page
-        if (userRole != null && userRole == 3) {
+        // If user is logged in as admin (role_id = 1), redirect to admin page
+        if (userRole != null && userRole == 1) {
             return "redirect:/admin";
         }
         
@@ -47,12 +47,12 @@ public class HomeController
         Integer userRole = (Integer) session.getAttribute("userRole");
         
         // If user is logged in as receptionist, redirect to receptionist page
-        if (userRole != null && userRole == 1) {
+        if (userRole != null && userRole == 2) {
             return "redirect:/receptionist";
         }
         
-        // If user is logged in as admin (role_id = 3), redirect to admin page
-        if (userRole != null && userRole == 3) {
+        // If user is logged in as admin (role_id = 1), redirect to admin page
+        if (userRole != null && userRole == 1) {
             return "redirect:/admin";
         }
         
@@ -81,12 +81,12 @@ public class HomeController
         Integer userRole = (Integer) session.getAttribute("userRole");
         
         // If user is logged in as receptionist, redirect to receptionist page
-        if (userRole != null && userRole == 1) {
+        if (userRole != null && userRole == 2) {
             return "redirect:/receptionist";
         }
         
-        // If user is logged in as admin (role_id = 3), redirect to admin page
-        if (userRole != null && userRole == 3) {
+        // If user is logged in as admin (role_id = 1), redirect to admin page
+        if (userRole != null && userRole == 1) {
             return "redirect:/admin";
         }
         
@@ -100,12 +100,12 @@ public class HomeController
         Integer userRole = (Integer) session.getAttribute("userRole");
         
         // If user is logged in as receptionist, redirect to receptionist page
-        if (userRole != null && userRole == 1) {
+        if (userRole != null && userRole == 2) {
             return "redirect:/receptionist";
         }
         
-        // If user is logged in as admin (role_id = 3), redirect to admin page
-        if (userRole != null && userRole == 3) {
+        // If user is logged in as admin (role_id = 1), redirect to admin page
+        if (userRole != null && userRole == 1) {
             return "redirect:/admin";
         }
         

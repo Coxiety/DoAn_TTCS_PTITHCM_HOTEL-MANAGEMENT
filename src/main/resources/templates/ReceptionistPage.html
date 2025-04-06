@@ -10,6 +10,35 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Add these to your existing styles or create a new style block */
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+    </style>
 </head>
 <body>
     <!-- Messages -->
@@ -65,10 +94,17 @@
                                 </td>
                                 <td th:text="${#temporals.format(booking.checkInDate, 'HH:mm')}">14:00</td>
                                 <td>
-                                    <form th:action="@{/receptionist/check-in}" method="post">
-                                        <input type="hidden" name="bookingId" th:value="${booking.id}">
-                                        <button type="submit" class="btn btn-primary">Check In</button>
-                                    </form>
+                                    <div class="action-buttons">
+                                        <form th:action="@{/receptionist/check-in}" method="post">
+                                            <input type="hidden" name="bookingId" th:value="${booking.id}">
+                                            <button type="submit" class="btn btn-primary">Check In</button>
+                                        </form>
+                                        
+                                        <form th:action="@{/receptionist/cancel-booking}" method="post" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                                            <input type="hidden" name="bookingId" th:value="${booking.id}">
+                                            <button type="submit" class="btn btn-danger">Cancel</button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>

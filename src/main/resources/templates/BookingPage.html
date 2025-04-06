@@ -35,7 +35,12 @@
     <section class="rooms-section">
       <!-- Dynamic Room Cards -->
       <div th:each="roomType : ${roomTypes}" class="room-card" th:data-room-type="${roomType.id}">
+        <!-- Debug info to see the actual path value -->
+        <div th:if="${roomType.imagePath != null}" style="display: none;" th:text="${'Image path: ' + roomType.imagePath}"></div>
+        
+        <!-- Updated image div with proper URL handling -->
         <div class="room-image" th:style="${roomType.imagePath != null} ? 'background-image: url(' + @{${roomType.imagePath}} + ')' : 'background-image: url(/img/rooms/default-room.jpg)'"></div>
+        
         <div class="room-details">
           <h2 th:text="${roomType.name}">Room Type Name</h2>
           
@@ -117,12 +122,15 @@
   <!-- Room Detail Modal HTML -->
   <div id="modalOverlayRoomDetail" class="modal-overlay">
     <div class="modal room-detail-modal">
-      <div id="modalHeader" class="modal-header">
-        <span id="closeModalRoomDetail" class="close-button">&times;</span>
-        <h2 id="detailRoomTitle" class="modal-title">Room Details</h2>
-      </div>
+      <span id="closeModalRoomDetail" class="close-button">&times;</span>
       
       <div class="room-detail-content">
+        <!-- Room Image -->
+        <div id="modalRoomImage" class="modal-room-image">
+          <!-- Room title will display over the image -->
+          <h2 id="detailRoomTitle" class="modal-room-title">Room Details</h2>
+        </div>
+        
         <!-- Room Info -->
         <div class="room-info">
           <div class="info-item">
@@ -324,13 +332,18 @@
           currentSelectedCard = card;
           roomTitle.classList.add('selected-room');
           
+          // Get the background image URL from the room card
+          const roomImageDiv = card.querySelector('.room-image');
+          const roomImageStyle = window.getComputedStyle(roomImageDiv).backgroundImage;
+          
           const roomType = {
             name: card.querySelector('h2').textContent,
             capacity: card.querySelector('.meta-item span span').textContent,
             amenities: card.querySelector('.meta-item:nth-child(2) span').textContent,
             description: card.querySelector('.room-description').textContent,
             price: card.querySelector('.room-select').getAttribute('data-room-price'),
-            availableRooms: card.querySelector('.availability-btn span').textContent
+            availableRooms: card.querySelector('.availability-btn span').textContent,
+            imagePath: roomImageStyle
           };
           
           // Update modal content
@@ -338,6 +351,10 @@
           document.getElementById('roomCapacityDetail').textContent = roomType.capacity;
           document.getElementById('roomDescriptionDetail').textContent = roomType.description;
           document.getElementById('roomPriceDetail').textContent = roomType.price;
+          
+          // Set modal room image - using computed style to get the complete URL
+          const modalRoomImage = document.getElementById('modalRoomImage');
+          modalRoomImage.style.backgroundImage = roomType.imagePath;
           
           // Update amenities list
           const amenitiesList = document.getElementById('roomAmenitiesList');

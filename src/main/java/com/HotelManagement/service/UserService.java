@@ -72,8 +72,8 @@ public class UserService {
         
         // Check if this is not the last administrator
         User user = getUserById(id);
-        if (user.getRoleId() == 3) {
-            long adminCount = countUsersByRole(3);
+        if (user.getRoleId() == 1) {
+            long adminCount = countUsersByRole(1);
             if (adminCount <= 1) {
                 throw new RuntimeException("Cannot delete the last administrator account");
             }

@@ -35,9 +35,13 @@
         
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <button id="createUserBtn" class="btn btn-primary">
+            <button id="addUserBtn" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Create New User
             </button>
+            
+            <form th:action="@{/admin/reset-all-passwords}" method="post" style="display: inline-block; margin-left: 10px;" onsubmit="return confirm('Are you sure you want to reset ALL user passwords to &quot;test&quot;?');">
+                <button type="submit" class="btn btn-warning">Reset All Passwords</button>
+            </form>
         </div>
 
         <!-- Users Table -->
@@ -62,9 +66,9 @@
                         <td th:text="${user.email}">john@example.com</td>
                         <td th:text="${user.phone}">123-456-7890</td>
                         <td th:switch="${user.roleId}">
-                            <span th:case="1" class="role-badge role-receptionist">Receptionist</span>
-                            <span th:case="2" class="role-badge role-customer">Customer</span>
-                            <span th:case="3" class="role-badge role-admin">Administrator</span>
+                            <span th:case="1" class="role-badge role-admin">Administrator</span>
+                            <span th:case="2" class="role-badge role-receptionist">Receptionist</span>
+                            <span th:case="0" class="role-badge role-customer">Customer</span>
                         </td>
                         <td class="action-cell">
                             <button th:attr="data-id=${user.id}" class="btn btn-sm btn-secondary edit-user-btn">
@@ -224,7 +228,7 @@
                 $('#usersTable').DataTable();
                 
                 // Create User Modal
-                $('#createUserBtn').on('click', function() {
+                $('#addUserBtn').on('click', function() {
                     $('#createUserModal').fadeIn(300);
                 });
                 

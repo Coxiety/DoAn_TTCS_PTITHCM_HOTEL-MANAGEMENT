@@ -62,8 +62,8 @@
                         <td th:text="${user.email}">john@example.com</td>
                         <td th:text="${user.phone}">123-456-7890</td>
                         <td th:switch="${user.roleId}">
-                            <span th:case="1" class="role-badge role-receptionist">Receptionist</span>
-                            <span th:case="3" class="role-badge role-admin">Administrator</span>
+                            <span th:case="1" class="role-badge role-admin">Administrator</span>
+                            <span th:case="2" class="role-badge role-receptionist">Receptionist</span>
                         </td>
                         <td class="action-cell">
                             <button th:attr="data-id=${user.id}" class="btn btn-sm btn-secondary edit-staff-btn">
@@ -129,8 +129,8 @@
                             <label for="roleId">Role*</label>
                             <select id="roleId" name="roleId" class="form-control" required>
                                 <option value="">Select Role</option>
-                                <option value="1">Receptionist</option>
-                                <option value="3">Administrator</option>
+                                <option value="1">Administrator</option>
+                                <option value="2">Receptionist</option>
                             </select>
                         </div>
                     </div>
@@ -179,8 +179,8 @@
                             <label for="editRoleId">Role*</label>
                             <select id="editRoleId" name="roleId" class="form-control" required>
                                 <option value="">Select Role</option>
-                                <option value="1">Receptionist</option>
-                                <option value="3">Administrator</option>
+                                <option value="1">Administrator</option>
+                                <option value="2">Receptionist</option>
                             </select>
                         </div>
                     </div>

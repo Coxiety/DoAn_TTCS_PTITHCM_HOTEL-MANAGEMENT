@@ -77,13 +77,13 @@ public class AuthService
         newUser.setEmail(email);
         newUser.setFullName(fullName);
         newUser.setPhone(phone);
-        newUser.setRoleId(2); // 2 for customer role
+        newUser.setRoleId(0); // 0 for customer role
         
         // Save the user first to get the ID
         newUser = userRepository.save(newUser);
         
-        // If this is a customer (roleId = 2), create a customer record
-        if (newUser.getRoleId() == 2) {
+        // If this is a customer (roleId = 0), create a customer record
+        if (newUser.getRoleId() == 0) {
             Customer customer = new Customer();
             customer.setFullName(fullName);
             customer.setPhone(phone);

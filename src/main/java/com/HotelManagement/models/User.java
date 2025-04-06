@@ -34,7 +34,4 @@ public class User
     
     @Column(name = "role_id")
     private Integer roleId;
-    
-    @Column(length = 255)
-    private String address;
 }
