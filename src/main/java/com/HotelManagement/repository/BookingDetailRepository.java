@@ -41,11 +41,11 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, In
     @Query("""
         SELECT bd FROM BookingDetail bd 
         WHERE bd.room.id = :roomId 
-        AND bd.booking.status IN ('CONFIRMED', 'CHECKED_IN')
+        AND bd.booking.status IN ('CONFIRMED', 'CHECKED_IN') 
         AND (
-            (bd.booking.checkInDate BETWEEN :startDate AND :endDate)
+            (bd.booking.checkInDate <= :endDate AND bd.booking.checkOutDate >= :startDate)
+            OR (bd.booking.checkInDate BETWEEN :startDate AND :endDate)
             OR (bd.booking.checkOutDate BETWEEN :startDate AND :endDate)
-            OR (bd.booking.checkInDate <= :startDate AND bd.booking.checkOutDate >= :endDate)
         )
     """)
     List<BookingDetail> findConflictingBookings(

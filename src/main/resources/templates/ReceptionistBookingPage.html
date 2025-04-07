@@ -7,12 +7,229 @@
     <link rel="stylesheet" th:href="@{/css/stylesHome.css}">
     <link rel="stylesheet" th:href="@{/css/stylesBooking.css}">
     <link rel="stylesheet" th:href="@{/css/stylesReceptionist.css}">
+    <link rel="stylesheet" th:href="@{/css/stylesReceptionistBooking.css}">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <!-- Flatpickr Date Picker CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Additional fixes for specific styling issues */
+        .room-image {
+            min-height: 240px;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .room-image.standard {
+            background-image: url('/img/rooms/standard.jpg');
+        }
+        
+        .room-image.deluxe {
+            background-image: url('/img/rooms/deluxe.jpg');
+        }
+        
+        .room-image.suite {
+            background-image: url('/img/rooms/suite.jpg');
+        }
+        
+        .room-options {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .availability-btn {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .room-select {
+            padding: 8px 15px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 1rem;
+            color: #333;
+            min-width: 120px;
+        }
+        
+        /* Fix receptionist header */
+        .receptionist-header {
+            background-color: #1a2942;
+            color: white;
+            padding: 15px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .receptionist-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logout-btn {
+            background-color: #e53935;
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background-color: #c62828;
+        }
+        
+        /* Fix main booking area */
+        .receptionist-booking-main {
+            display: flex;
+            gap: 30px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .rooms-section {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .summary-section {
+            flex: 1;
+            position: sticky;
+            top: 100px;
+            align-self: flex-start;
+        }
+        
+        .summary-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        
+        .summary-header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+        }
+        
+        .summary-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 500;
+        }
+        
+        .summary-content {
+            padding: 20px;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .summary-item.total {
+            font-weight: bold;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            font-size: 1.2rem;
+        }
+        
+        /* Complete booking button */
+        .book-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .book-btn i {
+            font-size: 1.2rem;
+        }
+        
+        .book-btn:hover {
+            background-color: #388e3c;
+        }
+        
+        .book-btn:disabled {
+            background-color: #c8e6c9;
+            color: #7cb342;
+            cursor: not-allowed;
+        }
+        
+        /* Date picker styling */
+        .date-picker {
+            margin-bottom: 20px;
+        }
+        
+        .date-picker label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        input[type="text"]#checkInDate {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            color: #333;
+            background-color: white;
+        }
+        
+        /* Responsive fixes */
+        @media (max-width: 768px) {
+            .receptionist-booking-main {
+                flex-direction: column;
+            }
+            
+            .summary-section {
+                position: static;
+                margin-top: 30px;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Messages -->

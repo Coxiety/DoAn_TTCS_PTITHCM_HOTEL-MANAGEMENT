@@ -112,6 +112,15 @@ public class AdminService {
      * Generate a revenue report for a given date range
      */
     public RevenueReportDto getRevenueReport(LocalDate startDate, LocalDate endDate) {
+        // Validate date range
+        if (startDate == null || endDate == null) {
+            throw new IllegalArgumentException("Start date and end date cannot be null");
+        }
+        
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("Start date cannot be after end date");
+        }
+        
         // Find all completed bookings in the date range
         List<Booking> bookings = bookingRepository.findAll().stream()
                 .filter(b -> "COMPLETED".equals(b.getStatus()))

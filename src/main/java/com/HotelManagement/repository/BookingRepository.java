@@ -14,7 +14,7 @@ import com.HotelManagement.models.Booking;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Integer> {
     
-    @Query("SELECT b FROM Booking b WHERE DATE(b.checkInDate) = :date")
+    @Query("SELECT b FROM Booking b WHERE CAST(b.checkInDate AS date) = :date")
     List<Booking> findByCheckInDate(@Param("date") LocalDate date);
     
     @Query("SELECT b FROM Booking b JOIN b.customer c WHERE c.phone = :phone")
@@ -29,13 +29,13 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     @Query("SELECT b FROM Booking b WHERE b.checkInDate BETWEEN :startDate AND :endDate")
     List<Booking> findByCheckInDateBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
     
-    @Query("SELECT b FROM Booking b WHERE b.status = 'CONFIRMED' AND CAST(b.checkInDate AS date) = CAST(CURRENT_TIMESTAMP AS date)")
+    @Query("SELECT b FROM Booking b WHERE b.status IN ('CONFIRMED', 'CHECKED_IN') AND CAST(b.checkInDate AS date) = CAST(CURRENT_TIMESTAMP AS date)")
     List<Booking> findTodayCheckIns();
     
     @Query("SELECT b FROM Booking b WHERE b.paymentStatus = :paymentStatus")
     List<Booking> findByPaymentStatus(@Param("paymentStatus") String paymentStatus);
     
-    @Query("SELECT COUNT(b) FROM Booking b WHERE b.status = :status AND DATE(b.checkInDate) = :date")
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.status = :status AND CAST(b.checkInDate AS date) = :date")
     Long countByStatusAndDate(@Param("status") String status, @Param("date") LocalDate date);
 
     @Query("SELECT b FROM Booking b WHERE b.checkInDate > :date AND b.status = :status")

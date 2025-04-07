@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -66,13 +65,20 @@ public class ReceptionistController {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     
     @GetMapping("")
-    public String dashboard(Model model, HttpSession session) {
+    public String dashboard(Model model, HttpSession session, 
+                           @RequestParam(required = false) Boolean bookingSuccess,
+                           @RequestParam(required = false) Integer bookingId) {
         // Check if user is logged in and has receptionist role
         User user = (User) session.getAttribute("user");
         Integer userRole = (Integer) session.getAttribute("userRole");
         
         if (user == null || userRole == null || userRole != 2) {
             return "redirect:/";
+        }
+        
+        // Add success message for booking if applicable
+        if (bookingSuccess != null && bookingSuccess && bookingId != null) {
+            model.addAttribute("success", "Booking #" + bookingId + " has been created successfully!");
         }
         
         // Get all rooms for availability display
@@ -143,6 +149,11 @@ public class ReceptionistController {
     @GetMapping("/searchBookingByPhone")
     public String searchBookingByPhone(@RequestParam String phone, Model model) {
         try {
+            if (phone == null || phone.trim().isEmpty()) {
+                model.addAttribute("error", "Phone number cannot be empty");
+                return "receptionist/booking-search-results";
+            }
+            
             List<Booking> bookings = bookingService.getBookingsByCustomerPhone(phone);
             model.addAttribute("bookings", bookings);
             model.addAttribute("searchType", "phone");
@@ -171,7 +182,13 @@ public class ReceptionistController {
         Customer selectedCustomer;
         try {
             selectedCustomer = customerService.getCustomerById(customerId);
+            if (selectedCustomer == null) {
+                throw new RuntimeException("Customer not found");
+            }
+            // Add selected customer to the model
+            model.addAttribute("selectedCustomer", selectedCustomer);
         } catch (Exception e) {
+            model.addAttribute("error", "Customer not found: " + e.getMessage());
             return "redirect:/receptionist";
         }
         
@@ -216,40 +233,30 @@ public class ReceptionistController {
             
             // If roomType has amenities string, parse it and add to amenities list
             if (roomType.getAmenities() != null && !roomType.getAmenities().isEmpty()) {
-                String[] amenityList = roomType.getAmenities().split(",");
-                for (String amenity : amenityList) {
-                    String icon = getIconForAmenity(amenity.trim());
-                    amenities.add(new RoomTypeAmenityDto(icon, amenity.trim()));
+                String[] amenityArray = roomType.getAmenities().split(",");
+                for (String amenity : amenityArray) {
+                    String trimmedAmenity = amenity.trim();
+                    RoomTypeAmenityDto amenityDto = new RoomTypeAmenityDto();
+                    amenityDto.setName(trimmedAmenity);
+                    amenityDto.setIcon(getIconForAmenity(trimmedAmenity));
+                    amenities.add(amenityDto);
                 }
-            } else {
-                // Default amenities if none are specified
-                amenities.add(new RoomTypeAmenityDto("fas fa-wifi", "Free Wi-Fi"));
-                amenities.add(new RoomTypeAmenityDto("fas fa-tv", "Flat-screen TV"));
-                amenities.add(new RoomTypeAmenityDto("fas fa-snowflake", "Air Conditioning"));
-                amenities.add(new RoomTypeAmenityDto("fas fa-shower", "Private Bathroom"));
             }
             
             dto.setAmenityList(amenities);
             roomTypeDtos.add(dto);
         }
         
-        // Create JSON representation of room types for JavaScript
+        model.addAttribute("roomTypes", roomTypeDtos);
+        
+        // Convert room types to JSON for JavaScript use
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            String roomTypesJson = objectMapper.writeValueAsString(
-                roomTypeDtos.stream()
-                    .collect(Collectors.toMap(
-                        dto -> dto.getName().toLowerCase(), 
-                        dto -> dto
-                    ))
-            );
+            String roomTypesJson = objectMapper.writeValueAsString(roomTypeDtos);
             model.addAttribute("roomTypesJson", roomTypesJson);
         } catch (Exception e) {
-            model.addAttribute("roomTypesJson", "{}");
+            e.printStackTrace();
         }
-        
-        model.addAttribute("selectedCustomer", selectedCustomer);
-        model.addAttribute("roomTypes", roomTypeDtos);
         
         return "ReceptionistBookingPage";
     }

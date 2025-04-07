@@ -50,6 +50,9 @@ public class BookingService {
     @Autowired
     private RoomTypeRepository roomTypeRepository;
 
+    @Autowired
+    private RoomService roomService;
+
     public List<Booking> getAllBookings() {
         LOGGER.info("Fetching all bookings");
         return bookingRepository.findAll();
@@ -131,9 +134,9 @@ public class BookingService {
             
             LOGGER.fine("Processing room selection for room type: " + roomType.getName() + ", count: " + roomSelection.getCount());
             
-            // Get available rooms of this type
-            List<Room> availableRooms = roomRepository.findByStatus("AVAILABLE").stream()
-                    .filter(r -> r.getRoomType().getId().equals(roomType.getId()))
+            // Get available rooms of this type using RoomService
+            List<Room> availableRooms = roomService.getAvailableRoomsByType(roomType.getId())
+                    .stream()
                     .limit(roomSelection.getCount())
                     .collect(Collectors.toList());
             
@@ -182,15 +185,6 @@ public class BookingService {
         // In a real application, you would filter based on availability
         // For now we'll just return room types with sufficient capacity
         return allRoomTypes;
-    }
-
-    public List<Room> getAvailableRoomsByType(Integer roomTypeId) {
-        // Get all available rooms by type
-        List<Room> availableRooms = roomRepository.findByStatus("AVAILABLE").stream()
-                .filter(r -> r.getRoomType().getId().equals(roomTypeId))
-                .collect(Collectors.toList());
-        
-        return availableRooms;
     }
 
     public Booking processBookingUpdate(Integer bookingId, List<Integer> roomIds, User user) {
@@ -282,10 +276,16 @@ public class BookingService {
     }
     
     public boolean isRoomAvailable(Integer roomId, LocalDate checkInDate, LocalDate checkOutDate) {
-        // In a real application, you would check if the room is available for the specified date range
-        // For now, we'll just return true if the room status is "AVAILABLE"
-        Room room = roomRepository.findById(roomId).orElse(null);
-        return room != null && "AVAILABLE".equals(room.getStatus());
+        // Use RoomService to check availability
+        if (checkInDate == null || checkOutDate == null) {
+            throw new IllegalArgumentException("Check-in and check-out dates cannot be null");
+        }
+        
+        return roomService.isRoomAvailableForDateRange(
+            roomId,
+            checkInDate.atStartOfDay(),
+            checkOutDate.atTime(23, 59, 59)
+        );
     }
 
     public List<Booking> getBookingsByDate(LocalDate date) {

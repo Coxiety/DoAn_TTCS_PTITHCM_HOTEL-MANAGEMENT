@@ -34,6 +34,9 @@ public class PaymentService {
     @Autowired
     private BookingDetailRepository bookingDetailRepository;
     
+    @Autowired
+    private BookingService bookingService;
+    
     /**
      * Creates a payment record for a booking and updates the booking status
      */
@@ -47,8 +50,10 @@ public class PaymentService {
         payment.setStatus("COMPLETED");
         paymentRepository.save(payment);
         
-        // Update booking
-        booking.setPaymentStatus("PAID");
+        // Update booking payment status using BookingService
+        bookingService.updatePaymentStatus(bookingId, "PAID");
+        
+        // Update payment method
         booking.setPaymentMethod(paymentMethod);
         bookingRepository.save(booking);
         
