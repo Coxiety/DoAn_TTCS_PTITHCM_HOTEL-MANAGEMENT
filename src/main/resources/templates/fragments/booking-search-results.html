@@ -29,7 +29,7 @@
                             <span th:each="detail, detailStat : ${bookingDetailsMap.get(booking.id)}" 
                                   th:text="${detailStat.count > 1 ? ', ' + detail.room.roomNumber : detail.room.roomNumber}">101</span>
                         </td>
-                        <td th:text="${#temporals.format(booking.checkInDate, 'yyyy-MM-dd HH:mm')}">2025-01-01 14:00</td>
+                        <td th:text="${#temporals.format(booking.checkInDate, 'dd-MM-yyyy HH:mm')}">01-01-2025 14:00</td>
                         <td th:text="${booking.status}">CONFIRMED</td>
                         <td>
                             <div class="action-buttons">
@@ -42,7 +42,16 @@
                                 <!-- Check-out button for checked-in bookings -->
                                 <form th:if="${booking.status == 'CHECKED_IN'}" th:action="@{/receptionist/check-out}" method="post">
                                     <input type="hidden" name="bookingId" th:value="${booking.id}">
-                                    <button type="submit" class="btn btn-secondary">Check Out</button>
+                                    <div class="checkout-form">
+                                        <select name="paymentMethod" class="form-control" required>
+                                            <option value="">Select payment method</option>
+                                            <option value="CASH">Cash</option>
+                                            <option value="CREDIT_CARD">Credit Card</option>
+                                            <option value="DEBIT_CARD">Debit Card</option>
+                                            <option value="BANK_TRANSFER">Bank Transfer</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-secondary">Check Out</button>
+                                    </div>
                                 </form>
                                 
                                 <!-- Cancel button for confirmed bookings -->
@@ -138,6 +147,18 @@
             
             .btn:hover {
                 opacity: 0.9;
+            }
+            
+            .checkout-form {
+                display: flex;
+                gap: 5px;
+            }
+            
+            .checkout-form select {
+                padding: 5px;
+                border-radius: 4px;
+                border: 1px solid #ddd;
+                font-size: 0.9rem;
             }
         </style>
     </div>

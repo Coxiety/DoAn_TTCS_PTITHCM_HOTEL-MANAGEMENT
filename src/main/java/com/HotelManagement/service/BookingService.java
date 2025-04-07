@@ -33,7 +33,7 @@ import com.HotelManagement.repository.RoomTypeRepository;
 public class BookingService {
 
     private static final Logger LOGGER = Logger.getLogger(BookingService.class.getName());
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     @Autowired
     private BookingRepository bookingRepository;
@@ -483,5 +483,27 @@ public class BookingService {
 
     public List<Booking> getTodayCheckIns() {
         return bookingRepository.findTodayCheckIns();
+    }
+
+    public List<Booking> getAllActiveBookings() {
+        return bookingRepository.findAllActiveBookings();
+    }
+
+    @Transactional
+    public Booking updatePaymentStatus(Integer bookingId, String newPaymentStatus) {
+        if (newPaymentStatus == null || newPaymentStatus.trim().isEmpty()) {
+            throw new IllegalArgumentException("Payment status cannot be empty");
+        }
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Validate payment status
+        if (!List.of("PENDING", "PAID", "REFUNDED", "CANCELLED").contains(newPaymentStatus)) {
+            throw new IllegalArgumentException("Invalid payment status: " + newPaymentStatus);
+        }
+
+        booking.setPaymentStatus(newPaymentStatus);
+        return bookingRepository.save(booking);
     }
 }

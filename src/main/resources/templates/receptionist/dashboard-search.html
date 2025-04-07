@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receptionist Dashboard</title>
+</head>
+<body>
+    <div class="card mb-4" th:fragment="searchPanel">
+        <div class="card-header">
+            <h5 class="card-title">Search Bookings</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Search by phone number -->
+                <div class="col-md-6">
+                    <form th:action="@{/receptionist/searchBookingByPhone}" method="get">
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" 
+                                  placeholder="Customer Phone Number" 
+                                  name="phone" required
+                                  pattern="[0-9]+"
+                                  title="Please enter only numbers">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Search by booking ID -->
+                <div class="col-md-6">
+                    <form th:action="@{/receptionist/bookingDetails}" method="get">
+                        <div class="input-group mb-3">
+                            <input type="number" class="form-control" 
+                                  placeholder="Booking ID" 
+                                  name="bookingId" required>
+                            <button class="btn btn-secondary" type="submit">
+                                <i class="fas fa-info-circle"></i> View Details
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Alert messages -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

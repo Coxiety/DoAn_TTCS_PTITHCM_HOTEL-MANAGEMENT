@@ -249,7 +249,7 @@ FROM booking b
 JOIN customer c ON b.customer_id = c.id
 LEFT JOIN users u ON b.user_id = u.id
 WHERE CAST(b.check_in_date AS DATE) = CAST(GETDATE() AS DATE)
-  AND b.status IN ('CONFIRMED', 'CHECKED_IN');
+  AND b.status = 'CONFIRMED';
 GO
 /****** Object:  Table [dbo].[booking_detail]    Script Date: 06/04/2025 2:05:40 CH ******/
 SET ANSI_NULLS ON
@@ -808,7 +808,7 @@ BEGIN
     FROM booking b
     JOIN customer c ON b.customer_id = c.id
     WHERE CAST(b.check_in_date AS DATE) = CAST(GETDATE() AS DATE)
-      AND b.status IN ('CONFIRMED', 'CHECKED_IN')
+      AND b.status = 'CONFIRMED'
     ORDER BY b.check_in_date;
 END;
 GO

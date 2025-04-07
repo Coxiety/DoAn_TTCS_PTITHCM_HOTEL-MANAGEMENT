@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import com.HotelManagement.dto.BookingRequestDto;
 import com.HotelManagement.dto.RoomTypeAmenityDto;
 import com.HotelManagement.dto.RoomTypeDto;
 import com.HotelManagement.models.Booking;
+import com.HotelManagement.models.BookingDetail;
 import com.HotelManagement.models.Customer;
 import com.HotelManagement.models.Room;
 import com.HotelManagement.models.RoomType;
@@ -33,6 +35,7 @@ import com.HotelManagement.repository.BookingDetailRepository;
 import com.HotelManagement.repository.RoomTypeRepository;
 import com.HotelManagement.service.BookingService;
 import com.HotelManagement.service.CustomerService;
+import com.HotelManagement.service.PaymentService;
 import com.HotelManagement.service.RoomService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -57,7 +60,10 @@ public class ReceptionistController {
     @Autowired
     private RoomTypeRepository roomTypeRepository;
     
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    @Autowired
+    private PaymentService paymentService;
+    
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     
     @GetMapping("")
     public String dashboard(Model model, HttpSession session) {
@@ -134,24 +140,18 @@ public class ReceptionistController {
     /**
      * Search for bookings by phone number
      */
-    @GetMapping("/search-booking-by-phone")
+    @GetMapping("/searchBookingByPhone")
     public String searchBookingByPhone(@RequestParam String phone, Model model) {
-        if (phone != null && !phone.trim().isEmpty()) {
+        try {
             List<Booking> bookings = bookingService.getBookingsByCustomerPhone(phone);
             model.addAttribute("bookings", bookings);
-            
-            // Create booking details map for displaying room numbers
-            if (!bookings.isEmpty()) {
-                Map<Integer, List<com.HotelManagement.models.BookingDetail>> bookingDetailsMap = new HashMap<>();
-                for (Booking booking : bookings) {
-                    List<com.HotelManagement.models.BookingDetail> details = bookingDetailRepository.findByBookingId(booking.getId());
-                    bookingDetailsMap.put(booking.getId(), details);
-                }
-                model.addAttribute("bookingDetailsMap", bookingDetailsMap);
-            }
+            model.addAttribute("searchType", "phone");
+            model.addAttribute("searchValue", phone);
+            return "receptionist/booking-search-results";
+        } catch (Exception e) {
+            model.addAttribute("error", "Error searching for bookings: " + e.getMessage());
+            return "receptionist/dashboard";
         }
-        
-        return "fragments/booking-search-results :: results";
     }
     
     /**
@@ -373,19 +373,83 @@ public class ReceptionistController {
     }
     
     /**
-     * Handle check-out by receptionist
+     * Handle check-out by receptionist from the occupied rooms view
      */
     @PostMapping("/check-out")
-    public String checkOutBooking(@RequestParam Integer bookingId, RedirectAttributes redirectAttributes) {
+    public String checkOutRoom(@RequestParam Integer roomId, @RequestParam String paymentMethod, RedirectAttributes redirectAttributes) {
         try {
-            // Process the check-out
+            // Find the active booking for this room
+            Optional<BookingDetail> detailOpt = bookingDetailRepository.findByRoomIdAndStatus(roomId, "CHECKED_IN");
+            if (!detailOpt.isPresent()) {
+                redirectAttributes.addFlashAttribute("error", "No active booking found for this room");
+                return "redirect:/receptionist";
+            }
+            
+            // Get the booking
+            BookingDetail detail = detailOpt.get();
+            Integer bookingId = detail.getBooking().getId();
+            
+            // Create payment record with the selected payment method
+            paymentService.createPayment(bookingId, detail.getBooking().getTotalAmount(), paymentMethod);
+            
+            // Check out the booking
             bookingService.checkOut(bookingId);
             
-            redirectAttributes.addFlashAttribute("success", "Booking #" + bookingId + " has been checked out successfully");
+            redirectAttributes.addFlashAttribute("success", "Room has been checked out successfully and payment recorded");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Failed to check out: " + e.getMessage());
         }
         
         return "redirect:/receptionist";
+    }
+    
+    /**
+     * Handle check-out by receptionist from booking details with payment method selection
+     */
+    @PostMapping("/checkout-booking")
+    public String checkOutBooking(@RequestParam Integer bookingId, @RequestParam String paymentMethod, RedirectAttributes redirectAttributes) {
+        try {
+            // Get the booking
+            Booking booking = bookingService.getBookingById(bookingId);
+            
+            if (booking == null) {
+                redirectAttributes.addFlashAttribute("error", "Booking not found");
+                return "redirect:/receptionist";
+            }
+            
+            // Can only check out if status is CHECKED_IN
+            if (!"CHECKED_IN".equals(booking.getStatus())) {
+                redirectAttributes.addFlashAttribute("error", 
+                    "Cannot check out booking with status: " + booking.getStatus() + 
+                    ". Only CHECKED_IN bookings can be checked out.");
+                return "redirect:/receptionist";
+            }
+            
+            // Create payment record
+            paymentService.createPayment(bookingId, booking.getTotalAmount(), paymentMethod);
+            
+            // Check out the booking
+            bookingService.checkOut(bookingId);
+            
+            redirectAttributes.addFlashAttribute("success", "Booking #" + bookingId + " has been checked out successfully and payment recorded");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to check out: " + e.getMessage());
+        }
+        
+        return "redirect:/receptionist";
+    }
+    
+    @PostMapping("/updatePaymentStatus")
+    public String updatePaymentStatus(@RequestParam Integer bookingId, 
+                                     @RequestParam String paymentStatus,
+                                     RedirectAttributes redirectAttributes) {
+        try {
+            Booking booking = bookingService.updatePaymentStatus(bookingId, paymentStatus);
+            redirectAttributes.addFlashAttribute("success", 
+                "Payment status updated to " + paymentStatus + " for booking #" + bookingId);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/receptionist/dashboard";
     }
 }

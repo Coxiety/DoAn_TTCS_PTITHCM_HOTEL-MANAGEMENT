@@ -28,6 +28,7 @@ import com.HotelManagement.models.Room;
 import com.HotelManagement.models.RoomType;
 import com.HotelManagement.models.User;
 import com.HotelManagement.service.AdminService;
+import com.HotelManagement.service.PaymentService;
 import com.HotelManagement.service.RoomService;
 import com.HotelManagement.service.UserService;
 
@@ -45,6 +46,9 @@ public class AdminController {
     
     @Autowired
     private RoomService roomService;
+    
+    @Autowired
+    private PaymentService paymentService;
     
     // Simple password encoder for security
     private String encodePassword(String password) {
@@ -733,8 +737,9 @@ public class AdminController {
         LocalDate start = startDate != null ? LocalDate.parse(startDate) : LocalDate.now().minusMonths(1);
         LocalDate end = endDate != null ? LocalDate.parse(endDate) : LocalDate.now();
         
-        // For a real app, generate a real revenue report
-        // For now, just send empty model attributes
+        // Get revenue report data
+        Map<String, Object> reportData = paymentService.getRevenueReportData(start, end);
+        model.addAttribute("reportData", reportData);
         model.addAttribute("startDate", start.format(DateTimeFormatter.ISO_DATE));
         model.addAttribute("endDate", end.format(DateTimeFormatter.ISO_DATE));
         

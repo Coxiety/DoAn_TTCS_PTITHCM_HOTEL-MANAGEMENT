@@ -38,6 +38,113 @@
         .btn:hover {
             opacity: 0.9;
         }
+        
+        /* Custom Modal Overlay Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+        }
+        
+        .modal-overlay .modal-content {
+            background-color: #fff;
+            width: 450px;
+            max-width: 90%;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        
+        .modal-overlay .modal-header {
+            background-color: #1a2942;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+        
+        .modal-overlay .modal-header h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 500;
+        }
+        
+        .modal-overlay .close-modal {
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .modal-overlay .close-modal:hover {
+            color: #f44336;
+        }
+        
+        .modal-overlay .modal-body {
+            padding: 25px;
+        }
+        
+        .modal-overlay .checkout-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .modal-overlay .checkout-info h3 {
+            margin-top: 0;
+            color: #1a2942;
+            font-size: 18px;
+        }
+        
+        .modal-overlay .checkout-info p {
+            color: #333;
+        }
+        
+        .modal-overlay .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .modal-overlay label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .modal-overlay select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: white;
+        }
+        
+        .modal-overlay .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+        
+        .modal-overlay .form-actions button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -76,7 +183,7 @@
                                 <th>Booking ID</th>
                                 <th>Customer</th>
                                 <th>Room</th>
-                                <th>Check-In Time</th>
+                                <th>Check-In Date</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -92,7 +199,7 @@
                                     <span th:each="detail, detailStat : ${bookingDetailsMap.get(booking.id)}" 
                                           th:text="${detailStat.count > 1 ? ', ' + detail.room.roomNumber : detail.room.roomNumber}">101</span>
                                 </td>
-                                <td th:text="${#temporals.format(booking.checkInDate, 'HH:mm')}">14:00</td>
+                                <td th:text="${#temporals.format(booking.checkInDate, 'dd-MM-yyyy')}">07-04-2025</td>
                                 <td>
                                     <div class="action-buttons">
                                         <form th:action="@{/receptionist/check-in}" method="post">
@@ -142,14 +249,50 @@
                                     <span>Check-in Date</span>
                                 </td>
                                 <td>
-                                    <form th:action="@{/receptionist/check-out}" method="post">
-                                        <input type="hidden" name="roomId" th:value="${room.id}">
-                                        <button type="submit" class="btn btn-primary">Check Out</button>
-                                    </form>
+                                    <button class="btn btn-primary checkout-room-btn" 
+                                            th:data-room-id="${room.id}"
+                                            th:data-room-number="${room.roomNumber}">
+                                        Check Out
+                                    </button>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+                
+                <!-- Custom Modal Overlay for room checkout -->
+                <div id="modalOverlayCheckout" class="modal-overlay">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Room Check-out</h2>
+                            <span id="closeModalCheckout" class="close-modal">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                            <div class="checkout-info">
+                                <h3>Room: <span id="modalRoomNumber"></span></h3>
+                                <p style="color: #333;">Please select payment method to complete check-out.</p>
+                            </div>
+                            <form id="checkoutRoomForm" th:action="@{/receptionist/check-out}" method="post">
+                                <input type="hidden" id="modalRoomId" name="roomId">
+                                
+                                <div class="form-group">
+                                    <label for="paymentMethod">Payment Method</label>
+                                    <select id="paymentMethod" name="paymentMethod" required>
+                                        <option value="">Select payment method</option>
+                                        <option value="CASH">Cash</option>
+                                        <option value="QR_BANKING">QR Banking</option>
+                                        <option value="CREDIT_CARD">Credit Card</option>
+                                        <option value="DEBIT_CARD">Debit Card</option>
+                                        <option value="BANK_TRANSFER">Bank Transfer</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">Confirm Payment & Check-out</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -322,6 +465,47 @@
             // Initial load
             if (document.getElementById('customerListBody')) {
                 loadCustomerList();
+            }
+            
+            // Room checkout modal handling
+            const checkoutRoomBtns = document.querySelectorAll('.checkout-room-btn');
+            const modalOverlayCheckout = document.getElementById('modalOverlayCheckout');
+            const closeModalCheckout = document.getElementById('closeModalCheckout');
+            
+            if (checkoutRoomBtns.length > 0) {
+                checkoutRoomBtns.forEach(button => {
+                    button.addEventListener('click', function() {
+                        // Get the room ID and number from data attributes
+                        const roomId = this.getAttribute('data-room-id');
+                        const roomNumber = this.getAttribute('data-room-number');
+                        
+                        // Set values in the modal
+                        document.getElementById('modalRoomId').value = roomId;
+                        document.getElementById('modalRoomNumber').textContent = roomNumber;
+                        
+                        // Show the modal
+                        modalOverlayCheckout.classList.add('show');
+                    });
+                });
+                
+                // Close the modal when clicking the close button
+                closeModalCheckout.addEventListener('click', function() {
+                    modalOverlayCheckout.classList.remove('show');
+                });
+                
+                // Close the modal when clicking outside the modal content
+                modalOverlayCheckout.addEventListener('click', function(e) {
+                    if (e.target === modalOverlayCheckout) {
+                        modalOverlayCheckout.classList.remove('show');
+                    }
+                });
+                
+                // Also close with escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && modalOverlayCheckout.classList.contains('show')) {
+                        modalOverlayCheckout.classList.remove('show');
+                    }
+                });
             }
         });
     </script>

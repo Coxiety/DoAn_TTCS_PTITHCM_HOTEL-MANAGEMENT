@@ -181,7 +181,7 @@ public class AdminService {
         report.setBookingsByRoomType(bookingsByRoomType);
         
         // Set daily breakdown
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         List<DailyRevenueDto> dailyData = new ArrayList<>();
         
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {

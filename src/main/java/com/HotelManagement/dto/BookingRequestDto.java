@@ -4,13 +4,12 @@ import java.util.List;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 public class BookingRequestDto {
     
     @NotBlank(message = "Check-in date is required")
-    @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "Check-in date must be in format YYYY-MM-DD")
+    @Pattern(regexp = "\\d{2}-\\d{2}-\\d{4}", message = "Check-in date must be in format DD-MM-YYYY")
     private String checkInDate;
     
     private Integer customerId;

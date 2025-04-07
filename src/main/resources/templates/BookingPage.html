@@ -205,11 +205,11 @@
       // Initialize Flatpickr date picker
       const today = new Date();
       const checkInPicker = flatpickr("#checkInDate", {
-        dateFormat: "Y-m-d",
-        minDate: today,
-        disableMobile: "true",
+        minDate: "today",
+        dateFormat: "d-m-Y",
+        altFormat: "d-m-Y",
         altInput: true,
-        altFormat: "F j, Y",
+        disableMobile: "true",
         defaultDate: today,
         onChange: function(selectedDates, dateStr, instance) {
           calculateTotals();

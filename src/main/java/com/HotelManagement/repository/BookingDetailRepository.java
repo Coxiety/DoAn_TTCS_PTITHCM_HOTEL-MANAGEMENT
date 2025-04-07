@@ -16,6 +16,9 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, In
     List<BookingDetail> findByBookingId(Integer bookingId);
     Optional<BookingDetail> findByRoomIdAndStatus(Integer roomId, String status);
     
+    @Query("SELECT bd FROM BookingDetail bd WHERE bd.booking.id IN :bookingIds")
+    List<BookingDetail> findByBookingIdIn(@Param("bookingIds") List<Integer> bookingIds);
+    
     @Query("SELECT bd FROM BookingDetail bd WHERE bd.booking.status = :status")
     List<BookingDetail> findByBookingStatus(@Param("status") String status);
     
