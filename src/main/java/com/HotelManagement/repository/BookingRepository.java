@@ -29,7 +29,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     @Query("SELECT b FROM Booking b WHERE b.checkInDate BETWEEN :startDate AND :endDate")
     List<Booking> findByCheckInDateBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
     
-    @Query("SELECT b FROM Booking b WHERE b.status IN ('CONFIRMED', 'CHECKED_IN') AND CAST(b.checkInDate AS date) = CAST(CURRENT_TIMESTAMP AS date)")
+    @Query("SELECT b FROM Booking b WHERE b.status = 'CONFIRMED' AND CAST(b.checkInDate AS date) = CAST(CURRENT_TIMESTAMP AS date)")
     List<Booking> findTodayCheckIns();
     
     @Query("SELECT b FROM Booking b WHERE b.paymentStatus = :paymentStatus")

@@ -32,8 +32,6 @@ import com.HotelManagement.repository.UserRepository;
 @Service
 public class AdminService {
     
-    private final String UPLOAD_DIR = "src/main/resources/static/uploads/";
-    
     @Autowired
     private BookingRepository bookingRepository;
     

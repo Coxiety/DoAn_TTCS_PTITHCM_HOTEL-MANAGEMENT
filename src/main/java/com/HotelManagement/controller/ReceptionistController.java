@@ -1,7 +1,6 @@
 package com.HotelManagement.controller;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,8 +60,6 @@ public class ReceptionistController {
     
     @Autowired
     private PaymentService paymentService;
-    
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     
     @GetMapping("")
     public String dashboard(Model model, HttpSession session, 
@@ -451,7 +448,7 @@ public class ReceptionistController {
                                      @RequestParam String paymentStatus,
                                      RedirectAttributes redirectAttributes) {
         try {
-            Booking booking = bookingService.updatePaymentStatus(bookingId, paymentStatus);
+            bookingService.updatePaymentStatus(bookingId, paymentStatus);
             redirectAttributes.addFlashAttribute("success", 
                 "Payment status updated to " + paymentStatus + " for booking #" + bookingId);
         } catch (Exception e) {

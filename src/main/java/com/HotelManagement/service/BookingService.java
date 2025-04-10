@@ -63,7 +63,7 @@ public class BookingService {
             LOGGER.warning("Attempted to get booking with null id");
             return null;
         }
-        LOGGER.info("Fetching booking with id: " + id);
+        LOGGER.info(String.format("Fetching booking with id: %d", id));
         return bookingRepository.findById(id).orElse(null);
     }
 
@@ -73,10 +73,10 @@ public class BookingService {
             return new ArrayList<>();
         }
         
-        LOGGER.info("Fetching booking details for booking id: " + bookingId);
+        LOGGER.info(String.format("Fetching booking details for booking id: %d", bookingId));
         Booking booking = bookingRepository.findById(bookingId).orElse(null);
         if (booking == null) {
-            LOGGER.warning("No booking found with id: " + bookingId);
+            LOGGER.warning(String.format("No booking found with id: %d", bookingId));
             return new ArrayList<>();
         }
         return bookingDetailRepository.findByBookingId(bookingId);
@@ -84,23 +84,23 @@ public class BookingService {
 
     @Transactional
     public Booking createBooking(BookingRequestDto bookingRequest, User user) {
-        LOGGER.info("Creating new booking for user: " + user.getUsername());
+        LOGGER.info(String.format("Creating new booking for user: %s", user.getUsername()));
         
         // Validate check-in date
         LocalDateTime checkInDate = LocalDate.parse(bookingRequest.getCheckInDate(), DATE_FORMATTER).atStartOfDay();
         // Compare dates only, not time
         if (checkInDate.toLocalDate().isBefore(LocalDate.now())) {
-            LOGGER.warning("Attempt to create booking with past date: " + checkInDate);
+            LOGGER.warning(String.format("Attempt to create booking with past date: %s", checkInDate));
             throw new IllegalArgumentException("Check-in date cannot be in the past");
         }
 
         // Create or get customer
         Customer customer;
         if (bookingRequest.getCustomerId() != null) {
-            LOGGER.fine("Using existing customer with id: " + bookingRequest.getCustomerId());
+            LOGGER.fine(String.format("Using existing customer with id: %d", bookingRequest.getCustomerId()));
             customer = customerRepository.findById(bookingRequest.getCustomerId()).orElse(null);
             if (customer == null) {
-                LOGGER.warning("Customer not found with id: " + bookingRequest.getCustomerId());
+                LOGGER.warning(String.format("Customer not found with id: %d", bookingRequest.getCustomerId()));
                 throw new RuntimeException("Customer not found");
             }
         } else {
@@ -121,18 +121,18 @@ public class BookingService {
         
         booking.setUser(user); // Use entity reference
         bookingRepository.save(booking);
-        LOGGER.info("Created booking with id: " + booking.getId());
+        LOGGER.info(String.format("Created booking with id: %d", booking.getId()));
 
         // Create booking details for each selected room
         for (RoomSelectionDto roomSelection : bookingRequest.getRoomSelections()) {
             // Get rooms by room type
             RoomType roomType = roomTypeRepository.findById(roomSelection.getRoomTypeId()).orElse(null);
             if (roomType == null) {
-                LOGGER.warning("Room type not found with id: " + roomSelection.getRoomTypeId());
+                LOGGER.warning(String.format("Room type not found with id: %d", roomSelection.getRoomTypeId()));
                 throw new RuntimeException("Room type not found");
             }
             
-            LOGGER.fine("Processing room selection for room type: " + roomType.getName() + ", count: " + roomSelection.getCount());
+            LOGGER.fine(String.format("Processing room selection for room type: %s, count: %d", roomType.getName(), roomSelection.getCount()));
             
             // Get available rooms of this type using RoomService
             List<Room> availableRooms = roomService.getAvailableRoomsByType(roomType.getId())
@@ -141,8 +141,8 @@ public class BookingService {
                     .collect(Collectors.toList());
             
             if (availableRooms.size() < roomSelection.getCount()) {
-                LOGGER.warning("Not enough rooms available of type: " + roomType.getName() + 
-                              ". Requested: " + roomSelection.getCount() + ", Available: " + availableRooms.size());
+                LOGGER.warning(String.format("Not enough rooms available of type: %s. Requested: %d, Available: %d", 
+                              roomType.getName(), roomSelection.getCount(), availableRooms.size()));
                 throw new RuntimeException("Not enough rooms available of type: " + roomType.getName());
             }
             
@@ -155,12 +155,12 @@ public class BookingService {
                 detail.setCheckInDate(checkInDate);
                 detail.setStatus("BOOKED");
                 bookingDetailRepository.save(detail);
-                LOGGER.fine("Created booking detail for room: " + room.getRoomNumber());
+                LOGGER.fine(String.format("Created booking detail for room: %s", room.getRoomNumber()));
 
                 // Update room status to BOOKED
                 room.setStatus("BOOKED");
                 roomRepository.save(room);
-                LOGGER.fine("Updated room status to BOOKED for room: " + room.getRoomNumber());
+                LOGGER.fine(String.format("Updated room status to BOOKED for room: %s", room.getRoomNumber()));
                 
                 // Add this room's price to the total amount
                 totalAmount = totalAmount.add(roomType.getPrice());
@@ -170,9 +170,9 @@ public class BookingService {
         // Update the booking with the final total amount
         booking.setTotalAmount(totalAmount);
         bookingRepository.save(booking);
-        LOGGER.info("Updated booking with total amount: " + totalAmount);
+        LOGGER.info(String.format("Updated booking with total amount: %s", totalAmount));
 
-        LOGGER.info("Booking creation completed successfully for booking id: " + booking.getId());
+        LOGGER.info(String.format("Booking creation completed successfully for booking id: %d", booking.getId()));
         return booking;
     }
 
@@ -293,7 +293,7 @@ public class BookingService {
             LOGGER.warning("Attempted to get bookings with null date");
             throw new IllegalArgumentException("Date cannot be null");
         }
-        LOGGER.info("Fetching bookings for date: " + date);
+        LOGGER.info(String.format("Fetching bookings for date: %s", date));
         return bookingRepository.findByCheckInDate(date);
     }
 
@@ -304,12 +304,12 @@ public class BookingService {
         }
         
         if (startDate.isAfter(endDate)) {
-            LOGGER.warning("Attempted to get bookings with invalid date range: " + 
-                          startDate + " to " + endDate);
+            LOGGER.warning(String.format("Attempted to get bookings with invalid date range: %s to %s", 
+                          startDate, endDate));
             throw new IllegalArgumentException("Start date cannot be after end date");
         }
         
-        LOGGER.info("Fetching bookings for date range: " + startDate + " to " + endDate);
+        LOGGER.info(String.format("Fetching bookings for date range: %s to %s", startDate, endDate));
         return bookingRepository.findByCheckInDateBetween(startDate, endDate);
     }
 
@@ -318,7 +318,7 @@ public class BookingService {
             LOGGER.warning("Attempted to get bookings with null or empty phone");
             throw new IllegalArgumentException("Phone number cannot be empty");
         }
-        LOGGER.info("Fetching bookings for customer phone: " + phone);
+        LOGGER.info(String.format("Fetching bookings for customer phone: %s", phone));
         return bookingRepository.findByCustomerPhone(phone);
     }
 
@@ -381,19 +381,19 @@ public class BookingService {
         switch (currentStatus) {
             case "CONFIRMED":
                 if (!newStatus.equals("CHECKED_IN") && !newStatus.equals("CANCELLED")) {
-                    throw new IllegalStateException("Invalid status transition from CONFIRMED to " + newStatus);
+                    throw new IllegalStateException(String.format("Invalid status transition from CONFIRMED to %s", newStatus));
                 }
                 break;
             case "CHECKED_IN":
                 if (!newStatus.equals("CHECKED_OUT")) {
-                    throw new IllegalStateException("Invalid status transition from CHECKED_IN to " + newStatus);
+                    throw new IllegalStateException(String.format("Invalid status transition from CHECKED_IN to %s", newStatus));
                 }
                 break;
             case "CHECKED_OUT":
             case "CANCELLED":
-                throw new IllegalStateException("Cannot change status from " + currentStatus);
+                throw new IllegalStateException(String.format("Cannot change status from %s", currentStatus));
             default:
-                throw new IllegalStateException("Invalid current status: " + currentStatus);
+                throw new IllegalStateException(String.format("Invalid current status: %s", currentStatus));
         }
     }
 
@@ -500,7 +500,7 @@ public class BookingService {
 
         // Validate payment status
         if (!List.of("PENDING", "PAID", "REFUNDED", "CANCELLED").contains(newPaymentStatus)) {
-            throw new IllegalArgumentException("Invalid payment status: " + newPaymentStatus);
+            throw new IllegalArgumentException(String.format("Invalid payment status: %s", newPaymentStatus));
         }
 
         booking.setPaymentStatus(newPaymentStatus);

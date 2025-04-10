@@ -17,7 +17,10 @@
 </head>
 <body>
     <!-- Messages -->
-    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+    <div th:if="${error}" class="alert alert-error">
+        <span th:text="${error}"></span>
+        <span th:if="${errorCode}" class="error-code" th:text="${errorCode}"></span>
+    </div>
     <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
 
     <!-- Include Universal Header -->
@@ -105,30 +108,35 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="name">Name*</label>
-                            <input type="text" id="name" name="name" class="form-control" required>
+                            <input type="text" id="name" name="name" class="form-control" required 
+                                   th:value="${roomTypeForm?.name}">
                         </div>
                         <div class="form-group">
                             <label for="capacity">Capacity* (persons)</label>
-                            <input type="number" id="capacity" name="capacity" class="form-control" min="1" required>
+                            <input type="number" id="capacity" name="capacity" class="form-control" min="1" required 
+                                   th:value="${roomTypeForm?.capacity}">
                         </div>
                         <div class="form-group">
                             <label for="price">Price* ($)</label>
-                            <input type="number" id="price" name="price" class="form-control" step="0.01" min="0" required>
+                            <input type="number" id="price" name="price" class="form-control" step="0.01" min="0" required 
+                                   th:value="${roomTypeForm?.price}">
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="description">Description*</label>
-                        <textarea id="description" name="description" class="form-control" rows="3" required></textarea>
+                        <textarea id="description" name="description" class="form-control" rows="3" required 
+                                  th:text="${roomTypeForm?.description}"></textarea>
                     </div>
                     <div class="form-group">
                         <label for="amenities">Amenities* (comma separated)</label>
-                        <textarea id="amenities" name="amenities" class="form-control" rows="3" required></textarea>
+                        <textarea id="amenities" name="amenities" class="form-control" rows="3" required 
+                                  th:text="${roomTypeForm?.amenities}"></textarea>
                         <small class="form-text">E.g., WiFi, TV, Air Conditioning, Mini Bar</small>
                     </div>
                     <div class="form-group">
                         <label for="image">Room Type Image</label>
-                        <input type="file" id="image" name="image" class="form-control" accept="image/*">
-                        <small class="form-text">Optional. Maximum size: 5MB</small>
+                        <input type="file" id="image" name="image" class="form-control" accept="image/jpeg,image/png">
+                        <small class="form-text">Optional. Maximum size: 5MB. Only JPG or PNG formats allowed.</small>
                     </div>
                     <div class="form-group">
                         <label>Preview:</label>

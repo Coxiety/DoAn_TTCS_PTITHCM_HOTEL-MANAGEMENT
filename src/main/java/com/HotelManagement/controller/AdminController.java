@@ -1,5 +1,6 @@
 package com.HotelManagement.controller;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -31,6 +32,8 @@ import com.HotelManagement.service.AdminService;
 import com.HotelManagement.service.PaymentService;
 import com.HotelManagement.service.RoomService;
 import com.HotelManagement.service.UserService;
+import com.HotelManagement.validation.RoomTypeValidationError;
+import com.HotelManagement.validation.RoomTypeValidationException;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -141,7 +144,7 @@ public class AdminController {
             
             userService.saveUser(newUser);
             redirectAttributes.addFlashAttribute("success", "Staff member created successfully!");
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to create staff member: " + e.getMessage());
         }
         
@@ -215,16 +218,16 @@ public class AdminController {
             user.setPhone(phone);
             user.setEmail(email);
             // Only update role if not editing self or not changing from admin
-            if (!currentUser.getId().equals(id) || (currentUser.getId().equals(id) && user.getRoleId() == 1 && roleId == 1)) {
+            if (!currentUser.getId().equals(id) || (currentUser.getId().equals(id) && user.getRoleId().equals(1) && roleId.equals(1))) {
                 user.setRoleId(roleId);
-            } else if (user.getRoleId() != roleId) {
+            } else if (!user.getRoleId().equals(roleId)) {
                 // If trying to change own role from admin, show warning but keep admin role
                 redirectAttributes.addFlashAttribute("warning", "You cannot change your own admin role. Your admin privileges have been maintained.");
             }
             
             userService.saveUser(user);
             redirectAttributes.addFlashAttribute("success", "Staff member updated successfully!");
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to update staff member: " + e.getMessage());
         }
         
@@ -260,7 +263,7 @@ public class AdminController {
             
             userService.deleteUser(id);
             redirectAttributes.addFlashAttribute("success", "Staff member deleted successfully!");
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to delete staff member: " + e.getMessage());
         }
         
@@ -334,7 +337,7 @@ public class AdminController {
             
             userService.saveUser(newUser);
             redirectAttributes.addFlashAttribute("success", "User created successfully!");
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to create user: " + e.getMessage());
         }
         
@@ -413,7 +416,7 @@ public class AdminController {
             
             userService.saveUser(user);
             redirectAttributes.addFlashAttribute("success", "User updated successfully!");
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to update user: " + e.getMessage());
         }
         
@@ -449,7 +452,7 @@ public class AdminController {
             
             userService.deleteUser(id);
             redirectAttributes.addFlashAttribute("success", "User deleted successfully!");
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to delete user: " + e.getMessage());
         }
         
@@ -510,7 +513,7 @@ public class AdminController {
             
             roomService.saveRoom(newRoom);
             redirectAttributes.addFlashAttribute("success", "Room created successfully!");
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to create room: " + e.getMessage());
         }
         
@@ -552,7 +555,7 @@ public class AdminController {
             
             roomService.saveRoom(room);
             redirectAttributes.addFlashAttribute("success", "Room updated successfully!");
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to update room: " + e.getMessage());
         }
         
@@ -573,7 +576,7 @@ public class AdminController {
             
             roomService.deleteRoom(id);
             redirectAttributes.addFlashAttribute("success", "Room deleted successfully!");
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to delete room: " + e.getMessage());
         }
         
@@ -616,9 +619,12 @@ public class AdminController {
             RedirectAttributes redirectAttributes) {
         
         try {
-            // Validate price
-            if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
-                throw new RuntimeException("Price must be greater than zero");
+            // Validate image format if provided
+            if (image != null && !image.isEmpty()) {
+                String contentType = image.getContentType();
+                if (!"image/jpeg".equals(contentType) && !"image/png".equals(contentType)) {
+                    throw new RoomTypeValidationException(RoomTypeValidationError.INVALID_IMAGE_FORMAT);
+                }
             }
             
             RoomType newRoomType = new RoomType();
@@ -640,8 +646,19 @@ public class AdminController {
             }
             
             redirectAttributes.addFlashAttribute("success", "Room type created successfully!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Failed to create room type: " + e.getMessage());
+        } catch (RoomTypeValidationException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorCode", e.getError().name());
+            // Add the invalid input back to the form
+            redirectAttributes.addFlashAttribute("roomTypeForm", Map.of(
+                "name", name,
+                "description", description,
+                "capacity", capacity,
+                "price", price,
+                "amenities", amenities
+            ));
+        } catch (IOException e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to upload image: " + e.getMessage());
         }
         
         return "redirect:/admin/roomtypes";
@@ -683,8 +700,10 @@ public class AdminController {
             
             roomService.saveRoomType(roomType);
             redirectAttributes.addFlashAttribute("success", "Room type updated successfully!");
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to update room type: " + e.getMessage());
+        } catch (IOException e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to upload image: " + e.getMessage());
         }
         
         return "redirect:/admin/roomtypes";
@@ -709,7 +728,7 @@ public class AdminController {
             
             roomService.deleteRoomType(id);
             redirectAttributes.addFlashAttribute("success", "Room type deleted successfully!");
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to delete room type: " + e.getMessage());
         }
         
@@ -777,7 +796,7 @@ public class AdminController {
             }
             
             redirectAttributes.addFlashAttribute("success", "Successfully reset " + count + " user passwords to 'test'");
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to reset passwords: " + e.getMessage());
         }
         
