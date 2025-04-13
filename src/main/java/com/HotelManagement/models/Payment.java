@@ -51,7 +51,6 @@ public class Payment {
         this.booking = booking;
         this.amount = amount;
         this.paymentMethod = paymentMethod;
-        this.paymentDate = LocalDateTime.now();
         this.status = "COMPLETED";
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();

@@ -153,13 +153,14 @@
                     <th>Customer</th>
                     <th>Room</th>
                     <th>Check-In Time</th>
+                    <th>Check-Out Date</th>
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <tr th:if="${bookings.empty}">
-                    <td colspan="6" class="no-bookings">No check-ins scheduled for today</td>
+                    <td colspan="7" class="no-bookings">No check-ins scheduled for today</td>
                 </tr>
                 <tr th:each="booking : ${bookings}">
                     <td th:text="${booking.id}">123</td>
@@ -175,6 +176,7 @@
                         </div>
                     </td>
                     <td th:text="${#temporals.format(booking.checkInDate, 'HH:mm')}">14:00</td>
+                    <td th:text="${#temporals.format(booking.checkOutDate, 'dd-MM-yyyy')}">08-04-2025</td>
                     <td>
                         <span class="status-badge" 
                               th:classappend="${'status-' + #strings.toLowerCase(booking.status)}"

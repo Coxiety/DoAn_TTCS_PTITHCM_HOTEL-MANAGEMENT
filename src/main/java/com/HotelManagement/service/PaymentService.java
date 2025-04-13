@@ -48,6 +48,7 @@ public class PaymentService {
         // Create payment
         Payment payment = new Payment(booking, amount, paymentMethod);
         payment.setStatus("COMPLETED");
+        payment.setPaymentDate(LocalDateTime.now());
         paymentRepository.save(payment);
         
         // Update booking payment status using BookingService

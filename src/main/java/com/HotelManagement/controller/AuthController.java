@@ -37,14 +37,11 @@ public class AuthController
                 session.setAttribute("userRole", user.getRoleId());
                 
                 // Redirect based on user role
-                switch (user.getRoleId()) {
-                    case 1: // Admin role
-                        return "redirect:/admin";
-                    case 2: // Receptionist role
-                        return "redirect:/receptionist";
-                    default: // Customer (0) or other roles
-                        return "redirect:/";
-                }
+                return switch (user.getRoleId()) {
+                    case 1 -> "redirect:/admin"; // Admin role
+                    case 2 -> "redirect:/receptionist"; // Receptionist role
+                    default -> "redirect:/"; // Customer (0) or other roles
+                };
             } 
             else 
             {

@@ -116,4 +116,8 @@ public class BookingDetailService {
         return bookingDetailRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking detail not found"));
     }
+
+    public BookingDetail saveBookingDetail(BookingDetail bookingDetail) {
+        return bookingDetailRepository.save(bookingDetail);
+    }
 } 

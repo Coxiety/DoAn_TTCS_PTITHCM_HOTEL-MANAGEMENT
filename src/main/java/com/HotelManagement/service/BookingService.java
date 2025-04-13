@@ -88,10 +88,17 @@ public class BookingService {
         
         // Validate check-in date
         LocalDateTime checkInDate = LocalDate.parse(bookingRequest.getCheckInDate(), DATE_FORMATTER).atStartOfDay();
+        LocalDateTime checkOutDate = LocalDate.parse(bookingRequest.getCheckOutDate(), DATE_FORMATTER).atStartOfDay();
+        
         // Compare dates only, not time
         if (checkInDate.toLocalDate().isBefore(LocalDate.now())) {
             LOGGER.warning(String.format("Attempt to create booking with past date: %s", checkInDate));
             throw new IllegalArgumentException("Check-in date cannot be in the past");
+        }
+        
+        if (checkOutDate.isBefore(checkInDate)) {
+            LOGGER.warning(String.format("Check-out date %s is before check-in date %s", checkOutDate, checkInDate));
+            throw new IllegalArgumentException("Check-out date cannot be before check-in date");
         }
 
         // Create or get customer
@@ -110,16 +117,17 @@ public class BookingService {
 
         // Create booking
         Booking booking = new Booking();
-        booking.setCustomer(customer); // Use entity reference
+        booking.setCustomer(customer);
         booking.setCheckInDate(checkInDate);
+        booking.setCheckOutDate(checkOutDate);
         booking.setStatus("CONFIRMED");
-        booking.setPaymentStatus("PENDING"); // Set payment status to prevent NULL constraint error
+        booking.setPaymentStatus("PENDING");
         
         // Initialize total amount to zero
         BigDecimal totalAmount = BigDecimal.ZERO;
-        booking.setTotalAmount(totalAmount); // Set initial amount (will be updated later)
+        booking.setTotalAmount(totalAmount);
         
-        booking.setUser(user); // Use entity reference
+        booking.setUser(user);
         bookingRepository.save(booking);
         LOGGER.info(String.format("Created booking with id: %d", booking.getId()));
 
@@ -149,10 +157,11 @@ public class BookingService {
             // Create booking details for each available room
             for (Room room : availableRooms) {
                 BookingDetail detail = new BookingDetail();
-                detail.setBooking(booking); // Use entity reference
-                detail.setRoom(room); // Use entity reference
-                detail.setPrice(roomType.getPrice()); // Use room type price
+                detail.setBooking(booking);
+                detail.setRoom(room);
+                detail.setPrice(roomType.getPrice());
                 detail.setCheckInDate(checkInDate);
+                detail.setCheckOutDate(checkOutDate);
                 detail.setStatus("BOOKED");
                 bookingDetailRepository.save(detail);
                 LOGGER.fine(String.format("Created booking detail for room: %s", room.getRoomNumber()));
@@ -225,7 +234,8 @@ public class BookingService {
                     detail.setBooking(booking);
                     detail.setRoom(room);
                     detail.setPrice(room.getRoomType().getPrice());
-                    detail.setCheckInDate(LocalDateTime.now());
+                    detail.setCheckInDate(booking.getCheckInDate());
+                    detail.setCheckOutDate(booking.getCheckOutDate());
                     detail.setStatus("BOOKED");
                     bookingDetailRepository.save(detail);
                     
@@ -416,6 +426,14 @@ public class BookingService {
         if (now.isBefore(booking.getCheckInDate().toLocalDate())) {
             throw new RuntimeException("Cannot check in before the scheduled check-in date");
         }
+        
+        // Make sure all booking details have the correct checkout date from the booking
+        List<BookingDetail> details = bookingDetailRepository.findByBookingId(bookingId);
+        for (BookingDetail detail : details) {
+            // Update the checkout date to match the booking's checkout date
+            detail.setCheckOutDate(booking.getCheckOutDate());
+            bookingDetailRepository.save(detail);
+        }
 
         return updateBookingStatus(bookingId, "CHECKED_IN");
     }
@@ -428,7 +446,10 @@ public class BookingService {
         if (!booking.getStatus().equals("CHECKED_IN")) {
             throw new RuntimeException("Booking must be in CHECKED_IN status to check out");
         }
-
+        
+        // Do NOT modify the checkout date - it represents the planned checkout date
+        // The actual checkout time will be recorded in the payment record
+        
         return updateBookingStatus(bookingId, "CHECKED_OUT");
     }
 
@@ -482,7 +503,10 @@ public class BookingService {
     }
 
     public List<Booking> getTodayCheckIns() {
-        return bookingRepository.findTodayCheckIns();
+        LocalDate today = LocalDate.now();
+        return bookingRepository.findByStatus("CONFIRMED").stream()
+                .filter(booking -> booking.getCheckInDate().toLocalDate().equals(today))
+                .collect(Collectors.toList());
     }
 
     public List<Booking> getAllActiveBookings() {
@@ -505,5 +529,16 @@ public class BookingService {
 
         booking.setPaymentStatus(newPaymentStatus);
         return bookingRepository.save(booking);
+    }
+
+    // Get all room types
+    public List<RoomType> getAllRoomTypes() {
+        return roomTypeRepository.findAll();
+    }
+    
+    // Get count of available rooms for a specific room type
+    public int getAvailableRoomCountByType(Integer roomTypeId) {
+        // Count rooms of this type that are AVAILABLE
+        return roomRepository.findByRoomTypeIdAndStatus(roomTypeId, "AVAILABLE").size();
     }
 }

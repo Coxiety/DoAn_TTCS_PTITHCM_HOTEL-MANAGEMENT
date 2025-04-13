@@ -6,7 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -43,6 +46,8 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/receptionist")
 public class ReceptionistController {
 
+    private static final Logger logger = LoggerFactory.getLogger(ReceptionistController.class);
+
     @Autowired
     private BookingService bookingService;
     
@@ -69,37 +74,80 @@ public class ReceptionistController {
         User user = (User) session.getAttribute("user");
         Integer userRole = (Integer) session.getAttribute("userRole");
         
+        logger.debug("Dashboard accessed - User: {}, Role: {}", user, userRole);
+        
         if (user == null || userRole == null || userRole != 2) {
+            logger.warn("Unauthorized access attempt to receptionist dashboard - User: {}, Role: {}", user, userRole);
             return "redirect:/";
         }
         
-        // Add success message for booking if applicable
-        if (bookingSuccess != null && bookingSuccess && bookingId != null) {
-            model.addAttribute("success", "Booking #" + bookingId + " has been created successfully!");
-        }
-        
-        // Get all rooms for availability display
-        List<Room> availableRooms = roomService.getAvailableRooms();
-        model.addAttribute("availableRooms", availableRooms);
-        
-        List<Room> occupiedRooms = roomService.getOccupiedRooms();
-        model.addAttribute("occupiedRooms", occupiedRooms);
-        
-        // Get today's check-ins - use the getTodayCheckIns method
-        List<Booking> todayCheckIns = bookingService.getTodayCheckIns();
-        model.addAttribute("checkins", todayCheckIns);
-        
-        // Create a map of booking IDs to their details for room information
-        if (!todayCheckIns.isEmpty()) {
-            Map<Integer, List<com.HotelManagement.models.BookingDetail>> bookingDetailsMap = new HashMap<>();
-            for (Booking booking : todayCheckIns) {
-                List<com.HotelManagement.models.BookingDetail> details = bookingDetailRepository.findByBookingId(booking.getId());
-                bookingDetailsMap.put(booking.getId(), details);
+        try {
+            // Add success message for booking if applicable
+            if (bookingSuccess != null && bookingSuccess && bookingId != null) {
+                model.addAttribute("success", "Booking #" + bookingId + " has been created successfully!");
             }
-            model.addAttribute("bookingDetailsMap", bookingDetailsMap);
+            
+            // Get all rooms for availability display
+            List<Room> availableRooms = roomService.getAvailableRooms();
+            logger.debug("Available rooms count: {}", availableRooms.size());
+            model.addAttribute("availableRooms", availableRooms);
+            
+            // Get occupied rooms and their booking details
+            List<Room> occupiedRooms = roomService.getOccupiedRooms();
+            logger.debug("Occupied rooms count: {}", occupiedRooms.size());
+            Map<Integer, BookingDetail> roomBookingDetails = new HashMap<>();
+            Map<Integer, Booking> roomBookings = new HashMap<>();
+            
+            // Maps to group rooms by booking
+            Map<Integer, List<Room>> roomsByBooking = new HashMap<>();
+            Map<Integer, Booking> bookingsMap = new HashMap<>();
+            
+            for (Room room : occupiedRooms) {
+                Optional<BookingDetail> bookingDetail = bookingDetailRepository.findByRoomIdAndStatus(room.getId(), "CHECKED_IN");
+                if (bookingDetail.isPresent()) {
+                    BookingDetail detail = bookingDetail.get();
+                    roomBookingDetails.put(room.getId(), detail);
+                    
+                    // Also store the booking object to access check-in and check-out dates
+                    Booking booking = detail.getBooking();
+                    roomBookings.put(room.getId(), booking);
+                    
+                    // Group rooms by booking ID
+                    Integer roomBookingId = booking.getId();
+                    if (!roomsByBooking.containsKey(roomBookingId)) {
+                        roomsByBooking.put(roomBookingId, new ArrayList<>());
+                        bookingsMap.put(roomBookingId, booking);
+                    }
+                    roomsByBooking.get(roomBookingId).add(room);
+                }
+            }
+            
+            model.addAttribute("occupiedRooms", occupiedRooms);
+            model.addAttribute("roomBookingDetails", roomBookingDetails);
+            model.addAttribute("roomBookings", roomBookings);
+            model.addAttribute("roomsByBooking", roomsByBooking);
+            model.addAttribute("bookingsMap", bookingsMap);
+            
+            // Get today's check-ins
+            List<Booking> todayCheckIns = bookingService.getTodayCheckIns();
+            logger.debug("Today's check-ins count: {}", todayCheckIns.size());
+            model.addAttribute("checkins", todayCheckIns);
+            
+            // Create a map of booking IDs to their details for room information
+            if (!todayCheckIns.isEmpty()) {
+                Map<Integer, List<BookingDetail>> bookingDetailsMap = new HashMap<>();
+                for (Booking booking : todayCheckIns) {
+                    List<BookingDetail> details = bookingDetailRepository.findByBookingId(booking.getId());
+                    bookingDetailsMap.put(booking.getId(), details);
+                }
+                model.addAttribute("bookingDetailsMap", bookingDetailsMap);
+            }
+            
+            return "ReceptionistPage";
+        } catch (Exception e) {
+            logger.error("Error in dashboard method", e);
+            throw e;
         }
-        
-        return "ReceptionistPage";
     }
     
     @GetMapping("/get-all-customers")
@@ -304,15 +352,7 @@ public class ReceptionistController {
         }
     }
 
-    @GetMapping("/receptionist")
-    public String showDashboard(Model model) {
-        // Get today's bookings
-        List<Booking> todayBookings = bookingService.getBookingsByDate(LocalDate.now());
-        model.addAttribute("bookings", todayBookings);
-        return "ReceptionistDashboard";
-    }
-    
-    @GetMapping("/receptionist/search")
+    @GetMapping("/search")
     public String searchBookings(@RequestParam(required = false) String phone, Model model) {
         List<Booking> bookings;
         if (phone != null && !phone.trim().isEmpty()) {
@@ -382,24 +422,40 @@ public class ReceptionistController {
     @PostMapping("/check-out")
     public String checkOutRoom(@RequestParam Integer roomId, @RequestParam String paymentMethod, RedirectAttributes redirectAttributes) {
         try {
-            // Find the active booking for this room
+            // Find the active booking detail for this room
             Optional<BookingDetail> detailOpt = bookingDetailRepository.findByRoomIdAndStatus(roomId, "CHECKED_IN");
             if (!detailOpt.isPresent()) {
                 redirectAttributes.addFlashAttribute("error", "No active booking found for this room");
                 return "redirect:/receptionist";
             }
             
-            // Get the booking
+            // Get the booking detail and booking ID
             BookingDetail detail = detailOpt.get();
-            Integer bookingId = detail.getBooking().getId();
+            Booking booking = detail.getBooking();
+            Integer bookingId = booking.getId();
             
-            // Create payment record with the selected payment method
-            paymentService.createPayment(bookingId, detail.getBooking().getTotalAmount(), paymentMethod);
+            // Check if there are other rooms in this booking
+            List<BookingDetail> allBookingDetails = bookingDetailRepository.findByBookingId(bookingId);
             
-            // Check out the booking
+            // Verify all rooms in the booking are checked in
+            boolean allCheckedIn = allBookingDetails.stream()
+                    .allMatch(bd -> "CHECKED_IN".equals(bd.getStatus()));
+                    
+            if (!allCheckedIn) {
+                redirectAttributes.addFlashAttribute("error", 
+                    "Cannot check out. Some rooms in this booking aren't checked in.");
+                return "redirect:/receptionist";
+            }
+            
+            // Create payment record for the total booking amount
+            paymentService.createPayment(bookingId, booking.getTotalAmount(), paymentMethod);
+            
+            // Check out the entire booking
             bookingService.checkOut(bookingId);
             
-            redirectAttributes.addFlashAttribute("success", "Room has been checked out successfully and payment recorded");
+            redirectAttributes.addFlashAttribute("success", 
+                "Booking #" + bookingId + " has been checked out successfully. " +
+                "Total payment: $" + booking.getTotalAmount() + " (" + allBookingDetails.size() + " rooms)");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Failed to check out: " + e.getMessage());
         }
@@ -454,6 +510,46 @@ public class ReceptionistController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/receptionist/dashboard";
+        return "redirect:/receptionist";
+    }
+
+    /**
+     * Get booking details by room ID for the checkout modal
+     */
+    @GetMapping("/booking-by-room")
+    @ResponseBody
+    public Map<String, Object> getBookingByRoom(@RequestParam Integer roomId) {
+        // Find the booking detail for this room
+        Optional<BookingDetail> detailOpt = bookingDetailRepository.findByRoomIdAndStatus(roomId, "CHECKED_IN");
+        if (!detailOpt.isPresent()) {
+            throw new RuntimeException("No active booking found for this room");
+        }
+        
+        // Get the booking and all its details
+        BookingDetail detail = detailOpt.get();
+        Booking booking = detail.getBooking();
+        List<BookingDetail> allDetails = bookingDetailRepository.findByBookingId(booking.getId());
+        
+        // Convert to simple room objects for the response
+        List<Map<String, Object>> rooms = allDetails.stream()
+            .map(bd -> {
+                Map<String, Object> room = new HashMap<>();
+                room.put("id", bd.getRoom().getId());
+                room.put("roomNumber", bd.getRoom().getRoomNumber());
+                room.put("price", bd.getPrice());
+                return room;
+            })
+            .collect(Collectors.toList());
+        
+        // Build the response
+        Map<String, Object> response = new HashMap<>();
+        response.put("bookingId", booking.getId());
+        response.put("totalAmount", booking.getTotalAmount());
+        response.put("rooms", rooms);
+        response.put("checkInDate", booking.getCheckInDate());
+        response.put("checkOutDate", booking.getCheckOutDate());
+        response.put("customerName", booking.getCustomer().getFullName());
+        
+        return response;
     }
 }

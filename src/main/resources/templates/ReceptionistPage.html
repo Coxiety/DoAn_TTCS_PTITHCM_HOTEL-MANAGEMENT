@@ -184,12 +184,13 @@
                                 <th>Customer</th>
                                 <th>Room</th>
                                 <th>Check-In Date</th>
+                                <th>Check-Out Date</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:if="${checkins == null || checkins.empty}">
-                                <td colspan="5">No check-ins scheduled for today</td>
+                                <td colspan="6">No check-ins scheduled for today</td>
                             </tr>
                             <tr th:each="booking : ${checkins}" th:if="${checkins != null}">
                                 <td th:text="${booking.id}">123</td>
@@ -199,7 +200,8 @@
                                     <span th:each="detail, detailStat : ${bookingDetailsMap.get(booking.id)}" 
                                           th:text="${detailStat.count > 1 ? ', ' + detail.room.roomNumber : detail.room.roomNumber}">101</span>
                                 </td>
-                                <td th:text="${#temporals.format(booking.checkInDate, 'dd-MM-yyyy')}">07-04-2025</td>
+                                <td th:text="${#temporals.format(booking.checkInDate, 'dd-MM-yyyy HH:mm')}">07-04-2025</td>
+                                <td th:text="${#temporals.format(booking.checkOutDate, 'dd-MM-yyyy')}">08-04-2025</td>
                                 <td>
                                     <div class="action-buttons">
                                         <form th:action="@{/receptionist/check-in}" method="post">
@@ -221,37 +223,44 @@
 
             <!-- Check-Out Tab -->
             <div class="tab-pane" id="check-out">
-                <h2>Occupied Rooms</h2>
+                <h2>Occupied Rooms by Booking</h2>
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th>Room</th>
-                                <th>Type</th>
+                                <th>Booking ID</th>
                                 <th>Customer</th>
+                                <th>Rooms</th>
                                 <th>Check-In Date</th>
+                                <th>Check-Out Date</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:if="${occupiedRooms == null || occupiedRooms.empty}">
-                                <td colspan="5">No rooms are currently occupied</td>
+                            <tr th:if="${roomsByBooking == null || roomsByBooking.empty}">
+                                <td colspan="6">No bookings are currently active</td>
                             </tr>
-                            <tr th:each="room : ${occupiedRooms}" th:if="${occupiedRooms != null}">
-                                <td th:text="${room.roomNumber}">101</td>
-                                <td th:text="${room.roomType.name}">Standard</td>
+                            <tr th:each="entry : ${roomsByBooking}" th:if="${roomsByBooking != null}">
+                                <td th:text="${entry.key}">1023</td>
+                                <td th:text="${bookingsMap.get(entry.key).customer.fullName}">Customer Name</td>
                                 <td>
-                                    <!-- This will need to be handled in the controller -->
-                                    <span>Customer Name</span>
+                                    <span th:each="room, roomStat : ${entry.value}">
+                                        <span th:text="${room.roomNumber}">101</span>
+                                        <span th:if="${!roomStat.last}">, </span>
+                                    </span>
+                                </td>
+                                <td th:text="${#temporals.format(bookingsMap.get(entry.key).checkInDate, 'dd-MM-yyyy')}">
+                                    14-04-2025
+                                </td>
+                                <td th:text="${#temporals.format(bookingsMap.get(entry.key).checkOutDate, 'dd-MM-yyyy')}">
+                                    15-04-2025
                                 </td>
                                 <td>
-                                    <!-- This will need to be handled in the controller -->
-                                    <span>Check-in Date</span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-primary checkout-room-btn" 
-                                            th:data-room-id="${room.id}"
-                                            th:data-room-number="${room.roomNumber}">
+                                    <button class="btn btn-primary checkout-booking-btn" 
+                                            th:data-booking-id="${entry.key}"
+                                            th:data-room-id="${entry.value[0].id}"
+                                            th:data-room-count="${entry.value.size()}"
+                                            th:data-customer-name="${bookingsMap.get(entry.key).customer.fullName}">
                                         Check Out
                                     </button>
                                 </td>
@@ -260,20 +269,26 @@
                     </table>
                 </div>
                 
-                <!-- Custom Modal Overlay for room checkout -->
+                <!-- Custom Modal Overlay for booking checkout -->
                 <div id="modalOverlayCheckout" class="modal-overlay">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h2>Room Check-out</h2>
+                            <h2>Booking Check-out</h2>
                             <span id="closeModalCheckout" class="close-modal">&times;</span>
                         </div>
                         <div class="modal-body">
                             <div class="checkout-info">
-                                <h3>Room: <span id="modalRoomNumber"></span></h3>
-                                <p style="color: #333;">Please select payment method to complete check-out.</p>
+                                <h3>Booking #<span id="modalBookingId">0</span></h3>
+                                <p>Customer: <span id="modalCustomerName"></span></p>
+                                <div id="bookingRooms" style="margin-top: 10px;">
+                                    <p>Rooms: <span id="modalRoomsList"></span></p>
+                                </div>
+                                <p style="color: #333; font-weight: bold; margin-top: 10px;">
+                                    Total Amount Due: $<span id="modalTotalPrice">0.00</span>
+                                </p>
                             </div>
-                            <form id="checkoutRoomForm" th:action="@{/receptionist/check-out}" method="post">
-                                <input type="hidden" id="modalRoomId" name="roomId">
+                            <form id="checkoutRoomForm" th:action="@{/receptionist/checkout-booking}" method="post">
+                                <input type="hidden" id="modalBookingIdInput" name="bookingId">
                                 
                                 <div class="form-group">
                                     <label for="paymentMethod">Payment Method</label>
@@ -348,6 +363,44 @@
                             <!-- Customer list will be loaded here -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- Occupied Rooms Section -->
+            <div class="tab-pane fade" id="occupied" role="tabpanel" aria-labelledby="occupied-tab">
+                <div class="row">
+                    <div th:each="room : ${occupiedRooms}" class="col-md-4 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title" th:text="${'Room ' + room.roomNumber}">Room Number</h5>
+                                <p class="card-text" th:text="${'Type: ' + room.roomType.name}">Room Type</p>
+                                <div th:if="${roomBookingDetails.containsKey(room.id)}">
+                                    <p class="card-text">
+                                        <strong>Check-in:</strong> 
+                                        <span th:text="${#temporals.format(roomBookingDetails.get(room.id).checkInDate, 'dd/MM/yyyy')}"></span>
+                                    </p>
+                                    <p class="card-text">
+                                        <strong>Check-out:</strong> 
+                                        <span th:text="${#temporals.format(roomBookingDetails.get(room.id).checkOutDate, 'dd/MM/yyyy')}"></span>
+                                    </p>
+                                    <p class="card-text">
+                                        <strong>Customer:</strong> 
+                                        <span th:text="${roomBookingDetails.get(room.id).booking.customer.fullName}"></span>
+                                    </p>
+                                    <p class="card-text">
+                                        <strong>Price:</strong> 
+                                        $<span th:text="${#numbers.formatDecimal(roomBookingDetails.get(room.id).price, 1, 2)}">0.00</span>
+                                    </p>
+                                </div>
+                                <button type="button" class="btn btn-primary checkout-room-btn"
+                                        th:data-room-id="${room.id}"
+                                        th:data-room-number="${room.roomNumber}"
+                                        th:data-room-price="${roomBookingDetails.containsKey(room.id) ? #numbers.formatDecimal(roomBookingDetails.get(room.id).price, 1, 2) : '0.00'}">
+                                    Check-out
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -468,20 +521,53 @@
             }
             
             // Room checkout modal handling
-            const checkoutRoomBtns = document.querySelectorAll('.checkout-room-btn');
+            const checkoutBookingBtns = document.querySelectorAll('.checkout-booking-btn');
             const modalOverlayCheckout = document.getElementById('modalOverlayCheckout');
             const closeModalCheckout = document.getElementById('closeModalCheckout');
             
-            if (checkoutRoomBtns.length > 0) {
-                checkoutRoomBtns.forEach(button => {
+            if (checkoutBookingBtns.length > 0) {
+                checkoutBookingBtns.forEach(button => {
                     button.addEventListener('click', function() {
-                        // Get the room ID and number from data attributes
+                        // Get booking data from data attributes
+                        const bookingId = this.getAttribute('data-booking-id');
                         const roomId = this.getAttribute('data-room-id');
-                        const roomNumber = this.getAttribute('data-room-number');
+                        const roomCount = this.getAttribute('data-room-count');
+                        const customerName = this.getAttribute('data-customer-name');
                         
-                        // Set values in the modal
-                        document.getElementById('modalRoomId').value = roomId;
-                        document.getElementById('modalRoomNumber').textContent = roomNumber;
+                        // Set initial values in the modal
+                        document.getElementById('modalBookingId').textContent = bookingId;
+                        document.getElementById('modalBookingIdInput').value = bookingId;
+                        document.getElementById('modalCustomerName').textContent = customerName;
+                        
+                        // Fetch booking details for this booking
+                        fetch(`/receptionist/booking-by-room?roomId=${roomId}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Failed to fetch booking details');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            // Update total price
+                            document.getElementById('modalTotalPrice').textContent = data.totalAmount.toFixed(2);
+                            
+                            // Display all rooms in this booking
+                            const roomsList = document.getElementById('modalRoomsList');
+                            if (data.rooms.length > 0) {
+                                let roomsText = '';
+                                data.rooms.forEach((room, index) => {
+                                    roomsText += room.roomNumber;
+                                    if (index < data.rooms.length - 1) {
+                                        roomsText += ", ";
+                                    }
+                                });
+                                roomsList.textContent = roomsText;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Could not load booking details: ' + error.message);
+                        });
                         
                         // Show the modal
                         modalOverlayCheckout.classList.add('show');

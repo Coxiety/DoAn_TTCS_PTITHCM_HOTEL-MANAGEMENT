@@ -12,6 +12,10 @@ public class BookingRequestDto {
     @Pattern(regexp = "\\d{2}-\\d{2}-\\d{4}", message = "Check-in date must be in format DD-MM-YYYY")
     private String checkInDate;
     
+    @NotBlank(message = "Check-out date is required")
+    @Pattern(regexp = "\\d{2}-\\d{2}-\\d{4}", message = "Check-out date must be in format DD-MM-YYYY")
+    private String checkOutDate;
+    
     private Integer customerId;
     
     @NotEmpty(message = "At least one room selection is required")
@@ -24,6 +28,14 @@ public class BookingRequestDto {
 
     public void setCheckInDate(String checkInDate) {
         this.checkInDate = checkInDate;
+    }
+
+    public String getCheckOutDate() {
+        return checkOutDate;
+    }
+
+    public void setCheckOutDate(String checkOutDate) {
+        this.checkOutDate = checkOutDate;
     }
 
     public Integer getCustomerId() {

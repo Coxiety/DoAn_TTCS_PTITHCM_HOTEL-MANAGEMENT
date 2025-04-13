@@ -46,7 +46,7 @@ public class CustomerService {
     }
     
     public List<Customer> searchCustomers(String query) {
-        return customerRepository.searchByQuery(query);
+        return customerRepository.searchCustomers(query);
     }
     
     public Customer getCustomerById(Integer id) {

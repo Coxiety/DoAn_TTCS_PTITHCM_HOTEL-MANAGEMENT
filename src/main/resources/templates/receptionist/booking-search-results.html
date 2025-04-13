@@ -23,6 +23,7 @@
                         <th>ID</th>
                         <th>Customer</th>
                         <th>Check-In Date</th>
+                        <th>Check-Out Date</th>
                         <th>Status</th>
                         <th>Payment Status</th>
                         <th>Total Amount</th>
@@ -34,6 +35,7 @@
                         <td th:text="${booking.id}"></td>
                         <td th:text="${booking.customer.firstName + ' ' + booking.customer.lastName}"></td>
                         <td th:text="${#temporals.format(booking.checkInDate, 'dd-MM-yyyy')}"></td>
+                        <td th:text="${#temporals.format(booking.checkOutDate, 'dd-MM-yyyy')}"></td>
                         <td th:text="${booking.status}"></td>
                         <td th:text="${booking.paymentStatus}"></td>
                         <td th:text="${'$' + booking.totalAmount}"></td>

@@ -44,6 +44,9 @@ public class BookingDetail {
     @Column(name = "check_in_date")
     private LocalDateTime checkInDate;
     
+    @Column(name = "check_out_date")
+    private LocalDateTime checkOutDate;
+    
     // Constructors
     public BookingDetail() {
     }
@@ -53,6 +56,8 @@ public class BookingDetail {
         this.room = room;
         this.price = price;
         this.status = "BOOKED";
+        this.checkInDate = booking.getCheckInDate();
+        this.checkOutDate = booking.getCheckOutDate();
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -120,6 +125,14 @@ public class BookingDetail {
     
     public void setCheckInDate(LocalDateTime checkInDate) {
         this.checkInDate = checkInDate;
+    }
+    
+    public LocalDateTime getCheckOutDate() {
+        return checkOutDate;
+    }
+    
+    public void setCheckOutDate(LocalDateTime checkOutDate) {
+        this.checkOutDate = checkOutDate;
     }
     
     @PrePersist

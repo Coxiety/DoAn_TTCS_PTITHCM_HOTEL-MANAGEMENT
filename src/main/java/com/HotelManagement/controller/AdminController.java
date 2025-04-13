@@ -8,7 +8,6 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -66,7 +65,7 @@ public class AdminController {
         User user = (User) session.getAttribute("user");
         Integer userRole = (Integer) session.getAttribute("userRole");
         
-        if (user == null || userRole == null || userRole != 1) {
+        if (user == null || userRole == null || !Integer.valueOf(1).equals(userRole)) {
             return "redirect:/";
         }
         
@@ -85,13 +84,13 @@ public class AdminController {
         User user = (User) session.getAttribute("user");
         Integer userRole = (Integer) session.getAttribute("userRole");
         
-        if (user == null || userRole == null || userRole != 1) {
+        if (user == null || userRole == null || !Integer.valueOf(1).equals(userRole)) {
             return "redirect:/";
         }
         
         // Get all staff members (admins and receptionists)
         List<User> staffMembers = userService.getAllUsers().stream()
-                .filter(u -> u.getRoleId() == 1 || u.getRoleId() == 2) // 1=admin, 2=receptionist
+                .filter(u -> Integer.valueOf(1).equals(u.getRoleId()) || Integer.valueOf(2).equals(u.getRoleId())) // 1=admin, 2=receptionist
                 .collect(Collectors.toList());
         
         model.addAttribute("staffMembers", staffMembers);
@@ -218,9 +217,9 @@ public class AdminController {
             user.setPhone(phone);
             user.setEmail(email);
             // Only update role if not editing self or not changing from admin
-            if (!currentUser.getId().equals(id) || (currentUser.getId().equals(id) && user.getRoleId().equals(1) && roleId.equals(1))) {
+            if (!currentUser.getId().equals(id) || (currentUser.getId().equals(id) && Integer.valueOf(1).equals(user.getRoleId()) && Integer.valueOf(1).equals(roleId))) {
                 user.setRoleId(roleId);
-            } else if (!user.getRoleId().equals(roleId)) {
+            } else if (!Integer.valueOf(roleId).equals(user.getRoleId())) {
                 // If trying to change own role from admin, show warning but keep admin role
                 redirectAttributes.addFlashAttribute("warning", "You cannot change your own admin role. Your admin privileges have been maintained.");
             }
@@ -254,7 +253,7 @@ public class AdminController {
             }
             
             // Don't allow deletion if this is the last admin
-            if (user.getRoleId() == 1) {
+            if (Integer.valueOf(1).equals(user.getRoleId())) {
                 long adminCount = userService.countUsersByRole(1);
                 if (adminCount <= 1) {
                     throw new RuntimeException("Cannot delete the last administrator account");
@@ -278,23 +277,16 @@ public class AdminController {
         User user = (User) session.getAttribute("user");
         Integer userRole = (Integer) session.getAttribute("userRole");
         
-        if (user == null || userRole == null || userRole != 1) {
+        if (user == null || userRole == null || !Integer.valueOf(1).equals(userRole)) {
             return "redirect:/";
         }
         
-        // Get all users for the user management page
+        // Get all users
         List<User> users = userService.getAllUsers();
         model.addAttribute("users", users);
         
-        // Pass the current user's ID to the template so we can disable role editing for self
+        // Pass the current user's ID to the template so we can disable editing for self
         model.addAttribute("currentUserId", user.getId());
-        
-        // For the role dropdown in the create/edit form
-        Map<Integer, String> roles = new HashMap<>();
-        roles.put(1, "Administrator");
-        roles.put(2, "Receptionist");
-        roles.put(0, "Customer");
-        model.addAttribute("roles", roles);
         
         return "admin/UserManagement";
     }
@@ -407,9 +399,9 @@ public class AdminController {
             user.setEmail(email);
             
             // Only update role if not editing self or not changing from admin
-            if (!currentUser.getId().equals(id) || (currentUser.getId().equals(id) && user.getRoleId() == 1 && roleId == 1)) {
+            if (!currentUser.getId().equals(id) || (currentUser.getId().equals(id) && Integer.valueOf(1).equals(user.getRoleId()) && Integer.valueOf(1).equals(roleId))) {
                 user.setRoleId(roleId);
-            } else if (user.getRoleId() != roleId) {
+            } else if (!Integer.valueOf(roleId).equals(user.getRoleId())) {
                 // If trying to change own role from admin, show warning but keep admin role
                 redirectAttributes.addFlashAttribute("warning", "You cannot change your own admin role. Your admin privileges have been maintained.");
             }
@@ -443,7 +435,7 @@ public class AdminController {
             }
             
             // Don't allow deletion if this is the last admin
-            if (user.getRoleId() == 1) {
+            if (Integer.valueOf(1).equals(user.getRoleId())) {
                 long adminCount = userService.countUsersByRole(1);
                 if (adminCount <= 1) {
                     throw new RuntimeException("Cannot delete the last administrator account");
@@ -467,7 +459,7 @@ public class AdminController {
         User user = (User) session.getAttribute("user");
         Integer userRole = (Integer) session.getAttribute("userRole");
         
-        if (user == null || userRole == null || userRole != 1) {
+        if (user == null || userRole == null || !Integer.valueOf(1).equals(userRole)) {
             return "redirect:/";
         }
         
@@ -591,7 +583,7 @@ public class AdminController {
         User user = (User) session.getAttribute("user");
         Integer userRole = (Integer) session.getAttribute("userRole");
         
-        if (user == null || userRole == null || userRole != 1) {
+        if (user == null || userRole == null || !Integer.valueOf(1).equals(userRole)) {
             return "redirect:/";
         }
         
@@ -748,7 +740,7 @@ public class AdminController {
         User user = (User) session.getAttribute("user");
         Integer userRole = (Integer) session.getAttribute("userRole");
         
-        if (user == null || userRole == null || userRole != 1) {
+        if (user == null || userRole == null || !Integer.valueOf(1).equals(userRole)) {
             return "redirect:/";
         }
         
@@ -776,7 +768,8 @@ public class AdminController {
         User user = (User) session.getAttribute("user");
         Integer userRole = (Integer) session.getAttribute("userRole");
         
-        if (user == null || userRole == null || userRole != 1) {
+        if (user == null || userRole == null || !Integer.valueOf(1).equals(userRole)) {
+            redirectAttributes.addFlashAttribute("error", "Access denied");
             return "redirect:/";
         }
         

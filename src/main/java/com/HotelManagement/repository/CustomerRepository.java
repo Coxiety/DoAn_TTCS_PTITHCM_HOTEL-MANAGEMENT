@@ -18,7 +18,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
     Optional<Customer> findByUserId(Integer userId);
     
     @Query("SELECT c FROM Customer c WHERE c.fullName LIKE %:query% OR c.phone LIKE %:query% OR c.email LIKE %:query%")
-    List<Customer> searchByQuery(@Param("query") String query);
+    List<Customer> searchCustomers(@Param("query") String query);
     
     @Query("SELECT c FROM Customer c WHERE c.idCard = :idCard")
     Optional<Customer> findByIdCard(@Param("idCard") String idCard);

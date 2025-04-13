@@ -327,6 +327,13 @@
                         </div>
                     </div>
                     
+                    <div class="date-picker">
+                        <label>Select Check-out Date</label>
+                        <div class="date-inputs">
+                            <input type="text" id="checkOutDate" placeholder="Select a date" readonly>
+                        </div>
+                    </div>
+                    
                     <div class="summary-item total">
                         <span>Total Price</span>
                         <span>$<span id="totalPrice">0</span></span>
@@ -419,20 +426,38 @@
             const totalRoomsEl = document.getElementById('totalRooms');
             const totalPriceEl = document.getElementById('totalPrice');
             const checkInDateInput = document.getElementById('checkInDate');
+            const checkOutDateInput = document.getElementById('checkOutDate');
             const completeBookingBtn = document.getElementById('completeBookingBtn');
             const roomSelectionsSummary = document.getElementById('roomSelectionsSummary');
             
-            // Initialize Flatpickr date picker
+            // Initialize Flatpickr date picker for check-in
             const today = new Date();
             const checkInPicker = flatpickr("#checkInDate", {
                 minDate: "today",
                 dateFormat: "d-m-Y",
                 altFormat: "d-m-Y",
-                altInput: true,         // Shows the date in a more readable format
-                disableMobile: "true",  // Use the calendar picker on all devices
-                defaultDate: today,     // Set default to today
+                altInput: true,
+                disableMobile: "true",
+                defaultDate: today,
                 onChange: function(selectedDates, dateStr, instance) {
-                    calculateTotals();  // Recalculate when date changes
+                    // Update check-out date minimum when check-in changes
+                    checkOutPicker.set('minDate', selectedDates[0]);
+                    calculateTotals();
+                }
+            });
+
+            // Initialize Flatpickr date picker for check-out
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const checkOutPicker = flatpickr("#checkOutDate", {
+                minDate: tomorrow,
+                dateFormat: "d-m-Y",
+                altFormat: "d-m-Y",
+                altInput: true,
+                disableMobile: "true",
+                defaultDate: tomorrow,
+                onChange: function(selectedDates, dateStr, instance) {
+                    calculateTotals();
                 }
             });
             
@@ -447,9 +472,11 @@
                 let totalPrice = 0;
                 let selections = [];
                 
-                // Always calculate for 1 night (no checkout date)
-                // Price is per night, so use 1 as multiplier
-                let nights = 1;
+                // Calculate number of nights
+                const checkInDate = checkInPicker.selectedDates[0];
+                const checkOutDate = checkOutPicker.selectedDates[0];
+                const nights = checkInDate && checkOutDate ? 
+                    Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)) : 1;
                 
                 // Calculate totals
                 roomSelects.forEach(select => {
@@ -480,7 +507,7 @@
                 updateSelectionsSummary(selections, nights);
                 
                 // Enable/disable book button
-                completeBookingBtn.disabled = totalRooms === 0 || !selectedCustomer;
+                completeBookingBtn.disabled = totalRooms === 0 || !checkInDateInput.value || !checkOutDateInput.value || !selectedCustomer;
             }
             
             // Update the selections summary section
@@ -507,7 +534,7 @@
                 roomSelectionsSummary.innerHTML = html;
             }
             
-            // Complete booking button click
+            // Handle booking submission
             completeBookingBtn.addEventListener('click', function() {
                 if (this.disabled) return;
                 
@@ -525,8 +552,8 @@
                 
                 // Check if we have a customer and dates
                 const customerId = document.getElementById('selectedCustomerId')?.value;
-                if (!customerId || !checkInDateInput.value) {
-                    alert('Please select a customer and check-in date');
+                if (!customerId || !checkInDateInput.value || !checkOutDateInput.value) {
+                    alert('Please select a customer and both check-in and check-out dates');
                     return;
                 }
                 
@@ -534,6 +561,7 @@
                 const bookingData = {
                     customerId: customerId,
                     checkInDate: checkInDateInput.value,
+                    checkOutDate: checkOutDateInput.value,
                     roomSelections: selections
                 };
                 

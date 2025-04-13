@@ -230,10 +230,10 @@
                 <table class="admin-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Booking ID</th>
                             <th>Customer</th>
-                            <th>Date</th>
+                            <th>Check-in Date</th>
+                            <th title="Planned checkout date from booking">Planned Check-out</th>
+                            <th title="Date when payment was processed">Actual Payment Date</th>
                             <th>Amount</th>
                             <th>Method</th>
                             <th>Status</th>
@@ -245,9 +245,9 @@
                         </tr>
                         
                         <tr th:each="payment : ${reportData.payments}">
-                            <td th:text="${payment.id}">1</td>
-                            <td th:text="${payment.booking.id}">100</td>
                             <td th:text="${payment.booking.customer.fullName}">John Doe</td>
+                            <td th:text="${#temporals.format(payment.booking.checkInDate, 'dd-MM-yyyy')}">01-04-2023</td>
+                            <td th:text="${#temporals.format(payment.booking.checkOutDate, 'dd-MM-yyyy')}">05-04-2023</td>
                             <td th:text="${#temporals.format(payment.paymentDate, 'dd-MM-yyyy HH:mm')}">01-04-2023 14:30</td>
                             <td style="font-family: monospace;" th:text="${#numbers.formatCurrency(payment.amount)}">$120.00</td>
                             <td th:text="${payment.paymentMethod}">Credit Card</td>
@@ -261,6 +261,9 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            <div class="info-text" style="padding: 15px; color: #666; font-size: 0.9rem;">
+                <p><strong>Note:</strong> "Planned Check-out" shows the date selected during booking. "Actual Payment Date" shows when payment was processed (typically during checkout).</p>
             </div>
         </div>
     </main>
