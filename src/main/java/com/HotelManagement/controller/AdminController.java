@@ -24,10 +24,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.HotelManagement.models.Booking;
+import com.HotelManagement.models.BookingDetail;
+import com.HotelManagement.models.Payment;
 import com.HotelManagement.models.Room;
 import com.HotelManagement.models.RoomType;
 import com.HotelManagement.models.User;
+import com.HotelManagement.repository.BookingDetailRepository;
 import com.HotelManagement.service.AdminService;
+import com.HotelManagement.service.BookingService;
 import com.HotelManagement.service.PaymentService;
 import com.HotelManagement.service.RoomService;
 import com.HotelManagement.service.UserService;
@@ -51,6 +56,12 @@ public class AdminController {
     
     @Autowired
     private PaymentService paymentService;
+    
+    @Autowired
+    private BookingService bookingService;
+    
+    @Autowired
+    private BookingDetailRepository bookingDetailRepository;
     
     // Simple password encoder for security
     private String encodePassword(String password) {
@@ -806,6 +817,63 @@ public class AdminController {
             return Base64.getEncoder().encodeToString(hash);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Error hashing password", e);
+        }
+    }
+
+    /**
+     * Display invoice for a specific booking (for admin use)
+     */
+    @GetMapping("/invoice/{bookingId}")
+    public String showInvoice(@PathVariable Integer bookingId, 
+                             Model model, 
+                             HttpSession session) {
+        // Check if user is logged in and has admin role
+        User user = (User) session.getAttribute("user");
+        Integer userRole = (Integer) session.getAttribute("userRole");
+        
+        if (user == null || userRole == null || userRole != 1) {
+            return "redirect:/";
+        }
+        
+        try {
+            // Get the booking details
+            Booking booking = bookingService.getBookingById(bookingId);
+            if (booking == null) {
+                model.addAttribute("error", "Booking not found");
+                return "redirect:/admin/revenue";
+            }
+            
+            // Get all booking details (rooms)
+            List<BookingDetail> bookingDetails = bookingDetailRepository.findByBookingId(bookingId);
+            
+            // Get payment info
+            List<Payment> payments = paymentService.getPaymentsForBooking(bookingId);
+            String paymentMethod = !payments.isEmpty() ? payments.get(0).getPaymentMethod() : "N/A";
+            
+            // Calculate nights stayed
+            long nightsStayed = java.time.temporal.ChronoUnit.DAYS
+                .between(booking.getCheckInDate().toLocalDate(), booking.getCheckOutDate().toLocalDate());
+            
+            // Ensure at least 1 night is charged
+            if (nightsStayed < 1) {
+                nightsStayed = 1;
+            }
+            
+            // Add to model
+            model.addAttribute("booking", booking);
+            model.addAttribute("bookingDetails", bookingDetails);
+            model.addAttribute("paymentMethod", paymentMethod);
+            model.addAttribute("nightsStayed", nightsStayed);
+            model.addAttribute("checkoutDate", booking.getCheckOutDate().toLocalDate());
+            model.addAttribute("isAdminView", true);
+            
+            // Format total
+            model.addAttribute("formattedTotal", String.format("%.2f", booking.getTotalAmount()));
+            
+            return "InvoicePage";
+        } catch (Exception e) {
+            model.addAttribute("error", "Error generating invoice: " + e.getMessage());
+            return "redirect:/admin/revenue";
         }
     }
 }

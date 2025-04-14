@@ -286,9 +286,14 @@
                                 <p style="color: #333; font-weight: bold; margin-top: 10px;">
                                     Total Amount Due: $<span id="modalTotalPrice">0.00</span>
                                 </p>
+                                <!-- Early checkout warning message -->
+                                <div id="earlyCheckoutWarning" style="margin-top: 10px; color: #e74c3c; background-color: #fadbd8; padding: 10px; border-radius: 4px; border-left: 4px solid #e74c3c; display: none;">
+                                    <strong>Early Checkout Warning:</strong> You are checking out before the planned checkout date (<span id="plannedCheckoutDate"></span>).
+                                </div>
                             </div>
                             <form id="checkoutRoomForm" th:action="@{/receptionist/checkout-booking}" method="post">
                                 <input type="hidden" id="modalBookingIdInput" name="bookingId">
+                                <input type="hidden" id="earlyCheckoutConfirmed" name="earlyCheckoutConfirmed" value="false">
                                 
                                 <div class="form-group">
                                     <label for="paymentMethod">Payment Method</label>
@@ -303,7 +308,7 @@
                                 </div>
                                 
                                 <div class="form-actions">
-                                    <button type="submit" class="btn btn-primary">Confirm Payment & Check-out</button>
+                                    <button type="submit" class="btn btn-primary" id="confirmCheckoutBtn">Confirm Payment & Check-out</button>
                                 </div>
                             </form>
                         </div>
@@ -534,10 +539,16 @@
                         const roomCount = this.getAttribute('data-room-count');
                         const customerName = this.getAttribute('data-customer-name');
                         
+                        // Reset early checkout flag
+                        document.getElementById('earlyCheckoutConfirmed').value = "false";
+                        
                         // Set initial values in the modal
                         document.getElementById('modalBookingId').textContent = bookingId;
                         document.getElementById('modalBookingIdInput').value = bookingId;
                         document.getElementById('modalCustomerName').textContent = customerName;
+                        
+                        // Hide early checkout warning by default
+                        document.getElementById('earlyCheckoutWarning').style.display = 'none';
                         
                         // Fetch booking details for this booking
                         fetch(`/receptionist/booking-by-room?roomId=${roomId}`)
@@ -563,6 +574,25 @@
                                 });
                                 roomsList.textContent = roomsText;
                             }
+                            
+                            // Check if trying to checkout before the planned checkout date
+                            const checkOutDate = new Date(data.checkOutDate);
+                            const today = new Date();
+                            // Reset time portion to compare dates only
+                            today.setHours(0, 0, 0, 0);
+                            checkOutDate.setHours(0, 0, 0, 0);
+                            
+                            if (today.getTime() < checkOutDate.getTime()) {
+                                // Show early checkout warning
+                                document.getElementById('earlyCheckoutWarning').style.display = 'block';
+                                
+                                // Format date for display
+                                const formattedDate = checkOutDate.getDate().toString().padStart(2, '0') + '-' + 
+                                    (checkOutDate.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                                    checkOutDate.getFullYear();
+                                    
+                                document.getElementById('plannedCheckoutDate').textContent = formattedDate;
+                            }
                         })
                         .catch(error => {
                             console.error('Error:', error);
@@ -572,6 +602,23 @@
                         // Show the modal
                         modalOverlayCheckout.classList.add('show');
                     });
+                });
+                
+                // Add event listener for checkout form submission
+                document.getElementById('checkoutRoomForm').addEventListener('submit', function(e) {
+                    const warningVisible = document.getElementById('earlyCheckoutWarning').style.display === 'block';
+                    const earlyCheckoutConfirmed = document.getElementById('earlyCheckoutConfirmed').value === "true";
+                    
+                    // If there's an early checkout warning and it hasn't been confirmed yet
+                    if (warningVisible && !earlyCheckoutConfirmed) {
+                        e.preventDefault(); // Stop the form submission
+                        
+                        if (confirm('Are you sure you want to check out before the planned checkout date?')) {
+                            // Set the confirmed flag and submit the form
+                            document.getElementById('earlyCheckoutConfirmed').value = "true";
+                            this.submit();
+                        }
+                    }
                 });
                 
                 // Close the modal when clicking the close button

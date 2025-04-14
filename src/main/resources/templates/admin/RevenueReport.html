@@ -140,6 +140,33 @@
         .admin-table td {
             padding: 18px 15px;
         }
+        
+        /* Invoice button styling */
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-secondary {
+            background-color: #4b5563;
+            color: white;
+            border: none;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #374151;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .btn-secondary i {
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -237,11 +264,12 @@
                             <th>Amount</th>
                             <th>Method</th>
                             <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:if="${reportData.payments == null || reportData.payments.empty}">
-                            <td colspan="7" class="text-center">No payments found in the selected date range</td>
+                            <td colspan="8" class="text-center">No payments found in the selected date range</td>
                         </tr>
                         
                         <tr th:each="payment : ${reportData.payments}">
@@ -257,6 +285,13 @@
                                     th:text="${payment.status}">
                                     COMPLETED
                                 </span>
+                            </td>
+                            <td>
+                                <a th:if="${payment.status == 'COMPLETED'}" 
+                                   th:href="@{'/admin/invoice/' + ${payment.booking.id}}"
+                                   class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-file-invoice"></i> Show Invoice
+                                </a>
                             </td>
                         </tr>
                     </tbody>

@@ -1,6 +1,7 @@
 package com.HotelManagement.controller;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -420,7 +421,10 @@ public class ReceptionistController {
      * Handle check-out by receptionist from the occupied rooms view
      */
     @PostMapping("/check-out")
-    public String checkOutRoom(@RequestParam Integer roomId, @RequestParam String paymentMethod, RedirectAttributes redirectAttributes) {
+    public String checkOutRoom(@RequestParam Integer roomId, 
+                              @RequestParam String paymentMethod, 
+                              @RequestParam(required = false, defaultValue = "false") String earlyCheckoutConfirmed,
+                              RedirectAttributes redirectAttributes) {
         try {
             // Find the active booking detail for this room
             Optional<BookingDetail> detailOpt = bookingDetailRepository.findByRoomIdAndStatus(roomId, "CHECKED_IN");
@@ -447,15 +451,39 @@ public class ReceptionistController {
                 return "redirect:/receptionist";
             }
             
+            // Check if it's an early checkout
+            LocalDate today = LocalDate.now();
+            LocalDate plannedCheckoutDate = booking.getCheckOutDate().toLocalDate();
+            boolean isEarlyCheckout = today.isBefore(plannedCheckoutDate);
+            
+            // If it's an early checkout but not confirmed, redirect back
+            if (isEarlyCheckout && !"true".equals(earlyCheckoutConfirmed)) {
+                redirectAttributes.addFlashAttribute("error", 
+                    "Early checkout must be confirmed. Please try again and confirm the early checkout.");
+                return "redirect:/receptionist";
+            }
+            
+            // Log early checkout if applicable
+            if (isEarlyCheckout) {
+                logger.info("Early checkout for booking #{}: Checkout date was {}, checking out on {}", 
+                    bookingId, plannedCheckoutDate, today);
+            }
+            
             // Create payment record for the total booking amount
             paymentService.createPayment(bookingId, booking.getTotalAmount(), paymentMethod);
             
             // Check out the entire booking
             bookingService.checkOut(bookingId);
             
-            redirectAttributes.addFlashAttribute("success", 
-                "Booking #" + bookingId + " has been checked out successfully. " +
-                "Total payment: $" + booking.getTotalAmount() + " (" + allBookingDetails.size() + " rooms)");
+            String successMessage = "Booking #" + bookingId + " has been checked out successfully. " +
+                "Total payment: $" + booking.getTotalAmount() + " (" + allBookingDetails.size() + " rooms)";
+                
+            if (isEarlyCheckout) {
+                successMessage += " (Early checkout: " + (plannedCheckoutDate.getDayOfMonth() - today.getDayOfMonth()) + 
+                    " days before planned date)";
+            }
+            
+            redirectAttributes.addFlashAttribute("success", successMessage);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Failed to check out: " + e.getMessage());
         }
@@ -467,7 +495,10 @@ public class ReceptionistController {
      * Handle check-out by receptionist from booking details with payment method selection
      */
     @PostMapping("/checkout-booking")
-    public String checkOutBooking(@RequestParam Integer bookingId, @RequestParam String paymentMethod, RedirectAttributes redirectAttributes) {
+    public String checkOutBooking(@RequestParam Integer bookingId, 
+                                 @RequestParam String paymentMethod, 
+                                 @RequestParam(required = false, defaultValue = "false") String earlyCheckoutConfirmed,
+                                 RedirectAttributes redirectAttributes) {
         try {
             // Get the booking
             Booking booking = bookingService.getBookingById(bookingId);
@@ -485,18 +516,94 @@ public class ReceptionistController {
                 return "redirect:/receptionist";
             }
             
+            // Check if it's an early checkout
+            LocalDate today = LocalDate.now();
+            LocalDate plannedCheckoutDate = booking.getCheckOutDate().toLocalDate();
+            boolean isEarlyCheckout = today.isBefore(plannedCheckoutDate);
+            
+            // If it's an early checkout but not confirmed, show confirmation dialog
+            if (isEarlyCheckout && !"true".equals(earlyCheckoutConfirmed)) {
+                redirectAttributes.addFlashAttribute("showEarlyCheckoutConfirmation", true);
+                redirectAttributes.addFlashAttribute("bookingId", bookingId);
+                redirectAttributes.addFlashAttribute("paymentMethod", paymentMethod);
+                redirectAttributes.addFlashAttribute("warningMessage", 
+                    "You are checking out before the planned check-out date (" + 
+                    plannedCheckoutDate.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")) + 
+                    "). Please confirm to proceed.");
+                return "redirect:/receptionist";
+            }
+            
+            // Log early checkout if applicable
+            if (isEarlyCheckout) {
+                logger.info("Early checkout for booking #{}: Checkout date was {}, checking out on {}", 
+                    bookingId, plannedCheckoutDate, today);
+            }
+            
             // Create payment record
             paymentService.createPayment(bookingId, booking.getTotalAmount(), paymentMethod);
             
             // Check out the booking
             bookingService.checkOut(bookingId);
             
-            redirectAttributes.addFlashAttribute("success", "Booking #" + bookingId + " has been checked out successfully and payment recorded");
+            // Redirect to invoice page instead of dashboard
+            return "redirect:/receptionist/invoice/" + bookingId + "?paymentMethod=" + paymentMethod;
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Failed to check out: " + e.getMessage());
+            return "redirect:/receptionist";
+        }
+    }
+    
+    /**
+     * Display invoice after successful checkout
+     */
+    @GetMapping("/invoice/{bookingId}")
+    public String showInvoice(@PathVariable Integer bookingId, 
+                             @RequestParam String paymentMethod,
+                             Model model, 
+                             HttpSession session) {
+        // Check if user is logged in and has receptionist role
+        User user = (User) session.getAttribute("user");
+        Integer userRole = (Integer) session.getAttribute("userRole");
+        
+        if (user == null || userRole == null || userRole != 2) {
+            return "redirect:/";
         }
         
-        return "redirect:/receptionist";
+        try {
+            // Get the booking details
+            Booking booking = bookingService.getBookingById(bookingId);
+            if (booking == null) {
+                model.addAttribute("error", "Booking not found");
+                return "redirect:/receptionist";
+            }
+            
+            // Get all booking details (rooms)
+            List<BookingDetail> bookingDetails = bookingDetailRepository.findByBookingId(bookingId);
+            
+            // Calculate nights stayed
+            long nightsStayed = java.time.temporal.ChronoUnit.DAYS
+                .between(booking.getCheckInDate().toLocalDate(), LocalDate.now());
+            
+            // Ensure at least 1 night is charged
+            if (nightsStayed < 1) {
+                nightsStayed = 1;
+            }
+            
+            // Add to model
+            model.addAttribute("booking", booking);
+            model.addAttribute("bookingDetails", bookingDetails);
+            model.addAttribute("paymentMethod", paymentMethod);
+            model.addAttribute("nightsStayed", nightsStayed);
+            model.addAttribute("checkoutDate", LocalDate.now());
+            
+            // Format total
+            model.addAttribute("formattedTotal", String.format("%.2f", booking.getTotalAmount()));
+            
+            return "InvoicePage";
+        } catch (Exception e) {
+            model.addAttribute("error", "Error generating invoice: " + e.getMessage());
+            return "redirect:/receptionist";
+        }
     }
     
     @PostMapping("/updatePaymentStatus")

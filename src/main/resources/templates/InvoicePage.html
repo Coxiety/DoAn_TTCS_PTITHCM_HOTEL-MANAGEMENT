@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice - Luxury Hotel</title>
+    <link rel="stylesheet" th:href="@{/css/stylesUniversal.css}">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Invoice specific styles */
+        .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            font-family: 'Poppins', sans-serif;
+            font-size: 12px;
+        }
+
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .hotel-info h1 {
+            color: #1a2942;
+            margin-bottom: 3px;
+            font-size: 22px;
+        }
+
+        .hotel-info p {
+            color: #555;
+            margin: 2px 0;
+            font-size: 12px;
+        }
+
+        .invoice-title {
+            text-align: right;
+        }
+
+        .invoice-title h2 {
+            color: #1a2942;
+            font-size: 24px;
+            margin-bottom: 3px;
+        }
+
+        .invoice-title .invoice-number {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .invoice-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .client-info, .invoice-info {
+            flex: 1;
+        }
+
+        .client-info h3, .invoice-info h3 {
+            color: #1a2942;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .client-info p, .invoice-info p {
+            margin: 2px 0;
+            line-height: 1.3;
+        }
+
+        .invoice-info {
+            text-align: right;
+        }
+
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+
+        .invoice-table th {
+            background-color: #f8f9fa;
+            text-align: left;
+            padding: 8px 10px;
+            font-weight: 600;
+            color: #1a2942;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .invoice-table td {
+            padding: 6px 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .invoice-table .room-type {
+            color: #666;
+            font-size: 11px;
+        }
+
+        .invoice-totals {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .totals-table {
+            width: 250px;
+        }
+
+        .totals-table td {
+            padding: 4px 0;
+        }
+
+        .totals-table .label {
+            text-align: left;
+        }
+
+        .totals-table .value {
+            text-align: right;
+            font-weight: 500;
+        }
+
+        .totals-table .grand-total {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1a2942;
+            border-top: 2px solid #ddd;
+            padding-top: 6px;
+        }
+
+        .payment-info {
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .payment-info h3 {
+            color: #1a2942;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .payment-info p {
+            margin: 3px 0;
+        }
+
+        .thank-you {
+            text-align: center;
+            margin-top: 20px;
+            color: #1a2942;
+            font-size: 16px;
+        }
+
+        .thank-you p {
+            margin: 2px 0;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 15px;
+        }
+
+        .action-buttons button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .print-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .back-button {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .action-buttons button:hover {
+            opacity: 0.9;
+        }
+        
+        /* Print styles */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 5mm; /* Reduce margins to fit more content */
+            }
+            
+            body, html {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+            }
+            
+            body * {
+                visibility: hidden;
+            }
+            
+            header, footer, .universal-footer, .action-buttons {
+                display: none !important; /* Force hide all non-invoice elements */
+            }
+            
+            .main-content {
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            
+            .invoice-container, .invoice-container * {
+                visibility: visible;
+            }
+            
+            .invoice-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 99%;
+                box-shadow: none;
+                padding: 10px;
+                font-size: 10px; /* Reduce font size further */
+            }
+            
+            /* More compact layout */
+            .invoice-header {
+                margin-bottom: 15px;
+                padding-bottom: 5px;
+            }
+            
+            .hotel-info h1 {
+                font-size: 16px;
+                margin-bottom: 2px;
+            }
+            
+            .hotel-info p {
+                font-size: 9px;
+                margin: 1px 0;
+            }
+            
+            .invoice-title h2 {
+                font-size: 16px;
+                margin-bottom: 2px;
+            }
+            
+            .invoice-title .invoice-number {
+                font-size: 12px;
+            }
+            
+            .client-info h3, .invoice-info h3 {
+                font-size: 12px;
+                margin-bottom: 3px;
+            }
+            
+            .client-info p, .invoice-info p {
+                font-size: 9px;
+                margin: 1px 0;
+                line-height: 1.2;
+            }
+            
+            .invoice-details {
+                margin-bottom: 10px;
+            }
+            
+            .invoice-table {
+                font-size: 9px;
+                margin-bottom: 10px;
+            }
+            
+            .invoice-table th {
+                padding: 4px 6px;
+                font-weight: 600;
+            }
+            
+            .invoice-table td {
+                padding: 3px 6px;
+            }
+            
+            .invoice-table .room-type {
+                font-size: 8px;
+            }
+            
+            .totals-table {
+                width: 200px;
+            }
+            
+            .totals-table td {
+                padding: 2px 0;
+                font-size: 9px;
+            }
+            
+            .totals-table .grand-total {
+                font-size: 12px;
+                padding-top: 3px;
+            }
+            
+            .payment-info {
+                margin-bottom: 10px;
+                padding: 6px 10px;
+            }
+            
+            .payment-info h3 {
+                font-size: 12px;
+                margin-bottom: 2px;
+            }
+            
+            .payment-info p {
+                font-size: 9px;
+                margin: 1px 0;
+            }
+            
+            .thank-you {
+                font-size: 12px;
+                margin-top: 6px;
+            }
+            
+            .thank-you p {
+                margin: 1px 0;
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Include Universal Header -->
+    <header th:replace="fragments/header :: header"></header>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="invoice-container" id="printable-invoice">
+            <div class="invoice-header">
+                <div class="hotel-info">
+                    <h1>Luxury Hotel</h1>
+                    <p>123 Elegant Street, New York, NY 10001</p>
+                    <p>Phone: (123) 456-7890 | Email: info@luxuryhotel.com</p>
+                </div>
+                <div class="invoice-title">
+                    <h2>INVOICE</h2>
+                    <div class="invoice-number">Invoice #INV-<span th:text="${booking.id}">1000</span></div>
+                </div>
+            </div>
+            
+            <div class="invoice-details">
+                <div class="client-info">
+                    <h3>Bill To:</h3>
+                    <p th:text="${booking.customer.fullName}">John Doe</p>
+                    <p th:text="${booking.customer.phone}">+1 (234) 567-8901</p>
+                    <p th:if="${booking.customer.email != null && !booking.customer.email.isEmpty()}" th:text="${booking.customer.email}">john.doe@example.com</p>
+                    <p th:if="${booking.customer.address != null && !booking.customer.address.isEmpty()}" th:text="${booking.customer.address}">789 Customer St, Anytown</p>
+                </div>
+                <div class="invoice-info">
+                    <h3>Invoice Details:</h3>
+                    <p>Date: <span th:text="${#temporals.format(checkoutDate, 'dd-MM-yyyy')}">15-04-2025</span></p>
+                    <p>Check-in: <span th:text="${#temporals.format(booking.checkInDate, 'dd-MM-yyyy')}">10-04-2025</span></p>
+                    <p>Check-out: <span th:text="${#temporals.format(checkoutDate, 'dd-MM-yyyy')}">15-04-2025</span></p>
+                    <p>Nights: <span th:text="${nightsStayed}">5</span></p>
+                </div>
+            </div>
+            
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th>Room</th>
+                        <th>Room Type</th>
+                        <th>Rate/Night</th>
+                        <th>Nights</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="detail : ${bookingDetails}">
+                        <td th:text="${detail.room.roomNumber}">101</td>
+                        <td>
+                            <span th:text="${detail.room.roomType.name}">Deluxe</span>
+                            <div class="room-type" th:if="${detail.room.roomType.description != null && !detail.room.roomType.description.isEmpty()}" th:text="${detail.room.roomType.description}">Luxury room with ocean view</div>
+                        </td>
+                        <td th:text="${'$' + #numbers.formatDecimal(detail.price, 1, 2)}">$200.00</td>
+                        <td th:text="${nightsStayed}">5</td>
+                        <td th:text="${'$' + #numbers.formatDecimal(detail.price.multiply(new java.math.BigDecimal(nightsStayed)), 1, 2)}">$1,000.00</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="invoice-totals">
+                <table class="totals-table">
+                    <tr>
+                        <td class="label">Subtotal:</td>
+                        <td class="value" th:text="${'$' + formattedTotal}">$1,000.00</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Tax (0%):</td>
+                        <td class="value">$0.00</td>
+                    </tr>
+                    <tr>
+                        <td class="label grand-total">Grand Total:</td>
+                        <td class="value grand-total" th:text="${'$' + formattedTotal}">$1,000.00</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="payment-info">
+                <h3>Payment Information</h3>
+                <p>Payment Method: <span th:text="${paymentMethod}">Credit Card</span> | Payment Status: <span th:text="${booking.paymentStatus}">PAID</span> | Date: <span th:text="${#temporals.format(checkoutDate, 'dd-MM-yyyy')}">15-04-2025</span></p>
+            </div>
+            
+            <div class="thank-you">
+                <p>Thank you for choosing Luxury Hotel! We look forward to welcoming you again.</p>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="print-button" onclick="printInvoice()">
+                    <i class="fas fa-print"></i> Print Invoice
+                </button>
+                <button class="back-button" onclick="window.location.href='/receptionist'">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </button>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="universal-footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Luxury Hotel</p>
+        </div>
+    </footer>
+    
+    <script>
+        function printInvoice() {
+            window.print();
+        }
+    </script>
+</body>
+</html>
