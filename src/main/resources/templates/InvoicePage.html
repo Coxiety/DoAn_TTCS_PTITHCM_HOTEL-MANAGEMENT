@@ -361,7 +361,6 @@
                     <p th:text="${booking.customer.fullName}">John Doe</p>
                     <p th:text="${booking.customer.phone}">+1 (234) 567-8901</p>
                     <p th:if="${booking.customer.email != null && !booking.customer.email.isEmpty()}" th:text="${booking.customer.email}">john.doe@example.com</p>
-                    <p th:if="${booking.customer.address != null && !booking.customer.address.isEmpty()}" th:text="${booking.customer.address}">789 Customer St, Anytown</p>
                 </div>
                 <div class="invoice-info">
                     <h3>Invoice Details:</h3>
