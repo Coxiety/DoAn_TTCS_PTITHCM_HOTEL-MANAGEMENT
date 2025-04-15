@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Book Your Stay - Luxury Hotel</title>
-  <link rel="stylesheet" th:href="@{/css/stylesHome.css}" />
-  <link rel="stylesheet" th:href="@{/css/stylesBooking.css}" />
+  <link rel="stylesheet" th:href="@{/css/stylesHome.css}">
+  <link rel="stylesheet" th:href="@{/css/stylesBooking.css}">
   <!-- Auth modals CSS -->
   <div th:replace="~{fragments/auth-modals :: authCSS}"></div>
   <!-- Font Awesome for icons -->
@@ -245,13 +245,13 @@
       <div th:each="roomType : ${roomTypes}" class="room-card" th:data-room-type="${roomType.id}">
         <!-- Debug info to see the actual path value -->
         <div th:if="${roomType.imagePath != null}" style="display: none;" th:text="${'Image path: ' + roomType.imagePath}"></div>
-        
+
         <!-- Updated image div with proper URL handling -->
         <div class="room-image" th:style="${roomType.imagePath != null} ? 'background-image: url(' + @{${roomType.imagePath}} + ')' : 'background-image: url(/img/rooms/default-room.jpg)'"></div>
-        
+
         <div class="room-details">
           <h2 th:text="${roomType.name}">Room Type Name</h2>
-          
+
           <div class="room-meta">
             <div class="meta-item">
               <i class="fas fa-user"></i>
@@ -260,29 +260,29 @@
             <div class="meta-item">
               <i class="fas fa-bed"></i>
               <span th:text="${roomType.amenities}">Bed Type</span>
-      </div>
+            </div>
           </div>
-          
+
           <p class="room-description" th:text="${roomType.description}">
             Room description here.
           </p>
-          
+
           <div class="bed-price-info">
             <div class="price-tag">
               $<span th:text="${#numbers.formatDecimal(roomType.price, 1, 2)}">100.00</span>/night
             </div>
           </div>
-          
+
           <div class="room-options">
             <div class="availability-btn">
               <i class="fas fa-check-circle"></i>
               Available <span th:text="${availableRoomCounts[roomType.id] ?: 0}">5</span>
             </div>
-            <select class="room-select" 
+            <select class="room-select"
                     th:data-room-price="${roomType.price}"
                     th:data-room-type-id="${roomType.id}">
               <option value="0">0 Rooms</option>
-              <option th:each="i : ${#numbers.sequence(1, availableRoomCounts[roomType.id] ?: 0)}" 
+              <option th:each="i : ${#numbers.sequence(1, availableRoomCounts[roomType.id] ?: 0)}"
                       th:value="${i}" th:text="${i + ' Room' + (i > 1 ? 's' : '')}">1 Room</option>
             </select>
           </div>
@@ -301,7 +301,7 @@
             <span>Total Rooms</span>
             <span id="totalRooms">0</span>
           </div>
-          
+
           <div class="date-picker">
             <label>Select Check-in Date</label>
             <div class="date-inputs">
@@ -315,30 +315,30 @@
               <input type="text" id="checkOutDate" placeholder="Select a date" readonly>
             </div>
           </div>
-          
+
           <div class="summary-item total">
             <span>Total Price</span>
             <span>$<span id="totalPrice">0</span></span>
           </div>
-          
+
           <!-- Create a form that will handle booking submission -->
           <form id="bookingForm" method="POST" th:action="@{/booking/create}" style="margin:0;">
             <input type="hidden" id="bookingFormCheckIn" name="checkInDate">
             <input type="hidden" id="bookingFormCheckOut" name="checkOutDate">
             <input type="hidden" id="bookingFormPrice" name="totalPrice">
             <input type="hidden" id="bookingFormSelections" name="roomSelectionsJson">
-            
-            <button 
+
+            <button
               type="button"
               id="completeBookingBtn"
               class="book-btn">
               <i class="fas fa-check-circle"></i> Complete Booking
             </button>
           </form>
-          
+
           <!-- Hidden field to store login status -->
           <input type="hidden" id="isLoggedIn" th:value="${session.user != null} ? 'true' : 'false'" />
-          
+
           <div class="login-reminder" th:if="${session.user == null}">
             Please <a href="#" onclick="document.getElementById('modalOverlayLogin').style.display = 'flex'; return false;" class="login-link">login</a> to complete your booking
           </div>
@@ -418,10 +418,10 @@
 
   <!-- Include Modal Scripts -->
   <div th:replace="~{fragments/auth-modals :: modalScripts}"></div>
-  
+
   <!-- Include Navbar Scripts -->
   <div th:replace="~{fragments/navbar :: navbarScript}"></div>
-  
+
   <!-- Flatpickr Date Picker JS -->
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
@@ -449,7 +449,7 @@
           const nextDay = new Date(selectedDates[0]);
           nextDay.setDate(nextDay.getDate() + 1);
           checkOutPicker.set('minDate', nextDay);
-          
+
           // If check-out date is before new check-in date + 1, update it
           if (checkOutPicker.selectedDates[0] <= selectedDates[0]) {
             checkOutPicker.setDate(nextDay);
@@ -477,353 +477,91 @@
       function calculateTotals() {
         let totalRooms = 0;
         let totalPrice = 0;
-        
+
         // Calculate nights - fixed calculation
         const checkInDate = checkInPicker.selectedDates[0];
         const checkOutDate = checkOutPicker.selectedDates[0];
-        
+
         // Calculate nights by days difference, not milliseconds
         const checkInDay = new Date(checkInDate.getFullYear(), checkInDate.getMonth(), checkInDate.getDate());
         const checkOutDay = new Date(checkOutDate.getFullYear(), checkOutDate.getMonth(), checkOutDate.getDate());
         const millisecondsPerDay = 1000 * 60 * 60 * 24;
         const nights = Math.round((checkOutDay - checkInDay) / millisecondsPerDay);
-        
+
         console.log(`Calculating price for ${nights} nights (${checkInDate.toDateString()} to ${checkOutDate.toDateString()})`);
-        
+
         // Calculate totals based on selected rooms
         roomSelects.forEach(select => {
           const roomCount = parseInt(select.value);
           const roomPrice = parseFloat(select.getAttribute('data-room-price'));
           const roomTypeId = select.getAttribute('data-room-type-id');
-          
+
           console.log(`Room type ID: ${roomTypeId}, Count: ${roomCount}, Price: $${roomPrice}, Subtotal: $${roomCount * roomPrice * nights}`);
-          
+
           totalRooms += roomCount;
           totalPrice += roomCount * roomPrice * nights;
         });
-        
-        console.log(`Total price for ${totalRooms} rooms: $${totalPrice.toFixed(2)}`);
-        
-        // Update the display
+
+        // Update the UI
         totalRoomsEl.textContent = totalRooms;
         totalPriceEl.textContent = totalPrice.toFixed(2);
-        
-        // Enable/disable booking button based on selection
-        completeBookingBtn.disabled = totalRooms === 0 || /*[[${session.user == null}]]*/ true;
-      }
-      
-      // Add event listeners to room selects
-      roomSelects.forEach(select => {
-        select.addEventListener('change', calculateTotals);
-      });
-      
-      // Calculate initial totals
-      calculateTotals();
 
-      // Handle booking submission
-      completeBookingBtn.addEventListener('click', function(e) {
-        e.preventDefault(); // Prevent any default action
-        console.log("Booking button clicked");
-        
-        try {
-          // Check if user is logged in first
-          const userLoggedIn = document.getElementById('isLoggedIn').value === 'true';
-          console.log("User logged in:", userLoggedIn);
-          
-          if (!userLoggedIn) {
-            console.log("User not logged in, showing alert");
-            // Show login requirement
-            window.alert('You need to login before booking!');
-            
-            // Show the login modal
-            const loginModal = document.getElementById('modalOverlayLogin');
-            if (loginModal) {
-              loginModal.style.display = 'flex';
-            }
-            
-            // Return early to prevent further processing
-            return;
+        // Update hidden form fields
+        document.getElementById('bookingFormCheckIn').value = formatDate(checkInDate);
+        document.getElementById('bookingFormCheckOut').value = formatDate(checkOutDate);
+        document.getElementById('bookingFormPrice').value = totalPrice.toFixed(2);
+
+        // Create room selections JSON
+        const roomSelections = [];
+        roomSelects.forEach(select => {
+          const roomCount = parseInt(select.value);
+          if (roomCount > 0) {
+            roomSelections.push({
+              roomTypeId: parseInt(select.getAttribute('data-room-type-id')),
+              count: roomCount
+            });
           }
-          
-          // Validate selections
-          if (totalRoomsEl.textContent === '0') {
-            alert('Please select at least one room to book.');
-            return;
-          }
-          
-          console.log("User is logged in, proceeding with booking submission");
-          
-          // Create form data for submission
-          const formData = {
-            checkInDate: formatDateForBackend(checkInPicker.selectedDates[0]),
-            checkOutDate: formatDateForBackend(checkOutPicker.selectedDates[0]),
-            roomSelections: []
-          };
-          
-          // Add each selected room type
-          roomSelects.forEach(select => {
-            const count = parseInt(select.value);
-            if (count > 0) {
-              formData.roomSelections.push({
-                roomTypeId: parseInt(select.getAttribute('data-room-type-id')),
-                count: count
-              });
-            }
-          });
-          
-          console.log("Setting form values");
-          // Set values in the form
-          document.getElementById('bookingFormCheckIn').value = formData.checkInDate;
-          document.getElementById('bookingFormCheckOut').value = formData.checkOutDate;
-          document.getElementById('bookingFormPrice').value = totalPriceEl.textContent;
-          document.getElementById('bookingFormSelections').value = JSON.stringify(formData.roomSelections);
-          
-          // Get form reference
-          const bookingForm = document.getElementById('bookingForm');
-          
-          // Debugging
-          console.log("Form action:", bookingForm.action);
-          console.log("Form method:", bookingForm.method);
-          console.log("Submitting booking form with data:", {
-            checkInDate: document.getElementById('bookingFormCheckIn').value,
-            checkOutDate: document.getElementById('bookingFormCheckOut').value,
-            totalPrice: document.getElementById('bookingFormPrice').value,
-            roomSelections: document.getElementById('bookingFormSelections').value
-          });
-          
-          // Submit the form
-          console.log("Submitting form...");
-          bookingForm.submit();
-          console.log("Form submitted");
-        } catch (error) {
-          console.error("Error in booking submission:", error);
-          alert("An error occurred while processing your booking: " + error.message);
+        });
+        document.getElementById('bookingFormSelections').value = JSON.stringify(roomSelections);
+
+        // Enable/disable booking button based on selection
+        completeBookingBtn.disabled = totalRooms === 0;
+        if (totalRooms === 0) {
+          completeBookingBtn.classList.add('disabled');
+        } else {
+          completeBookingBtn.classList.remove('disabled');
         }
-      });
-      
-      // Helper function to format date for backend (DD-MM-YYYY to yyyy-MM-dd)
-      function formatDateForBackend(date) {
+      }
+
+      // Helper function to format date as DD-MM-YYYY
+      function formatDate(date) {
         const day = date.getDate().toString().padStart(2, '0');
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
         const year = date.getFullYear();
         return `${day}-${month}-${year}`;
       }
 
-      // Room Detail Modal Functionality
-      const modalOverlay = document.getElementById('modalOverlayRoomDetail');
-      const closeModalBtn = document.getElementById('closeModalRoomDetail');
-      const roomCards = document.querySelectorAll('.room-card');
-      let currentSelectedCard = null;
-      
-      // Close modal when clicking the close button or outside the modal
-      closeModalBtn.addEventListener('click', () => {
-        modalOverlay.style.display = 'none';
-        if (currentSelectedCard) {
-          currentSelectedCard.querySelector('h2').classList.remove('selected-room');
-          currentSelectedCard = null;
-        }
-      });
-      
-      modalOverlay.addEventListener('click', (e) => {
-        if (e.target === modalOverlay) {
-          modalOverlay.style.display = 'none';
-          if (currentSelectedCard) {
-            currentSelectedCard.querySelector('h2').classList.remove('selected-room');
-            currentSelectedCard = null;
-          }
-        }
+      // Add event listeners to room selects
+      roomSelects.forEach(select => {
+        select.addEventListener('change', calculateTotals);
       });
 
-      // Open modal when clicking room card title
-      roomCards.forEach(card => {
-        const roomTitle = card.querySelector('h2');
-        roomTitle.style.cursor = 'pointer';
-        
-        roomTitle.addEventListener('click', () => {
-          // Clear previous selection
-          if (currentSelectedCard) {
-            currentSelectedCard.querySelector('h2').classList.remove('selected-room');
-          }
-          
-          // Set current selection
-          currentSelectedCard = card;
-          roomTitle.classList.add('selected-room');
-          
-          // Get the background image URL from the room card
-          const roomImageDiv = card.querySelector('.room-image');
-          const roomImageStyle = window.getComputedStyle(roomImageDiv).backgroundImage;
-          
-          const roomType = {
-            name: card.querySelector('h2').textContent,
-            capacity: card.querySelector('.meta-item span span').textContent,
-            amenities: card.querySelector('.meta-item:nth-child(2) span').textContent,
-            description: card.querySelector('.room-description').textContent,
-            price: card.querySelector('.room-select').getAttribute('data-room-price'),
-            availableRooms: card.querySelector('.availability-btn span').textContent,
-            imagePath: roomImageStyle
-          };
-        
-        // Update modal content
-          document.getElementById('detailRoomTitle').textContent = roomType.name;
-          document.getElementById('roomCapacityDetail').textContent = roomType.capacity;
-          document.getElementById('roomDescriptionDetail').textContent = roomType.description;
-          document.getElementById('roomPriceDetail').textContent = roomType.price;
-          
-          // Set modal room image - using computed style to get the complete URL
-          const modalRoomImage = document.getElementById('modalRoomImage');
-          modalRoomImage.style.backgroundImage = roomType.imagePath;
-          
-          // Update amenities list
-        const amenitiesList = document.getElementById('roomAmenitiesList');
-          amenitiesList.innerHTML = '';
-          const amenities = roomType.amenities.split(',');
-          amenities.forEach(amenity => {
-            const li = document.createElement('li');
-            li.innerHTML = `<i class="fas fa-check"></i> ${amenity.trim()}`;
-            amenitiesList.appendChild(li);
-          });
-          
-          // Update availability in modal
-        document.getElementById('modalAvailableBtn').innerHTML = 
-            `<i class="fas fa-check-circle"></i> Available ${roomType.availableRooms}`;
-          
-          // Update room select options in modal
-          const modalSelect = document.getElementById('modalRoomSelect');
-          modalSelect.innerHTML = '<option value="0">0 Rooms</option>';
-          for (let i = 1; i <= roomType.availableRooms; i++) {
-            modalSelect.innerHTML += `<option value="${i}">${i} Room${i > 1 ? 's' : ''}</option>`;
-          }
-          
-          // Set the modal select to match the main select
-          const mainSelect = card.querySelector('.room-select');
-          modalSelect.value = mainSelect.value;
-          
-          // Show modal
-          modalOverlay.style.display = 'flex';
-        });
-      });
-      
-      // Handle "Done" button in modal
-      document.getElementById('modalAddBtn').addEventListener('click', () => {
-        if (currentSelectedCard) {
-          const mainSelect = currentSelectedCard.querySelector('.room-select');
-          const modalSelect = document.getElementById('modalRoomSelect');
-          mainSelect.value = modalSelect.value;
-          
-          // Dispatch change event to update totals
-          mainSelect.dispatchEvent(new Event('change'));
-          
-          // Close modal
-          modalOverlay.style.display = 'none';
-          currentSelectedCard.querySelector('h2').classList.remove('selected-room');
-          currentSelectedCard = null;
-          
-          // Log for debugging
-          console.log('Updated room selection from modal, triggered calculation');
+      // Complete booking button click handler
+      completeBookingBtn.addEventListener('click', function() {
+        const isLoggedIn = document.getElementById('isLoggedIn').value === 'true';
+
+        if (!isLoggedIn) {
+          // Show login modal
+          document.getElementById('modalOverlayLogin').style.display = 'flex';
+          return;
         }
+
+        // Submit the form
+        document.getElementById('bookingForm').submit();
       });
 
-      // Notification system functions
-      const notification = document.getElementById('notification');
-      const notificationLoginBtn = document.getElementById('notification-login');
-      
-      // Function to show the notification
-      function showNotification() {
-        notification.classList.add('show');
-        
-        // Auto-hide after 10 seconds
-        setTimeout(() => {
-          notification.classList.remove('show');
-        }, 10000);
-      }
-      
-      // Handle notification login button click
-      notificationLoginBtn.addEventListener('click', () => {
-        // Hide notification
-        notification.classList.remove('show');
-        
-        // Open login modal
-        if (typeof window.openLoginModal === 'function') {
-          window.openLoginModal();
-        } else {
-          // Fallback method
-          const loginModal = document.getElementById('modalOverlayLogin');
-          if (loginModal) {
-            loginModal.style.display = 'flex';
-          } else {
-            console.error("Login modal element not found");
-          }
-        }
-      });
-
-      // Hide notification when clicking outside of it
-      document.addEventListener('click', (e) => {
-        if (notification.classList.contains('show') && 
-            !notification.contains(e.target) && 
-            e.target !== completeBookingBtn) {
-          notification.classList.remove('show');
-        }
-      });
-      
-      // Login overlay handlers
-      const loginOverlay = document.getElementById('login-overlay');
-      const loginOverlayLoginBtn = document.getElementById('login-overlay-login');
-      const loginOverlayDismissBtn = document.getElementById('login-overlay-dismiss');
-      
-      // Login button on overlay
-      loginOverlayLoginBtn.addEventListener('click', () => {
-        // Hide the overlay
-        loginOverlay.style.display = 'none';
-        
-        // Open login modal
-        if (typeof window.openLoginModal === 'function') {
-          window.openLoginModal();
-        } else {
-          // Fallback method
-          const loginModal = document.getElementById('modalOverlayLogin');
-          if (loginModal) {
-            loginModal.style.display = 'flex';
-          } else {
-            console.error("Login modal element not found");
-          }
-        }
-      });
-      
-      // Dismiss button on overlay
-      loginOverlayDismissBtn.addEventListener('click', () => {
-        loginOverlay.style.display = 'none';
-      });
-      
-      // Close overlay when clicking outside of content
-      loginOverlay.addEventListener('click', (e) => {
-        if (e.target === loginOverlay) {
-          loginOverlay.style.display = 'none';
-        }
-      });
-    });
-  </script>
-
-  <!-- Additional script to ensure login links work properly -->
-  <script>
-    // Ensure all login links work
-    document.addEventListener('DOMContentLoaded', function() {
-      // Initialize direct login links
-      const loginLinks = document.querySelectorAll('.login-link');
-      loginLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-          e.preventDefault();
-          console.log("Login link clicked");
-          
-          // Try to find and show the login modal
-          const loginModal = document.getElementById('modalOverlayLogin');
-          if (loginModal) {
-            loginModal.style.display = 'flex';
-            console.log("Login modal shown via direct link");
-          } else {
-            console.error("Login modal element not found");
-          }
-        });
-      });
+      // Initialize with default values
+      calculateTotals();
     });
   </script>
 </body>

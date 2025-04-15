@@ -157,7 +157,7 @@ body {
 /* ============ HERO SECTION ============ */
 .hero-section {
     height: 100vh;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url('/img/hotel-hero.jpg');
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url('/img/homePage/HotelPage.jpg');
     background-position: center;
     background-size: cover;
     display: flex;
@@ -401,7 +401,7 @@ body {
     .navbar {
         padding: 0 20px;
     }
-    
+
     .nav-links {
         position: fixed;
         top: 70px;
@@ -414,23 +414,23 @@ body {
         padding-top: 30px;
         transition: all 0.3s ease;
     }
-    
+
     .nav-links.active {
         left: 0;
     }
-    
+
     .mobile-menu-btn {
         display: block;
     }
-    
+
     .hero-text h1 {
         font-size: 2.5rem;
     }
-    
+
     .hero-cta {
         flex-direction: column;
     }
-    
+
     .modal-buttons {
         flex-direction: column;
     }
@@ -440,11 +440,11 @@ body {
     .hero-text h1 {
         font-size: 2rem;
     }
-    
+
     .hero-text p {
         font-size: 1rem;
     }
-    
+
     .book-call, .learn-more {
         width: 100%;
         text-align: center;
