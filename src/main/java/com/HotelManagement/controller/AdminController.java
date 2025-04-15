@@ -870,7 +870,7 @@ public class AdminController {
             // Format total
             model.addAttribute("formattedTotal", String.format("%.2f", booking.getTotalAmount()));
             
-            return "InvoicePage";
+            return "invoice/InvoicePage";
         } catch (Exception e) {
             model.addAttribute("error", "Error generating invoice: " + e.getMessage());
             return "redirect:/admin/revenue";

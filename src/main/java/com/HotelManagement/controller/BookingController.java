@@ -115,7 +115,7 @@ public class BookingController {
         model.addAttribute("bookingDetails", bookingDetails);
         model.addAttribute("totalAmount", totalAmount);
 
-        return "BookingConfirmation";
+        return "booking/BookingConfirmation";
     }
 
     @GetMapping("/booking")
@@ -145,7 +145,7 @@ public class BookingController {
         }
         model.addAttribute("availableRoomCounts", availableRoomCounts);
         
-        return "BookingPage";
+        return "booking/BookingPage";
     }
 
     @PostMapping("/booking/create")

@@ -31,7 +31,7 @@ public class HomeController
         }
         
         // Otherwise show regular home page
-        return "HomePage";
+        return "homepage/HomePage";
     }
 
     @GetMapping("/contract")
@@ -50,7 +50,7 @@ public class HomeController
             return "redirect:/admin";
         }
         
-        return "ContractPage";
+        return "homepage/ContractPage";
     }
     
     @GetMapping("/intro")
@@ -69,6 +69,6 @@ public class HomeController
             return "redirect:/admin";
         }
         
-        return "IntroductionPage";
+        return "homepage/IntroductionPage";
     }
 }

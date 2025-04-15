@@ -144,7 +144,7 @@ public class ReceptionistController {
                 model.addAttribute("bookingDetailsMap", bookingDetailsMap);
             }
             
-            return "ReceptionistPage";
+            return "receptionist/ReceptionistPage";
         } catch (Exception e) {
             logger.error("Error in dashboard method", e);
             throw e;
@@ -205,7 +205,7 @@ public class ReceptionistController {
             return "receptionist/booking-search-results";
         } catch (Exception e) {
             model.addAttribute("error", "Error searching for bookings: " + e.getMessage());
-            return "receptionist/dashboard";
+            return "receptionist/ReceptionistDashboard";
         }
     }
     
@@ -302,7 +302,7 @@ public class ReceptionistController {
             e.printStackTrace();
         }
         
-        return "ReceptionistBookingPage";
+        return "receptionist/ReceptionistBookingPage";
     }
     
     /**
@@ -362,7 +362,7 @@ public class ReceptionistController {
             bookings = bookingService.getBookingsByDate(LocalDate.now());
         }
         model.addAttribute("bookings", bookings);
-        return "ReceptionistDashboard";
+        return "receptionist/ReceptionistDashboard";
     }
     
     /**
@@ -597,7 +597,7 @@ public class ReceptionistController {
             // Format total
             model.addAttribute("formattedTotal", String.format("%.2f", booking.getTotalAmount()));
             
-            return "InvoicePage";
+            return "invoice/InvoicePage";
         } catch (Exception e) {
             model.addAttribute("error", "Error generating invoice: " + e.getMessage());
             return "redirect:/receptionist";
