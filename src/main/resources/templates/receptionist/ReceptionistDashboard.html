@@ -5,121 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Receptionist Dashboard - Luxury Hotel</title>
     <link rel="stylesheet" th:href="@{/css/stylesHome.css}" />
+    <link rel="stylesheet" th:href="@{/css/receptionist-dashboard.css}" />
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        .dashboard-container {
-            padding: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .search-section {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        .search-box {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .search-input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        .search-button {
-            padding: 10px 20px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .search-button:hover {
-            background: #45a049;
-        }
-        .bookings-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .bookings-table th,
-        .bookings-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        .bookings-table th {
-            background: #f5f5f5;
-            font-weight: 600;
-        }
-        .bookings-table tr:hover {
-            background: #f9f9f9;
-        }
-        .status-badge {
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .status-confirmed {
-            background: #e3f2fd;
-            color: #1976d2;
-        }
-        .status-checked-in {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-        .status-checked-out {
-            background: #fafafa;
-            color: #616161;
-        }
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-        }
-        .action-button {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            color: white;
-        }
-        .check-in-button {
-            background: #4CAF50;
-        }
-        .check-out-button {
-            background: #f44336;
-        }
-        .view-button {
-            background: #2196F3;
-        }
-        .action-button:hover {
-            opacity: 0.9;
-        }
-        .action-button:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-        }
-        .no-bookings {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-            font-style: italic;
-        }
-    </style>
 </head>
 <body>
     <!-- Navbar -->
@@ -166,7 +56,7 @@
                     <td th:text="${booking.id}">123</td>
                     <td>
                         <div th:text="${booking.customer.name}">John Doe</div>
-                        <div style="color: #666; font-size: 14px;" th:text="${booking.customer.phone}">+1234567890</div>
+                        <div class="customer-phone" th:text="${booking.customer.phone}">+1234567890</div>
                     </td>
                     <td>
                         <div th:each="detail : ${booking.bookingDetails}">

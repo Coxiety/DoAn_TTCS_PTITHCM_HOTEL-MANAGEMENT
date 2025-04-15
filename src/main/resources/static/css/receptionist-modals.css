@@ -1,0 +1,155 @@
+/* Action Button Styles */
+.action-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-primary {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-danger {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+/* Custom Modal Overlay Styles */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal-overlay .modal-content {
+    background-color: #fff;
+    width: 450px;
+    max-width: 90%;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.modal-overlay .modal-header {
+    background-color: #1a2942;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.modal-overlay .modal-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.modal-overlay .close-modal {
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.modal-overlay .close-modal:hover {
+    color: #f44336;
+}
+
+.modal-overlay .modal-body {
+    padding: 25px;
+}
+
+.modal-overlay .checkout-info {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    border-left: 4px solid #4CAF50;
+}
+
+.modal-overlay .checkout-info h3 {
+    margin-top: 0;
+    color: #1a2942;
+    font-size: 18px;
+}
+
+.modal-overlay .checkout-info p {
+    color: #333;
+}
+
+.modal-overlay .form-group {
+    margin-bottom: 20px;
+}
+
+.modal-overlay label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+}
+
+.modal-overlay select {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    background-color: white;
+}
+
+.modal-overlay .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 30px;
+}
+
+.modal-overlay .form-actions button {
+    padding: 10px 20px;
+    font-size: 16px;
+}
+
+/* Additional inline styles */
+#bookingRooms {
+    margin-top: 10px;
+}
+
+.booking-room-info {
+    color: #333; 
+    font-weight: bold; 
+    margin-top: 10px;
+}
+
+#earlyCheckoutWarning {
+    margin-top: 10px;
+    color: #e74c3c;
+    background-color: #fadbd8;
+    padding: 10px;
+    border-radius: 4px;
+    border-left: 4px solid #e74c3c;
+    display: none;
+} 
