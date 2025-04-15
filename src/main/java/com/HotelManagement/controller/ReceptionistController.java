@@ -162,7 +162,6 @@ public class ReceptionistController {
             @RequestParam String fullName,
             @RequestParam String phone,
             @RequestParam String email,
-            @RequestParam(required = false) String address,
             RedirectAttributes redirectAttributes) {
         
         try {
@@ -170,7 +169,6 @@ public class ReceptionistController {
             newCustomer.setFullName(fullName);
             newCustomer.setPhone(phone);
             newCustomer.setEmail(email);
-            newCustomer.setAddress(address);
             
             customerService.saveCustomer(newCustomer);
             redirectAttributes.addFlashAttribute("success", "Customer created successfully!");

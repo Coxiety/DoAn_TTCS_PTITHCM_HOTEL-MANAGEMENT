@@ -35,13 +35,6 @@ public class CustomerService {
             }
         }
         
-        if (customer.getIdCard() != null && !customer.getIdCard().isEmpty()) {
-            Optional<Customer> existingIdCard = customerRepository.findByIdCard(customer.getIdCard());
-            if (existingIdCard.isPresent() && !existingIdCard.get().getId().equals(customer.getId())) {
-                throw new RuntimeException("Customer with this ID card already exists");
-            }
-        }
-        
         return customerRepository.save(customer);
     }
     
@@ -70,11 +63,6 @@ public class CustomerService {
     
     public Customer getCustomerByUserId(Integer userId) {
         return customerRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
-    }
-    
-    public Customer getCustomerByIdCard(String idCard) {
-        return customerRepository.findByIdCard(idCard)
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
     }
     
@@ -122,12 +110,6 @@ public class CustomerService {
         }
         if (customerDetails.getPhone() != null) {
             customer.setPhone(customerDetails.getPhone());
-        }
-        if (customerDetails.getAddress() != null) {
-            customer.setAddress(customerDetails.getAddress());
-        }
-        if (customerDetails.getIdCard() != null) {
-            customer.setIdCard(customerDetails.getIdCard());
         }
         
         return saveCustomer(customer);

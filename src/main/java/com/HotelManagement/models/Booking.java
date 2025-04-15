@@ -47,9 +47,6 @@ public class Booking {
     @Column(name = "payment_method", length = 50)
     private String paymentMethod;
     
-    @Column(columnDefinition = "varchar(max)")
-    private String notes;
-    
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
@@ -143,14 +140,6 @@ public class Booking {
     
     public void setPaymentMethod(String paymentMethod) {
         this.paymentMethod = paymentMethod;
-    }
-    
-    public String getNotes() {
-        return notes;
-    }
-    
-    public void setNotes(String notes) {
-        this.notes = notes;
     }
     
     public LocalDateTime getCreatedAt() {

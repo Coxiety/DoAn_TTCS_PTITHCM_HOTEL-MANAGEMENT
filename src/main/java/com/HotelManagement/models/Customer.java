@@ -33,12 +33,6 @@ public class Customer {
     @Column(nullable = false, length = 20)
     private String phone;
     
-    @Column(columnDefinition = "varchar(max)")
-    private String address;
-    
-    @Column(name = "id_card", length = 50)
-    private String idCard;
-    
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
@@ -49,11 +43,10 @@ public class Customer {
     public Customer() {
     }
     
-    public Customer(String fullName, String email, String phone, String address) {
+    public Customer(String fullName, String email, String phone) {
         this.fullName = fullName;
         this.email = email;
         this.phone = phone;
-        this.address = address;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -97,22 +90,6 @@ public class Customer {
     
     public void setPhone(String phone) {
         this.phone = phone;
-    }
-    
-    public String getAddress() {
-        return address;
-    }
-    
-    public void setAddress(String address) {
-        this.address = address;
-    }
-    
-    public String getIdCard() {
-        return idCard;
-    }
-    
-    public void setIdCard(String idCard) {
-        this.idCard = idCard;
     }
     
     public LocalDateTime getCreatedAt() {

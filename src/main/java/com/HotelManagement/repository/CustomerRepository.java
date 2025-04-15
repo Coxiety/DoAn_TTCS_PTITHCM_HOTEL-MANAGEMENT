@@ -20,9 +20,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Integer> {
     @Query("SELECT c FROM Customer c WHERE c.fullName LIKE %:query% OR c.phone LIKE %:query% OR c.email LIKE %:query%")
     List<Customer> searchCustomers(@Param("query") String query);
     
-    @Query("SELECT c FROM Customer c WHERE c.idCard = :idCard")
-    Optional<Customer> findByIdCard(@Param("idCard") String idCard);
-    
     @Query("SELECT DISTINCT c FROM Customer c JOIN Booking b ON c.id = b.customer.id WHERE b.checkInDate >= :startDate")
     List<Customer> findCustomersWithRecentBookings(@Param("startDate") LocalDateTime startDate);
     
