@@ -1,24 +1,23 @@
 USE [master]
 GO
-/****** Object:  Database [Hotel_Management]    Script Date: 06/04/2025 2:05:39 CH ******/
+/****** Object:  Database [Hotel_Management]    Script Date: 17/04/2025 4:16:14 CH ******/
 CREATE DATABASE [Hotel_Management]
-
 GO
 USE [Hotel_Management]
 GO
-/****** Object:  User [admin]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  User [admin]    Script Date: 17/04/2025 4:16:15 CH ******/
 CREATE USER [admin] FOR LOGIN [admin] WITH DEFAULT_SCHEMA=[dbo]
 GO
-/****** Object:  DatabaseRole [HotelReceptionist]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  DatabaseRole [HotelReceptionist]    Script Date: 17/04/2025 4:16:15 CH ******/
 CREATE ROLE [HotelReceptionist]
 GO
-/****** Object:  DatabaseRole [HotelCustomer]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  DatabaseRole [HotelCustomer]    Script Date: 17/04/2025 4:16:15 CH ******/
 CREATE ROLE [HotelCustomer]
 GO
-/****** Object:  DatabaseRole [HotelAdmin]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  DatabaseRole [HotelAdmin]    Script Date: 17/04/2025 4:16:15 CH ******/
 CREATE ROLE [HotelAdmin]
 GO
-/****** Object:  Table [dbo].[room_type]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  Table [dbo].[room_type]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -39,7 +38,7 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[room]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  Table [dbo].[room]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -62,7 +61,7 @@ UNIQUE NONCLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  View [dbo].[vw_available_rooms]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  View [dbo].[vw_available_rooms]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -79,7 +78,7 @@ FROM room r
 JOIN room_type rt ON r.room_type_id = rt.id
 WHERE r.status = 'AVAILABLE';
 GO
-/****** Object:  Table [dbo].[booking]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  Table [dbo].[booking]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -94,16 +93,15 @@ CREATE TABLE [dbo].[booking](
 	[total_amount] [decimal](10, 2) NOT NULL,
 	[payment_status] [varchar](20) NOT NULL,
 	[payment_method] [varchar](50) NULL,
-	[notes] [varchar](max) NULL,
 	[created_at] [datetime] NULL,
 	[updated_at] [datetime] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[users]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  Table [dbo].[users]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -136,7 +134,7 @@ UNIQUE NONCLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[customer]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  Table [dbo].[customer]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -147,17 +145,15 @@ CREATE TABLE [dbo].[customer](
 	[full_name] [varchar](100) NOT NULL,
 	[email] [varchar](100) NULL,
 	[phone] [varchar](20) NOT NULL,
-	[address] [varchar](max) NULL,
-	[id_card] [varchar](50) NULL,
 	[created_at] [datetime] NULL,
 	[updated_at] [datetime] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+) ON [PRIMARY]
 GO
-/****** Object:  View [dbo].[vw_today_checkins]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  View [dbo].[vw_today_checkins]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -171,9 +167,9 @@ FROM booking b
 JOIN customer c ON b.customer_id = c.id
 LEFT JOIN users u ON b.user_id = u.id
 WHERE CAST(b.check_in_date AS DATE) = CAST(GETDATE() AS DATE)
-  AND b.status = 'CONFIRMED';
+  AND b.status IN ('CONFIRMED', 'CHECKED_IN');
 GO
-/****** Object:  Table [dbo].[booking_detail]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  Table [dbo].[booking_detail]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -187,13 +183,14 @@ CREATE TABLE [dbo].[booking_detail](
 	[created_at] [datetime] NULL,
 	[updated_at] [datetime] NULL,
 	[check_in_date] [datetime2](6) NULL,
+	[check_out_date] [datetime] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  View [dbo].[vw_customer_bookings]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  View [dbo].[vw_customer_bookings]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -206,7 +203,7 @@ SELECT b.id, b.check_in_date, b.check_out_date, b.status, b.total_amount, b.paym
 FROM booking b
 JOIN customer c ON b.customer_id = c.id;
 GO
-/****** Object:  View [dbo].[vw_room_occupancy]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  View [dbo].[vw_room_occupancy]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -223,7 +220,7 @@ LEFT JOIN booking_detail bd ON r.id = bd.room_id
 LEFT JOIN booking b ON bd.booking_id = b.id AND b.status IN ('CHECKED_IN', 'CONFIRMED')
 LEFT JOIN customer c ON b.customer_id = c.id;
 GO
-/****** Object:  View [dbo].[vw_revenue_by_room_type]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  View [dbo].[vw_revenue_by_room_type]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -241,25 +238,7 @@ JOIN booking b ON bd.booking_id = b.id
 WHERE b.status = 'CHECKED_OUT'
 GROUP BY rt.id, rt.name;
 GO
-/****** Object:  Table [dbo].[Invoices]    Script Date: 06/04/2025 2:05:40 CH ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[Invoices](
-	[id] [int] IDENTITY(1,1) NOT NULL,
-	[issued_date] [datetime2](6) NOT NULL,
-	[status] [varchar](50) NOT NULL,
-	[total_amount] [numeric](10, 2) NOT NULL,
-	[booking_id] [int] NOT NULL,
-	[user_id] [int] NULL,
-PRIMARY KEY CLUSTERED 
-(
-	[id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-GO
-/****** Object:  Table [dbo].[payment]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  Table [dbo].[payment]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -279,13 +258,13 @@ PRIMARY KEY CLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Index [idx_booking_check_in_date]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  Index [idx_booking_check_in_date]    Script Date: 17/04/2025 4:16:15 CH ******/
 CREATE NONCLUSTERED INDEX [idx_booking_check_in_date] ON [dbo].[booking]
 (
 	[check_in_date] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [idx_booking_customer_id]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  Index [idx_booking_customer_id]    Script Date: 17/04/2025 4:16:15 CH ******/
 CREATE NONCLUSTERED INDEX [idx_booking_customer_id] ON [dbo].[booking]
 (
 	[customer_id] ASC
@@ -293,13 +272,13 @@ CREATE NONCLUSTERED INDEX [idx_booking_customer_id] ON [dbo].[booking]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [idx_booking_status]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  Index [idx_booking_status]    Script Date: 17/04/2025 4:16:15 CH ******/
 CREATE NONCLUSTERED INDEX [idx_booking_status] ON [dbo].[booking]
 (
 	[status] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [idx_booking_user_id]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  Index [idx_booking_user_id]    Script Date: 17/04/2025 4:16:15 CH ******/
 CREATE NONCLUSTERED INDEX [idx_booking_user_id] ON [dbo].[booking]
 (
 	[user_id] ASC
@@ -307,19 +286,19 @@ CREATE NONCLUSTERED INDEX [idx_booking_user_id] ON [dbo].[booking]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [idx_customer_phone]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  Index [idx_customer_phone]    Script Date: 17/04/2025 4:16:15 CH ******/
 CREATE NONCLUSTERED INDEX [idx_customer_phone] ON [dbo].[customer]
 (
 	[phone] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [idx_payment_booking_id]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  Index [idx_payment_booking_id]    Script Date: 17/04/2025 4:16:15 CH ******/
 CREATE NONCLUSTERED INDEX [idx_payment_booking_id] ON [dbo].[payment]
 (
 	[booking_id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [idx_room_room_type_id]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  Index [idx_room_room_type_id]    Script Date: 17/04/2025 4:16:15 CH ******/
 CREATE NONCLUSTERED INDEX [idx_room_room_type_id] ON [dbo].[room]
 (
 	[room_type_id] ASC
@@ -327,13 +306,13 @@ CREATE NONCLUSTERED INDEX [idx_room_room_type_id] ON [dbo].[room]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [idx_room_status]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  Index [idx_room_status]    Script Date: 17/04/2025 4:16:15 CH ******/
 CREATE NONCLUSTERED INDEX [idx_room_status] ON [dbo].[room]
 (
 	[status] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [idx_users_role_id]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  Index [idx_users_role_id]    Script Date: 17/04/2025 4:16:15 CH ******/
 CREATE NONCLUSTERED INDEX [idx_users_role_id] ON [dbo].[users]
 (
 	[role_id] ASC
@@ -341,7 +320,7 @@ CREATE NONCLUSTERED INDEX [idx_users_role_id] ON [dbo].[users]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [idx_users_username]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  Index [idx_users_username]    Script Date: 17/04/2025 4:16:15 CH ******/
 CREATE NONCLUSTERED INDEX [idx_users_username] ON [dbo].[users]
 (
 	[username] ASC
@@ -349,7 +328,7 @@ CREATE NONCLUSTERED INDEX [idx_users_username] ON [dbo].[users]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UK_ncoa9bfasrql0x4nhmh1plxxy]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  Index [UK_ncoa9bfasrql0x4nhmh1plxxy]    Script Date: 17/04/2025 4:16:15 CH ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UK_ncoa9bfasrql0x4nhmh1plxxy] ON [dbo].[users]
 (
 	[email] ASC
@@ -413,23 +392,13 @@ ALTER TABLE [dbo].[customer]  WITH CHECK ADD FOREIGN KEY([user_id])
 REFERENCES [dbo].[users] ([id])
 ON DELETE SET NULL
 GO
-ALTER TABLE [dbo].[Invoices]  WITH CHECK ADD  CONSTRAINT [FK1176kiirslq9sjbva69h86dao] FOREIGN KEY([booking_id])
-REFERENCES [dbo].[booking] ([id])
-GO
-ALTER TABLE [dbo].[Invoices] CHECK CONSTRAINT [FK1176kiirslq9sjbva69h86dao]
-GO
-ALTER TABLE [dbo].[Invoices]  WITH CHECK ADD  CONSTRAINT [FK7f40lrpb4q6f4kdc0xv5goe27] FOREIGN KEY([user_id])
-REFERENCES [dbo].[users] ([id])
-GO
-ALTER TABLE [dbo].[Invoices] CHECK CONSTRAINT [FK7f40lrpb4q6f4kdc0xv5goe27]
-GO
 ALTER TABLE [dbo].[payment]  WITH CHECK ADD FOREIGN KEY([booking_id])
 REFERENCES [dbo].[booking] ([id])
 GO
 ALTER TABLE [dbo].[room]  WITH CHECK ADD FOREIGN KEY([room_type_id])
 REFERENCES [dbo].[room_type] ([id])
 GO
-/****** Object:  StoredProcedure [dbo].[sp_check_in_customer]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  StoredProcedure [dbo].[sp_check_in_customer]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -463,7 +432,7 @@ BEGIN
     COMMIT;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[sp_check_out_customer]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  StoredProcedure [dbo].[sp_check_out_customer]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -498,7 +467,7 @@ BEGIN
     COMMIT;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[sp_get_available_rooms_by_type]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  StoredProcedure [dbo].[sp_get_available_rooms_by_type]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -514,7 +483,7 @@ BEGIN
     WHERE r.room_type_id = @room_type_id AND r.status = 'AVAILABLE';
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[sp_get_booking_details]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  StoredProcedure [dbo].[sp_get_booking_details]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -535,7 +504,7 @@ BEGIN
     WHERE b.id = @booking_id;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[sp_get_bookings_by_phone]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  StoredProcedure [dbo].[sp_get_bookings_by_phone]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -556,7 +525,7 @@ BEGIN
     ORDER BY b.created_at DESC;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[sp_get_customer_booking_history]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  StoredProcedure [dbo].[sp_get_customer_booking_history]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -573,7 +542,7 @@ BEGIN
     ORDER BY b.created_at DESC;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[sp_get_customer_statistics]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  StoredProcedure [dbo].[sp_get_customer_statistics]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -592,7 +561,7 @@ BEGIN
     LEFT JOIN booking b ON c.id = b.customer_id;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[sp_get_daily_revenue_report]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  StoredProcedure [dbo].[sp_get_daily_revenue_report]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -614,7 +583,7 @@ BEGIN
     ORDER BY PaymentDate;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[sp_get_occupancy_rate]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  StoredProcedure [dbo].[sp_get_occupancy_rate]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -647,7 +616,7 @@ BEGIN
         CAST(@occupied_rooms AS FLOAT) / (@total_rooms * @total_days) * 100 AS occupancy_rate;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[sp_get_payment_report]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  StoredProcedure [dbo].[sp_get_payment_report]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -668,7 +637,7 @@ BEGIN
     ORDER BY PaymentDate;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[sp_get_room_occupancy_report]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  StoredProcedure [dbo].[sp_get_room_occupancy_report]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -693,7 +662,7 @@ BEGIN
     ORDER BY r.room_number;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[sp_get_room_type_popularity]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  StoredProcedure [dbo].[sp_get_room_type_popularity]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -717,7 +686,7 @@ BEGIN
     ORDER BY booking_count DESC;
 END;
 GO
-/****** Object:  StoredProcedure [dbo].[sp_get_today_checkins]    Script Date: 06/04/2025 2:05:40 CH ******/
+/****** Object:  StoredProcedure [dbo].[sp_get_today_checkins]    Script Date: 17/04/2025 4:16:15 CH ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -730,7 +699,7 @@ BEGIN
     FROM booking b
     JOIN customer c ON b.customer_id = c.id
     WHERE CAST(b.check_in_date AS DATE) = CAST(GETDATE() AS DATE)
-      AND b.status = 'CONFIRMED'
+      AND b.status IN ('CONFIRMED', 'CHECKED_IN')
     ORDER BY b.check_in_date;
 END;
 GO
