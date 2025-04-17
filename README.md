@@ -58,9 +58,9 @@ The application comes with pre-configured user accounts:
 
 | Username | Password | Role |
 |----------|----------|------|
-| admin    | admin123 | Administrator |
-| reception| pass123  | Receptionist |
-| customer | pass123  | Customer |
+| admin    | test | Administrator |
+| reception| test  | Receptionist |
+| customer | test  | Customer |
 
 ## Key Features
 
