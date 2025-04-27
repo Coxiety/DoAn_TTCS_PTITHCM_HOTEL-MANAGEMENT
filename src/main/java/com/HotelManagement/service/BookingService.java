@@ -84,7 +84,11 @@ public class BookingService {
 
     @Transactional
     public Booking createBooking(BookingRequestDto bookingRequest, User user) {
-        LOGGER.info(String.format("Creating new booking for user: %s", user.getUsername()));
+        if (user != null) {
+            LOGGER.info(String.format("Creating new booking for user: %s", user.getUsername()));
+        } else {
+            LOGGER.info("Creating new booking by receptionist (no user associated)");
+        }
         
         // Validate check-in date
         LocalDateTime checkInDate = LocalDate.parse(bookingRequest.getCheckInDate(), DATE_FORMATTER).atStartOfDay();
@@ -127,6 +131,7 @@ public class BookingService {
         BigDecimal totalAmount = BigDecimal.ZERO;
         booking.setTotalAmount(totalAmount);
         
+        // Set user if provided (might be null for receptionist bookings)
         booking.setUser(user);
         bookingRepository.save(booking);
         LOGGER.info(String.format("Created booking with id: %d", booking.getId()));

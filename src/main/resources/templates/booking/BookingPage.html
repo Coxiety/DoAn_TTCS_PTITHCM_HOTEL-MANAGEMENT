@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Book Your Stay - Luxury Hotel</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
   <link rel="stylesheet" th:href="@{/css/stylesHome.css}">
   <link rel="stylesheet" th:href="@{/css/stylesBooking.css}">
   <!-- Auth modals CSS -->
@@ -15,187 +16,191 @@
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    /* ... existing styles ... */
-    
-    .login-reminder {
-      margin-top: 8px;
-      font-size: 14px;
-      color: #e74c3c;
+    /* Room Detail Modal Styles */
+    .room-detail-modal {
+      max-width: 700px;
+      width: 90%;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .modal-room-image {
+      height: 200px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+
+    .modal-room-title {
+      color: white;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    .room-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .info-item i {
+      color: #4CAF50;
+      font-size: 1.2rem;
+    }
+
+    .room-description, .room-amenities {
+      padding: 0 20px;
+      margin-bottom: 20px;
+    }
+
+    .room-amenities ul {
+      list-style-type: none;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .room-amenities li {
+      padding: 5px 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .room-amenities li:before {
+      content: "✓";
+      color: #4CAF50;
+      margin-right: 8px;
+    }
+
+    .modal-booking-controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px 20px;
+      background-color: #f5f5f5;
+      border-top: 1px solid #eee;
+    }
+
+    .modal-room-select {
+      padding: 8px 15px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      font-size: 1rem;
+    }
+
+    .modal-add-btn {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .modal-add-btn:hover {
+      background-color: #45a049;
+    }
+
+    /* Room Selections Summary Styles */
+    .room-selections-summary {
+      margin-top: 15px;
+      margin-bottom: 15px;
+      border-top: 1px solid #eee;
+      padding-top: 15px;
+    }
+
+    .selections-header {
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #333;
+      font-size: 1rem;
+    }
+
+    .selection-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+
+    .selection-details {
+      display: flex;
+      align-items: center;
+    }
+
+    .selection-name {
+      font-weight: 500;
+    }
+
+    .selection-count {
+      margin-left: 8px;
+      color: #666;
+    }
+
+    .selection-price {
+      font-weight: 500;
+      color: #4CAF50;
+    }
+
+    .no-selections {
+      color: #999;
+      font-style: italic;
       text-align: center;
     }
     
-    .login-reminder a {
-      color: #2980b9;
-      text-decoration: underline;
-      font-weight: bold;
-    }
-    
-    .login-link {
-      display: inline-block;
-      padding: 2px 8px;
-      background-color: #2980b9;
-      color: white !important;
-      border-radius: 4px;
-      text-decoration: none !important;
-      font-weight: bold;
-      transition: background-color 0.3s;
-    }
-    
-    .login-link:hover {
-      background-color: #3498db;
-    }
-    
-    /* Notification styles */
-    .notification {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #fff;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      border-radius: 8px;
-      padding: 0;
-      z-index: 1000;
-      max-width: 350px;
-      display: none;
-      overflow: hidden;
-      border-left: 4px solid #007bff;
-    }
-    
-    .notification-content {
-      padding: 15px;
-    }
-    
-    .notification-header {
+    /* Login Reminder Styles */
+    .login-reminder {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background-color: #fff3e0;
+      border-radius: 6px;
+      border-left: 4px solid #ff9800;
+      color: #e65100;
+      font-size: 0.9rem;
+      text-align: center;
       display: flex;
       align-items: center;
-      margin-bottom: 10px;
-      color: #007bff;
+      justify-content: center;
+      gap: 8px;
     }
     
-    .notification-header i {
-      margin-right: 10px;
-      font-size: 1.2rem;
+    .login-reminder.highlighted {
+      background-color: #ffecb3;
+      animation: pulse 1.5s infinite;
     }
     
-    .notification-header span {
-      font-weight: bold;
+    .login-reminder i {
       font-size: 1.1rem;
     }
     
-    .notification p {
-      margin-bottom: 15px;
-      color: #666;
-    }
-    
-    #notification-login {
-      width: 100%;
-    }
-    
-    .notification.show {
-      display: block;
-      animation: slideIn 0.3s forwards;
-    }
-    
-    @keyframes slideIn {
-      from {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
-    
-    /* Simple login overlay */
-    #login-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.7);
-      z-index: 9999;
-      display: none;
-      justify-content: center;
-      align-items: center;
-    }
-    
-    #login-overlay-content {
-      background-color: white;
-      padding: 30px;
-      border-radius: 8px;
-      max-width: 400px;
-      text-align: center;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    }
-    
-    #login-overlay h2 {
-      color: #e74c3c;
-      margin-bottom: 20px;
-    }
-    
-    #login-overlay p {
-      margin-bottom: 25px;
-      font-size: 16px;
-      line-height: 1.5;
-    }
-    
-    #login-overlay button {
-      margin: 10px;
-      padding: 10px 20px;
-      cursor: pointer;
-      border: none;
-      border-radius: 4px;
-    }
-    
-    #login-overlay-login {
-      background-color: #2980b9;
-      color: white;
-      font-weight: bold;
-    }
-    
-    #login-overlay-dismiss {
-      background-color: #ecf0f1;
-      color: #7f8c8d;
-    }
-    
-    /* Login notification banner */
-    .login-notification-banner {
-      background-color: #f8d7da;
-      color: #721c24;
-      padding: 10px 0;
-      width: 100%;
-      position: relative;
-    }
-    
-    .login-notification-banner .container {
-      display: flex;
-      align-items: center;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 15px;
-    }
-    
-    .login-notification-banner i {
-      margin-right: 10px;
-      font-size: 18px;
-    }
-    
-    .login-notification-banner a {
-      color: #721c24;
-      font-weight: bold;
+    .login-link {
+      color: #0288d1;
+      font-weight: 600;
       text-decoration: underline;
     }
     
-    .login-notification-banner button {
-      background: none;
-      border: none;
-      color: #721c24;
-      cursor: pointer;
-      font-size: 20px;
-      margin-left: auto;
-      padding: 0 5px;
+    @keyframes pulse {
+      0% { background-color: #fff3e0; }
+      50% { background-color: #ffe0b2; }
+      100% { background-color: #fff3e0; }
     }
   </style>
 </head>
@@ -204,38 +209,8 @@
   <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
   <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
 
-  <!-- Notification -->
-  <div id="notification" class="notification">
-    <div class="notification-content">
-      <div class="notification-header">
-        <i class="fas fa-exclamation-circle"></i>
-        <span>Login Required</span>
-      </div>
-      <p>You need to be logged in to complete your booking.</p>
-      <button id="notification-login" class="btn btn-primary">Login Now</button>
-    </div>
-  </div>
-
-  <!-- Simple Login Overlay -->
-  <div id="login-overlay">
-    <div id="login-overlay-content">
-      <h2>Login Required</h2>
-      <p>You need to be logged in to complete your booking. Please login to continue.</p>
-      <div>
-        <button id="login-overlay-login">Login Now</button>
-        <button id="login-overlay-dismiss">Dismiss</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Navbar -->
   <div th:replace="~{fragments/navbar :: navbar('booking')}"></div>
-
-  <!-- Header -->
-  <div class="booking-header">
-    <h1>Book Your Perfect Stay</h1>
-    <p>Choose from our selection of luxurious rooms and suites designed for your ultimate comfort and relaxation.</p>
-  </div>
 
   <!-- Main Content -->
   <main>
@@ -320,6 +295,10 @@
             <span>Total Price</span>
             <span>$<span id="totalPrice">0</span></span>
           </div>
+          
+
+          <!-- Selected Rooms Summary -->
+          <div id="roomSelectionsSummary" class="room-selections-summary"></div>
 
           <!-- Create a form that will handle booking submission -->
           <form id="bookingForm" method="POST" th:action="@{/booking/create}" style="margin:0;">
@@ -331,7 +310,7 @@
             <button
               type="button"
               id="completeBookingBtn"
-              class="book-btn">
+              class="book-btn" disabled>
               <i class="fas fa-check-circle"></i> Complete Booking
             </button>
           </form>
@@ -339,8 +318,8 @@
           <!-- Hidden field to store login status -->
           <input type="hidden" id="isLoggedIn" th:value="${session.user != null} ? 'true' : 'false'" />
 
-          <div class="login-reminder" th:if="${session.user == null}">
-            Please <a href="#" onclick="document.getElementById('modalOverlayLogin').style.display = 'flex'; return false;" class="login-link">login</a> to complete your booking
+          <div class="login-reminder" id="loginReminder" th:if="${session.user == null}">
+            <i class="fas fa-exclamation-circle"></i> Please <a href="#" onclick="document.getElementById('modalOverlayLogin').style.display = 'flex'; return false;" class="login-link">login</a> to complete your booking
           </div>
         </div>
       </div>
@@ -355,14 +334,14 @@
   <div id="modalOverlayRoomDetail" class="modal-overlay">
     <div class="modal room-detail-modal">
         <span id="closeModalRoomDetail" class="close-button">&times;</span>
-      
+
       <div class="room-detail-content">
         <!-- Room Image -->
         <div id="modalRoomImage" class="modal-room-image">
           <!-- Room title will display over the image -->
           <h2 id="detailRoomTitle" class="modal-room-title">Room Details</h2>
         </div>
-        
+
         <!-- Room Info -->
         <div class="room-info">
           <div class="info-item">
@@ -370,47 +349,21 @@
             <span>Capacity: <span id="roomCapacityDetail">2</span> persons</span>
           </div>
           <div class="info-item">
-            <i class="fas fa-bed"></i>
-            <span>Bed Type: <span id="roomBedTypeDetail">Queen</span></span>
-          </div>
-          <div class="info-item">
-            <i class="fas fa-ruler-combined"></i>
-            <span>Size: <span id="roomSizeDetail">28</span> m²</span>
-          </div>
-          <div class="info-item">
             <i class="fas fa-tag"></i>
             <span>Price: $<span id="roomPriceDetail">100</span>/night</span>
           </div>
         </div>
-        
+
         <!-- Description -->
         <div class="room-description">
           <h3>Description</h3>
           <p id="roomDescriptionDetail"></p>
         </div>
-        
+
         <!-- Amenities -->
         <div class="room-amenities">
           <h3>Amenities</h3>
           <ul id="roomAmenitiesList"></ul>
-        </div>
-        
-        <!-- Booking controls -->
-        <div class="modal-booking-controls">
-          <div class="availability-btn" id="modalAvailableBtn">
-            <i class="fas fa-check-circle"></i> Available 5
-          </div>
-          <select class="modal-room-select" id="modalRoomSelect">
-            <option value="0">0 Rooms</option>
-            <option value="1">1 Room</option>
-            <option value="2">2 Rooms</option>
-            <option value="3">3 Rooms</option>
-            <option value="4">4 Rooms</option>
-            <option value="5">5 Rooms</option>
-          </select>
-          <button class="modal-add-btn" id="modalAddBtn">
-            <i class="fas fa-check"></i> Done
-          </button>
         </div>
       </div>
     </div>
@@ -427,6 +380,10 @@
 
   <!-- Booking specific scripts -->
   <script th:inline="javascript">
+    // Get room type data from the server
+    const roomData = /*[[${roomTypesJson}]]*/ {};
+    console.log('Room data loaded:', roomData);
+
     document.addEventListener('DOMContentLoaded', function() {
       const roomSelects = document.querySelectorAll('.rooms-section .room-select');
       const totalRoomsEl = document.getElementById('totalRooms');
@@ -486,7 +443,8 @@
         const checkInDay = new Date(checkInDate.getFullYear(), checkInDate.getMonth(), checkInDate.getDate());
         const checkOutDay = new Date(checkOutDate.getFullYear(), checkOutDate.getMonth(), checkOutDate.getDate());
         const millisecondsPerDay = 1000 * 60 * 60 * 24;
-        const nights = Math.round((checkOutDay - checkInDay) / millisecondsPerDay);
+        // Sử dụng Math.floor thay vì Math.round để đảm bảo tính đúng số đêm
+        const nights = Math.floor((checkOutDay - checkInDay) / millisecondsPerDay);
 
         console.log(`Calculating price for ${nights} nights (${checkInDate.toDateString()} to ${checkOutDate.toDateString()})`);
 
@@ -506,6 +464,9 @@
         totalRoomsEl.textContent = totalRooms;
         totalPriceEl.textContent = totalPrice.toFixed(2);
 
+        // Update selections summary
+        updateSelectionsSummary(nights, checkInDate, checkOutDate);
+
         // Update hidden form fields
         document.getElementById('bookingFormCheckIn').value = formatDate(checkInDate);
         document.getElementById('bookingFormCheckOut').value = formatDate(checkOutDate);
@@ -524,12 +485,24 @@
         });
         document.getElementById('bookingFormSelections').value = JSON.stringify(roomSelections);
 
-        // Enable/disable booking button based on selection
-        completeBookingBtn.disabled = totalRooms === 0;
-        if (totalRooms === 0) {
+        // Enable/disable booking button based on selection AND login status
+        const isLoggedIn = document.getElementById('isLoggedIn').value === 'true';
+        completeBookingBtn.disabled = totalRooms === 0 || !isLoggedIn;
+        
+        if (totalRooms === 0 || !isLoggedIn) {
           completeBookingBtn.classList.add('disabled');
         } else {
           completeBookingBtn.classList.remove('disabled');
+        }
+        
+        // Highlight login reminder if rooms are selected but user is not logged in
+        const loginReminder = document.getElementById('loginReminder');
+        if (loginReminder) {
+          if (totalRooms > 0 && !isLoggedIn) {
+            loginReminder.classList.add('highlighted');
+          } else {
+            loginReminder.classList.remove('highlighted');
+          }
         }
       }
 
@@ -539,6 +512,55 @@
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
         const year = date.getFullYear();
         return `${day}-${month}-${year}`;
+      }
+
+      // Function to update the selections summary section
+      function updateSelectionsSummary(nights, checkInDate, checkOutDate) {
+        const roomSelectionsSummary = document.getElementById('roomSelectionsSummary');
+        if (!roomSelectionsSummary) return;
+
+        // Get selected rooms
+        const selections = [];
+        roomSelects.forEach(select => {
+          const roomCount = parseInt(select.value);
+          if (roomCount > 0) {
+            const roomTypeId = select.getAttribute('data-room-type-id');
+            const roomPrice = parseFloat(select.getAttribute('data-room-price'));
+            const roomCard = select.closest('.room-card');
+            const roomName = roomCard ? roomCard.querySelector('h2').textContent : 'Room';
+
+            selections.push({
+              name: roomName,
+              count: roomCount,
+              total: roomCount * roomPrice * nights
+            });
+          }
+        });
+
+        if (selections.length === 0) {
+          roomSelectionsSummary.innerHTML = '<p class="no-selections">No rooms selected</p>';
+          return;
+        }
+
+        // Format dates for display
+        const checkInStr = checkInDate ? `${checkInDate.getDate()}-${checkInDate.getMonth()+1}-${checkInDate.getFullYear()}` : '';
+        const checkOutStr = checkOutDate ? `${checkOutDate.getDate()}-${checkOutDate.getMonth()+1}-${checkOutDate.getFullYear()}` : '';
+
+        let html = `<div class="selections-header">Selected Rooms</div>`;
+
+        selections.forEach(selection => {
+          html += `
+          <div class="selection-item">
+            <div class="selection-details">
+              <span class="selection-name">${selection.name}</span>
+              <span class="selection-count">x${selection.count}</span>
+            </div>
+            <div class="selection-price">$${selection.total.toFixed(2)}</div>
+          </div>
+          `;
+        });
+
+        roomSelectionsSummary.innerHTML = html;
       }
 
       // Add event listeners to room selects
@@ -562,6 +584,121 @@
 
       // Initialize with default values
       calculateTotals();
+
+      // Set up room headings click event
+      const roomCards = document.querySelectorAll('.room-card');
+      roomCards.forEach(card => {
+        const heading = card.querySelector('h2');
+        if (heading) {
+          heading.style.cursor = 'pointer';
+          heading.addEventListener('click', () => {
+            showRoomDetails(card);
+          });
+        }
+      });
+    });
+
+    // Track which room card is currently being viewed
+    let currentRoomCard = null;
+
+    // Show room details modal
+    function showRoomDetails(roomCard) {
+      currentRoomCard = roomCard;
+      const roomTypeId = roomCard.dataset.roomType;
+      const room = roomData[roomTypeId];
+
+      if (!room) {
+        console.error('Room data not found for type ID:', roomTypeId);
+        return;
+      }
+
+      const modalOverlayRoomDetail = document.getElementById('modalOverlayRoomDetail');
+
+      // Get the background image from the room card
+      const roomImageDiv = roomCard.querySelector('.room-image');
+      const backgroundImage = roomImageDiv ? window.getComputedStyle(roomImageDiv).backgroundImage : '';
+
+      // Set the background image on the modal
+      const modalRoomImage = document.getElementById('modalRoomImage');
+      if (modalRoomImage && backgroundImage) {
+        modalRoomImage.style.backgroundImage = backgroundImage;
+      }
+
+      // Update modal content
+      document.getElementById('detailRoomTitle').textContent = room.name;
+      document.getElementById('roomCapacityDetail').textContent = room.capacity;
+      document.getElementById('roomPriceDetail').textContent = room.price;
+      document.getElementById('roomDescriptionDetail').textContent = room.description;
+
+      // Update amenities list
+      const amenitiesList = document.getElementById('roomAmenitiesList');
+      if (amenitiesList) {
+        amenitiesList.innerHTML = '';
+        if (room.amenities && room.amenities.length > 0) {
+          room.amenities.forEach(amenity => {
+            const li = document.createElement('li');
+            li.textContent = amenity;
+            amenitiesList.appendChild(li);
+          });
+        } else {
+          const li = document.createElement('li');
+          li.textContent = 'Basic amenities';
+          amenitiesList.appendChild(li);
+        }
+      }
+
+      // Update availability button
+      const modalAvailableBtn = document.getElementById('modalAvailableBtn');
+      if (modalAvailableBtn) {
+        modalAvailableBtn.innerHTML = `<i class="fas fa-check-circle"></i> Available ${room.availableCount}`;
+      }
+
+      // Sync modal select with main page select
+      const modalRoomSelect = document.getElementById('modalRoomSelect');
+      const mainSelect = roomCard.querySelector('.room-select');
+      if (modalRoomSelect && mainSelect) {
+        modalRoomSelect.value = mainSelect.value;
+      }
+
+      // Show modal
+      modalOverlayRoomDetail.style.display = 'flex';
+    }
+
+    // Modal done button handler
+    document.getElementById('modalAddBtn').addEventListener('click', function() {
+      if (!currentRoomCard) {
+        console.error('No room card selected');
+        return;
+      }
+
+      // Get the main page select for this room
+      const mainPageSelect = currentRoomCard.querySelector('.room-select');
+      if (!mainPageSelect) {
+        console.error('Cannot find select element in room card');
+        return;
+      }
+
+      // Update the main page select with the modal value
+      const modalRoomSelect = document.getElementById('modalRoomSelect');
+      mainPageSelect.value = modalRoomSelect.value;
+
+      // Trigger the change event to update totals
+      const changeEvent = new Event('change', { bubbles: true });
+      mainPageSelect.dispatchEvent(changeEvent);
+
+      // Close the modal
+      document.getElementById('modalOverlayRoomDetail').style.display = 'none';
+    });
+
+    // Close modal handlers
+    document.getElementById('closeModalRoomDetail').addEventListener('click', () => {
+      document.getElementById('modalOverlayRoomDetail').style.display = 'none';
+    });
+
+    window.addEventListener('click', (e) => {
+      if (e.target === document.getElementById('modalOverlayRoomDetail')) {
+        document.getElementById('modalOverlayRoomDetail').style.display = 'none';
+      }
     });
   </script>
 </body>

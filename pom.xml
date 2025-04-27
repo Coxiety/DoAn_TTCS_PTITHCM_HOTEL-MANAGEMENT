@@ -46,13 +46,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Lombok (tùy chọn) -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- Starter test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

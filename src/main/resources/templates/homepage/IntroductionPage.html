@@ -4,14 +4,277 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Introduction - Luxury Hotel</title>
-    <link rel="stylesheet" th:href="@{/css/stylesHome.css}">
-    <link rel="stylesheet" th:href="@{/css/stylesInfo.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Auth modals CSS -->
     <div th:replace="~{fragments/auth-modals :: authCSS}"></div>
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: #333;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .content-wrapper {
+            padding-top: 90px; /* Space for fixed navbar */
+        }
+        
+        .hero-section {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/img/homePage/HotelPage.jpg');
+            background-size: cover;
+            background-position: center;
+            margin-bottom: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .hero-content {
+            text-align: center;
+            color: white;
+            max-width: 800px;
+            padding: 0 20px;
+            z-index: 2;
+        }
+        
+        .hero-content h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .hero-content p {
+            font-size: 1.3rem;
+            line-height: 1.6;
+        }
+        
+        .intro-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .intro-section {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .intro-section h2 {
+            font-size: 2rem;
+            color: #1a2942;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        
+        .intro-section p {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            color: #555;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .feature-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .feature-card i {
+            font-size: 2.5rem;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #1a2942;
+        }
+        
+        .feature-card p {
+            font-size: 1rem;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .team-member {
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+        
+        .team-member:hover {
+            transform: translateY(-5px);
+        }
+        
+        .member-image {
+            height: 250px;
+            background-color: #e9e9e9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .member-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .member-image i {
+            font-size: 5rem;
+            color: #ccc;
+        }
+        
+        .member-info {
+            padding: 25px 20px;
+            text-align: center;
+        }
+        
+        .member-info h3 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+            color: #1a2942;
+        }
+        
+        .member-info .position {
+            color: #4CAF50;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 15px;
+        }
+        
+        .member-info p {
+            font-size: 0.95rem;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .awards-list {
+            list-style: none;
+            padding: 0;
+            margin: 30px 0;
+        }
+        
+        .awards-list li {
+            background-color: #f9f9f9;
+            margin-bottom: 15px;
+            padding: 15px 25px;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .awards-list li:before {
+            content: '\f559';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            margin-right: 15px;
+            color: #4CAF50;
+        }
+        
+        .cta-section {
+            text-align: center;
+            padding: 50px 20px;
+            background-color: #f5f5f5;
+            margin-top: 50px;
+            border-radius: 8px;
+        }
+        
+        .cta-section h2 {
+            font-size: 2.2rem;
+            color: #1a2942;
+            margin-bottom: 20px;
+        }
+        
+        .cta-section p {
+            font-size: 1.2rem;
+            color: #555;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            line-height: 1.6;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        
+        .cta-button:hover {
+            background-color: #3d8b40;
+            transform: translateY(-2px);
+        }
+        
+        footer {
+            background-color: #1a2942;
+            color: white;
+            padding: 50px 0 20px;
+            margin-top: 80px;
+            text-align: center;
+        }
+        
+        footer p {
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+            
+            .hero-content p {
+                font-size: 1rem;
+            }
+            
+            .intro-section {
+                padding: 25px;
+            }
+            
+            .features-grid, .team-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Messages -->
@@ -21,119 +284,144 @@
     <!-- Navbar -->
     <div th:replace="~{fragments/navbar :: navbar('intro')}"></div>
 
-    <!-- Main Content -->
-    <div class="info-container">
-        <div class="info-header">
-            <h1>Welcome to Luxury Hotel</h1>
-            <p class="subtitle">Experience the perfect blend of comfort, elegance, and impeccable service at our award-winning hotel in the heart of the city.</p>
-        </div>
-
-        <!-- Feature Image -->
-        <div class="intro-image-container"></div>
-
-        <div class="info-section">
-            <h2>About Our Hotel</h2>
-            <p>Since opening our doors in 2010, Luxury Hotel has been synonymous with excellence in hospitality. Our establishment combines modern design with timeless elegance to create an unforgettable experience for our guests.</p>
-            
-            <p>Situated in a prime location, our hotel offers easy access to major attractions, business districts, and transportation hubs. Whether you're visiting for business or leisure, you'll find our location ideal for your needs.</p>
-            
-            <div class="intro-grid">
-                <!-- Feature 1 -->
-                <div class="intro-card">
-                    <i class="fas fa-bed"></i>
-                    <h3>Luxurious Rooms</h3>
-                    <p>Our rooms are designed with your comfort in mind, featuring premium bedding, modern amenities, and elegant décor.</p>
-                </div>
-
-                <!-- Feature 2 -->
-                <div class="intro-card">
-                    <i class="fas fa-utensils"></i>
-                    <h3>Fine Dining</h3>
-                    <p>Experience culinary excellence at our award-winning restaurant serving local and international cuisine.</p>
-                </div>
-
-                <!-- Feature 3 -->
-                <div class="intro-card">
-                    <i class="fas fa-dumbbell"></i>
-                    <h3>Wellness Center</h3>
-                    <p>Maintain your fitness routine at our state-of-the-art gym or unwind at our spa and wellness center.</p>
-                </div>
-
-                <!-- Feature 4 -->
-                <div class="intro-card">
-                    <i class="fas fa-wifi"></i>
-                    <h3>Modern Connectivity</h3>
-                    <p>Stay connected with high-speed WiFi throughout the property and smart room controls.</p>
-                </div>
+    <div class="content-wrapper">
+        <!-- Hero Section with Welcome Text Inside -->
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1>Welcome to Luxury Hotel</h1>
+                <p>Experience the perfect blend of comfort, elegance, and impeccable service at our award-winning hotel in the heart of the city.</p>
             </div>
         </div>
 
-        <div class="info-section">
-            <h2>Our Mission</h2>
-            <p>At Luxury Hotel, our mission is to provide exceptional hospitality experiences that exceed our guests' expectations. We strive to:</p>
-            
-            <ul>
-                <li>Deliver personalized service that anticipates guest needs</li>
-                <li>Maintain the highest standards of cleanliness and comfort</li>
-                <li>Create memorable experiences for every visitor</li>
-                <li>Contribute positively to our local community</li>
-                <li>Implement sustainable practices throughout our operations</li>
-            </ul>
-        </div>
+        <!-- Main Content -->
+        <div class="intro-content">
+            <!-- About Section -->
+            <div class="intro-section">
+                <h2>About Our Hotel</h2>
+                <p>Since opening our doors in 2010, Luxury Hotel has been synonymous with excellence in hospitality. Our establishment combines modern design with timeless elegance to create an unforgettable experience for our guests.</p>
+                
+                <p>Situated in a prime location, our hotel offers easy access to major attractions, business districts, and transportation hubs. Whether you're visiting for business or leisure, you'll find our location ideal for your needs.</p>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-bed"></i>
+                        <h3>Luxurious Rooms</h3>
+                        <p>Our rooms are designed with your comfort in mind, featuring premium bedding, modern amenities, and elegant décor.</p>
+                    </div>
 
-        <div class="info-section">
-            <h2>Meet Our Team</h2>
-            <p>Our dedicated team of hospitality professionals works tirelessly to ensure your stay is perfect in every detail.</p>
-            
-            <div class="team-grid">
-                <!-- Team Member 1 -->
-                <div class="team-member">
-                    <div class="avatar"><i class="fas fa-user"></i></div>
-                    <h4>Sarah Johnson</h4>
-                    <span class="position">General Manager</span>
-                    <p>With 15+ years in luxury hospitality, Sarah ensures every aspect of your stay exceeds expectations.</p>
-                </div>
+                    <div class="feature-card">
+                        <i class="fas fa-utensils"></i>
+                        <h3>Fine Dining</h3>
+                        <p>Experience culinary excellence at our award-winning restaurant serving local and international cuisine.</p>
+                    </div>
 
-                <!-- Team Member 2 -->
-                <div class="team-member">
-                    <div class="avatar"><i class="fas fa-user"></i></div>
-                    <h4>Michael Chen</h4>
-                    <span class="position">Executive Chef</span>
-                    <p>Chef Michael's innovative culinary creations blend local flavors with international techniques.</p>
-                </div>
+                    <div class="feature-card">
+                        <i class="fas fa-dumbbell"></i>
+                        <h3>Wellness Center</h3>
+                        <p>Maintain your fitness routine at our state-of-the-art gym or unwind at our spa and wellness center.</p>
+                    </div>
 
-                <!-- Team Member 3 -->
-                <div class="team-member">
-                    <div class="avatar"><i class="fas fa-user"></i></div>
-                    <h4>Elena Rodriguez</h4>
-                    <span class="position">Guest Relations</span>
-                    <p>Elena's attention to detail and warm personality make every guest feel special and valued.</p>
+                    <div class="feature-card">
+                        <i class="fas fa-wifi"></i>
+                        <h3>Modern Connectivity</h3>
+                        <p>Stay connected with high-speed WiFi throughout the property and smart room controls.</p>
+                    </div>
                 </div>
+            </div>
 
-                <!-- Team Member 4 -->
-                <div class="team-member">
-                    <div class="avatar"><i class="fas fa-user"></i></div>
-                    <h4>David Kim</h4>
-                    <span class="position">Facilities Director</span>
-                    <p>David ensures our hotel's amenities and facilities are maintained to perfection.</p>
+            <!-- Our Mission Section -->
+            <div class="intro-section">
+                <h2>Our Mission</h2>
+                <p>At Luxury Hotel, our mission is to provide exceptional hospitality experiences that exceed our guests' expectations. We strive to:</p>
+                
+                <ul class="awards-list">
+                    <li>Deliver personalized service that anticipates guest needs</li>
+                    <li>Maintain the highest standards of cleanliness and comfort</li>
+                    <li>Create memorable experiences for every visitor</li>
+                    <li>Contribute positively to our local community</li>
+                    <li>Implement sustainable practices throughout our operations</li>
+                </ul>
+            </div>
+
+            <!-- Team Section -->
+            <div class="intro-section">
+                <h2>Meet Our Team</h2>
+                <p>Our dedicated team of hospitality professionals works tirelessly to ensure your stay is perfect in every detail.</p>
+                
+                <div class="team-grid">
+                    <div class="team-member">
+                        <div class="member-image">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="member-info">
+                            <h3>Sarah Johnson</h3>
+                            <span class="position">General Manager</span>
+                            <p>With 15+ years in luxury hospitality, Sarah ensures every aspect of your stay exceeds expectations.</p>
+                        </div>
+                    </div>
+
+                    <div class="team-member">
+                        <div class="member-image">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="member-info">
+                            <h3>Michael Chen</h3>
+                            <span class="position">Executive Chef</span>
+                            <p>Chef Michael's innovative culinary creations blend local flavors with international techniques.</p>
+                        </div>
+                    </div>
+
+                    <div class="team-member">
+                        <div class="member-image">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="member-info">
+                            <h3>Elena Rodriguez</h3>
+                            <span class="position">Guest Relations</span>
+                            <p>Elena's attention to detail and warm personality make every guest feel special and valued.</p>
+                        </div>
+                    </div>
+
+                    <div class="team-member">
+                        <div class="member-image">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="member-info">
+                            <h3>David Kim</h3>
+                            <span class="position">Facilities Director</span>
+                            <p>David ensures our hotel's amenities and facilities are maintained to perfection.</p>
+                        </div>
+                    </div>
                 </div>
+            </div>
+
+            <!-- Awards Section -->
+            <div class="intro-section">
+                <h2>Awards & Recognition</h2>
+                <p>Our commitment to excellence has been recognized with numerous awards in the hospitality industry:</p>
+                
+                <ul class="awards-list">
+                    <li>Five-Star Excellence Award (2025)</li>
+                    <li>Best Luxury Hotel Experience (2024)</li>
+                    <li>Sustainable Hospitality Certification (2023-2025)</li>
+                    <li>Top-Rated Customer Service (2022-2025)</li>
+                    <li>Culinary Excellence Award for our restaurant (2024)</li>
+                </ul>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="cta-section">
+                <h2>Experience Luxury Today</h2>
+                <p>Ready to experience our award-winning hospitality? Book your stay with us today!</p>
+                <a th:href="@{/booking}" class="cta-button">Book Your Stay</a>
             </div>
         </div>
 
-        <div class="info-section">
-            <h2>Awards & Recognition</h2>
-            <p>Our commitment to excellence has been recognized with numerous awards in the hospitality industry:</p>
-            
-            <ul>
-                <li>Five-Star Excellence Award (2023)</li>
-                <li>Best Luxury Hotel Experience (2022)</li>
-                <li>Sustainable Hospitality Certification (2021-2023)</li>
-                <li>Top-Rated Customer Service (2020-2023)</li>
-                <li>Culinary Excellence Award for our restaurant (2022)</li>
-            </ul>
-            
-            <p>Ready to experience our award-winning hospitality? <a th:href="@{/booking}" style="color: #4CAF50; font-weight: bold;">Book your stay</a> with us today!</p>
-        </div>
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2025 Luxury Hotel. All rights reserved.</p>
+            <p>123 Elegant Street, City Center, Country</p>
+        </footer>
     </div>
 
     <!-- Include Auth Modals -->
@@ -142,7 +430,7 @@
 
     <!-- Include Modal Scripts -->
     <div th:replace="~{fragments/auth-modals :: modalScripts}"></div>
-    
+
     <!-- Include Navbar Scripts -->
     <div th:replace="~{fragments/navbar :: navbarScript}"></div>
 </body>
