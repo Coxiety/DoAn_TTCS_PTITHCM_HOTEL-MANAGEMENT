@@ -1,6 +1,7 @@
 package com.HotelManagement.controller;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,10 +35,10 @@ import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class BookingController {
-    
+
     @Autowired
     private BookingService bookingService;
-    
+
     @Autowired
     private CustomerRepository customerRepository;
 
@@ -52,41 +53,41 @@ public class BookingController {
         if (user == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "Please login to make a booking"));
         }
-        
+
         try {
             // Validate input
             if (bookingRequest == null) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Booking data is required"));
             }
-            
+
             if (bookingRequest.getCheckInDate() == null || bookingRequest.getCheckInDate().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Check-in date is required"));
             }
-            
+
             if (bookingRequest.getCheckOutDate() == null || bookingRequest.getCheckOutDate().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Check-out date is required"));
             }
-            
+
             if (bookingRequest.getRoomSelections() == null || bookingRequest.getRoomSelections().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("message", "At least one room selection is required"));
             }
-            
-            // Find customer by phone number
-            Customer customer = customerRepository.findByPhone(user.getPhone()).orElse(null);
-            
+
+            // Find customer by user ID instead of phone number
+            Customer customer = customerRepository.findByUserId(user.getId()).orElse(null);
+
             if (customer == null) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Customer record not found. Please contact reception."));
             }
-            
+
             // Set the customer ID in the booking request
             bookingRequest.setCustomerId(customer.getId());
-            
+
             Booking booking = bookingService.createBooking(bookingRequest, user);
             Map<String, Object> response = new HashMap<>();
             response.put("bookingId", booking.getId());
             response.put("message", "Booking created successfully");
             response.put("redirectUrl", "/booking/confirmation/" + booking.getId());
-            
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
@@ -104,7 +105,7 @@ public class BookingController {
 
         // Get booking details
         List<BookingDetail> bookingDetails = bookingDetailService.getBookingDetailsByBookingId(bookingId);
-        
+
         // Calculate total amount
         BigDecimal totalAmount = bookingDetails.stream()
                 .map(BookingDetail::getPrice)
@@ -122,29 +123,57 @@ public class BookingController {
     public String showBookingPage(Model model, HttpSession session) {
         // Check if user is logged in
         Integer userRole = (Integer) session.getAttribute("userRole");
-        
+
         // If user is logged in as receptionist, redirect to receptionist page
         if (userRole != null && Integer.valueOf(2).equals(userRole)) {
             return "redirect:/receptionist";
         }
-        
+
         // If user is logged in as admin, redirect to admin page
         if (userRole != null && Integer.valueOf(1).equals(userRole)) {
             return "redirect:/admin";
         }
-        
+
         // Get all room types with counts of available rooms
         List<RoomType> roomTypes = bookingService.getAllRoomTypes();
         model.addAttribute("roomTypes", roomTypes);
-        
+
         // Get available rooms count for each room type
         Map<Integer, Integer> availableRoomCounts = new HashMap<>();
+        Map<String, Object> roomTypesJson = new HashMap<>();
+
         for (RoomType roomType : roomTypes) {
             int availableCount = bookingService.getAvailableRoomCountByType(roomType.getId());
             availableRoomCounts.put(roomType.getId(), availableCount);
+
+            // Create room type data for JavaScript
+            Map<String, Object> roomTypeData = new HashMap<>();
+            roomTypeData.put("name", roomType.getName());
+            roomTypeData.put("capacity", roomType.getCapacity());
+            roomTypeData.put("price", roomType.getPrice());
+            roomTypeData.put("description", roomType.getDescription());
+
+            // Process amenities
+            List<String> amenitiesList = new ArrayList<>();
+            if (roomType.getAmenities() != null && !roomType.getAmenities().isEmpty()) {
+                String[] amenities = roomType.getAmenities().split(",");
+                for (String amenity : amenities) {
+                    String trimmedAmenity = amenity.trim();
+                    if (!trimmedAmenity.isEmpty()) {
+                        amenitiesList.add(trimmedAmenity);
+                    }
+                }
+            }
+            roomTypeData.put("amenities", amenitiesList);
+            roomTypeData.put("availableCount", availableCount);
+
+            // Add to the JSON map using room type ID as key
+            roomTypesJson.put(roomType.getId().toString(), roomTypeData);
         }
+
         model.addAttribute("availableRoomCounts", availableRoomCounts);
-        
+        model.addAttribute("roomTypesJson", roomTypesJson);
+
         return "booking/BookingPage";
     }
 
@@ -156,36 +185,36 @@ public class BookingController {
             @RequestParam(value = "totalPrice", required = false) String totalPrice,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
-        
+
         // Get user from session
         User user = (User) session.getAttribute("user");
         if (user == null) {
             redirectAttributes.addFlashAttribute("error", "Please login to make a booking");
             return "redirect:/login";
         }
-        
+
         try {
             // Parse room selections from JSON
             ObjectMapper objectMapper = new ObjectMapper();
             List<Map<String, Object>> roomSelections = objectMapper.readValue(
-                roomSelectionsJson, 
+                roomSelectionsJson,
                 objectMapper.getTypeFactory().constructCollectionType(List.class, Map.class)
             );
-            
+
             // Create booking request DTO
             BookingRequestDto bookingRequest = new BookingRequestDto();
             bookingRequest.setCheckInDate(checkInDate);
             bookingRequest.setCheckOutDate(checkOutDate);
-            
-            // Find customer by phone number
-            Customer customer = customerRepository.findByPhone(user.getPhone()).orElse(null);
+
+            // Find customer by user ID instead of phone number
+            Customer customer = customerRepository.findByUserId(user.getId()).orElse(null);
             if (customer == null) {
                 redirectAttributes.addFlashAttribute("error", "Customer record not found. Please contact reception.");
                 return "redirect:/booking";
             }
-            
+
             bookingRequest.setCustomerId(customer.getId());
-            
+
             // Convert room selections to DTO format
             List<RoomSelectionDto> dtoSelections = roomSelections.stream()
                 .map(selection -> {
@@ -195,12 +224,12 @@ public class BookingController {
                     return dto;
                 })
                 .collect(Collectors.toList());
-            
+
             bookingRequest.setRoomSelections(dtoSelections);
-            
+
             // Create booking
             Booking booking = bookingService.createBooking(bookingRequest, user);
-            
+
             // Redirect to confirmation page
             return "redirect:/booking/confirmation/" + booking.getId();
         } catch (Exception e) {

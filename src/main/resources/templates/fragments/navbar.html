@@ -5,7 +5,7 @@
     <nav th:fragment="navbar(activeTab)" class="navbar">
         <div class="logo">LUXURY HOTEL</div>
         <ul class="nav-links">
-            <li><a th:href="@{/contract}" th:class="${activeTab == 'contract'} ? 'active' : ''">Contract</a></li>
+            <li><a th:href="@{/contact}" th:class="${activeTab == 'contact'} ? 'active' : ''">Contact</a></li>
             <li><a th:href="@{/}" th:class="${activeTab == 'home'} ? 'active' : ''">Home</a></li>
             <li><a th:href="@{/intro}" th:class="${activeTab == 'intro'} ? 'active' : ''">Introduction</a></li>
             <!-- Show these if user is not logged in -->

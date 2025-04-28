@@ -34,8 +34,8 @@ public class HomeController
         return "homepage/HomePage";
     }
 
-    @GetMapping("/contract")
-    public String contractPage(HttpSession session) 
+    @GetMapping("/contact")
+    public String contactPage(HttpSession session) 
     {
         // Check if user is logged in
         Integer userRole = (Integer) session.getAttribute("userRole");
@@ -50,7 +50,7 @@ public class HomeController
             return "redirect:/admin";
         }
         
-        return "homepage/ContractPage";
+        return "homepage/ContactPage";
     }
     
     @GetMapping("/intro")

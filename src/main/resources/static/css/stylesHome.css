@@ -5,13 +5,13 @@
     box-sizing: border-box;
 }
 
-body {
+/* body {
     font-family: 'Poppins', Arial, sans-serif;
     color: #333;
     line-height: 1.6;
     background-color: #f9f9f9;
     overflow-x: hidden;
-}
+} */
 
 /* ============ ALERTS ============ */
 .alert {
@@ -51,7 +51,7 @@ body {
 }
 
 /* ============ NAVBAR ============ */
-.navbar {
+/* .navbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -113,7 +113,7 @@ body {
 .nav-links span {
     color: #fff;
     font-weight: 500;
-}
+} */
 
 .mobile-menu-btn {
     display: none;

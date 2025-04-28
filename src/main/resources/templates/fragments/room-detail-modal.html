@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Room Detail Modal Fragment</title>
+</head>
+<body>
+    <!-- Room Detail Modal CSS -->
+    <div th:fragment="roomDetailCSS">
+        <style>
+            /* Room Detail Modal Styles */
+            .room-detail-modal {
+              max-width: 700px;
+              width: 90%;
+              border-radius: 8px;
+              overflow: hidden;
+            }
+
+            .modal-room-image {
+              height: 200px;
+              background-size: cover;
+              background-position: center;
+              position: relative;
+              display: flex;
+              align-items: flex-end;
+              padding: 20px;
+              background-color: #f5f5f5;
+            }
+
+            .modal-room-title {
+              color: white;
+              text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+              margin: 0;
+              font-size: 2rem;
+            }
+
+            .room-info {
+              display: grid;
+              grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+              gap: 15px;
+              padding: 20px;
+              background-color: #f9f9f9;
+            }
+
+            .info-item {
+              display: flex;
+              align-items: center;
+              gap: 10px;
+            }
+
+            .info-item i {
+              color: #4CAF50;
+              font-size: 1.2rem;
+            }
+
+            .room-description, .room-amenities {
+              padding: 0 20px;
+              margin-bottom: 20px;
+            }
+
+            .room-amenities ul {
+              list-style-type: none;
+              padding: 0;
+              display: grid;
+              grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+              gap: 10px;
+            }
+
+            .room-amenities li {
+              padding: 5px 0;
+              display: flex;
+              align-items: center;
+            }
+
+            .room-amenities li:before {
+              content: "✓";
+              color: #4CAF50;
+              margin-right: 8px;
+            }
+
+            .modal-booking-controls {
+              display: flex;
+              align-items: center;
+              gap: 15px;
+              padding: 15px 20px;
+              background-color: #f5f5f5;
+              border-top: 1px solid #eee;
+            }
+
+            .modal-room-select {
+              padding: 8px 15px;
+              border-radius: 4px;
+              border: 1px solid #ddd;
+              font-size: 1rem;
+            }
+
+            .modal-add-btn {
+              background-color: #4CAF50;
+              color: white;
+              border: none;
+              padding: 8px 15px;
+              border-radius: 4px;
+              cursor: pointer;
+              font-weight: 600;
+              display: flex;
+              align-items: center;
+              gap: 5px;
+            }
+
+            .modal-add-btn:hover {
+              background-color: #45a049;
+            }
+
+            /* Make room headings clickable */
+            .room-card h2 {
+              cursor: pointer;
+              transition: color 0.2s;
+            }
+
+            .room-card h2:hover {
+              color: #4CAF50;
+            }
+
+            /* Make room cards clickable */
+            .room-card {
+              cursor: pointer;
+            }
+
+            /* Prevent click on select element from triggering card click */
+            .room-card .room-select {
+              cursor: default;
+              position: relative;
+              z-index: 10;
+            }
+        </style>
+    </div>
+
+    <!-- Room Detail Modal HTML -->
+    <div th:fragment="roomDetailModal">
+        <div id="modalOverlayRoomDetail" class="modal-overlay">
+            <div class="modal room-detail-modal">
+                <span id="closeModalRoomDetail" class="close-button">&times;</span>
+
+                <div class="room-detail-content">
+                    <!-- Room Image -->
+                    <div id="modalRoomImage" class="modal-room-image">
+                        <!-- Room title will display over the image -->
+                        <h2 id="detailRoomTitle" class="modal-room-title">Room Details</h2>
+                    </div>
+
+                    <!-- Room Info -->
+                    <div class="room-info">
+                        <div class="info-item">
+                            <i class="fas fa-user"></i>
+                            <span>Capacity: <span id="roomCapacityDetail">2</span> persons</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-tag"></i>
+                            <span>Price: $<span id="roomPriceDetail">100</span>/night</span>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="room-description">
+                        <h3>Description</h3>
+                        <p id="roomDescriptionDetail"></p>
+                    </div>
+
+                    <!-- Amenities -->
+                    <div class="room-amenities">
+                        <h3>Amenities</h3>
+                        <ul id="roomAmenitiesList"></ul>
+                    </div>
+                    
+                    <!-- Booking controls -->
+                    <div class="modal-booking-controls">
+                        <div class="availability-btn" id="modalAvailableBtn">
+                            <i class="fas fa-check-circle"></i> Available <span id="modalAvailableCount">0</span>
+                        </div>
+                        <select class="modal-room-select" id="modalRoomSelect">
+                            <option value="0">0 Rooms</option>
+                        </select>
+                        <button class="modal-add-btn" id="modalAddBtn">
+                            <i class="fas fa-check"></i> Done
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Room Detail Modal Scripts -->
+    <div th:fragment="roomDetailScripts">
+        <script>
+            // Room Detail Modal Functions
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('Room detail modal script loaded');
+                
+                // Debug roomData
+                console.log('roomData type:', typeof roomData);
+                console.log('roomData value:', roomData);
+                
+                const roomCards = document.querySelectorAll('.room-card');
+                console.log('Room cards found:', roomCards.length);
+                
+                const modalOverlay = document.getElementById('modalOverlayRoomDetail');
+                const closeModal = document.getElementById('closeModalRoomDetail');
+                const modalRoomImage = document.getElementById('modalRoomImage');
+                const detailRoomTitle = document.getElementById('detailRoomTitle');
+                const roomCapacityDetail = document.getElementById('roomCapacityDetail');
+                const roomPriceDetail = document.getElementById('roomPriceDetail');
+                const roomDescriptionDetail = document.getElementById('roomDescriptionDetail');
+                const roomAmenitiesList = document.getElementById('roomAmenitiesList');
+                const modalAddBtn = document.getElementById('modalAddBtn');
+                const modalRoomSelect = document.getElementById('modalRoomSelect');
+                const modalAvailableBtn = document.getElementById('modalAvailableBtn');
+                const modalAvailableCount = document.getElementById('modalAvailableCount');
+                
+                let currentRoomTypeId = null;
+
+                // Helper function to get room type data
+                function getRoomTypeById(id) {
+                    console.log('Looking for room type with ID:', id);
+                    
+                    // Check if roomData is an array
+                    if (Array.isArray(roomData)) {
+                        return roomData.find(room => room.id == id);
+                    }
+                    
+                    // Check if roomData is an object with room type IDs as keys
+                    if (typeof roomData === 'object' && roomData !== null) {
+                        if (roomData[id]) {
+                            return roomData[id];
+                        }
+                        
+                        // Some implementations might have room types as array inside the object
+                        if (roomData.roomTypes && Array.isArray(roomData.roomTypes)) {
+                            return roomData.roomTypes.find(room => room.id == id);
+                        }
+                    }
+                    
+                    console.error('Room type not found for ID:', id);
+                    return null;
+                }
+
+                // Function to show room details modal
+                function showRoomDetails(roomCard) {
+                    try {
+                        // Get room type ID
+                        const roomTypeId = roomCard.getAttribute('data-room-type');
+                        console.log('Opening details for room type ID:', roomTypeId);
+                        currentRoomTypeId = roomTypeId;
+                        
+                        // Get room data directly from the card elements
+                        const roomName = roomCard.querySelector('h2').textContent;
+                        const roomCapacity = roomCard.querySelector('.meta-item:nth-child(1) span span').textContent;
+                        const roomAmenities = roomCard.querySelector('.meta-item:nth-child(2) span').textContent;
+                        const roomDescription = roomCard.querySelector('.room-description').textContent.trim();
+                        const roomPrice = roomCard.querySelector('.price-tag span').textContent;
+                        const roomImage = roomCard.querySelector('.room-image').style.backgroundImage;
+                        
+                        console.log('Room data from card:', {
+                            name: roomName,
+                            capacity: roomCapacity,
+                            price: roomPrice,
+                            description: roomDescription
+                        });
+                        
+                        // Get room type data from server data (for additional info)
+                        const roomType = getRoomTypeById(roomTypeId);
+                        
+                        // Get the available rooms count
+                        const availableRooms = roomCard.querySelector('.availability-btn span').textContent;
+                        const roomSelect = roomCard.querySelector('.room-select');
+                        const currentSelectedValue = roomSelect.value;
+                        
+                        // Update modal with room data
+                        detailRoomTitle.textContent = roomName;
+                        roomCapacityDetail.textContent = roomCapacity;
+                        roomPriceDetail.textContent = roomPrice;
+                        roomDescriptionDetail.textContent = roomDescription;
+                        
+                        // Update background image
+                        if (roomImage) {
+                            modalRoomImage.style.backgroundImage = roomImage;
+                        } else {
+                            modalRoomImage.style.backgroundImage = 'url(/img/rooms/default-room.jpg)';
+                        }
+                        
+                        // Update amenities list
+                        roomAmenitiesList.innerHTML = '';
+                        
+                        // Add common amenities
+                        roomAmenitiesList.innerHTML += `<li>Wi-Fi</li>`;
+                        roomAmenitiesList.innerHTML += `<li>TV</li>`;
+                        roomAmenitiesList.innerHTML += `<li>Air Conditioning</li>`;
+                        roomAmenitiesList.innerHTML += `<li>Private Bathroom</li>`;
+                        
+                        // Add specific amenities from roomAmenities string
+                        if (roomAmenities) {
+                            const amenitiesList = roomAmenities.split(',').map(item => item.trim());
+                            amenitiesList.forEach(amenity => {
+                                if (amenity && !['Wi-Fi', 'TV', 'Air Conditioning', 'Private Bathroom'].includes(amenity)) {
+                                    roomAmenitiesList.innerHTML += `<li>${amenity}</li>`;
+                                }
+                            });
+                        }
+                        
+                        // Update available count
+                        modalAvailableCount.textContent = availableRooms;
+                        
+                        // Update select options based on available count
+                        modalRoomSelect.innerHTML = '<option value="0">0 Rooms</option>';
+                        for (let i = 1; i <= availableRooms; i++) {
+                            const option = document.createElement('option');
+                            option.value = i;
+                            option.textContent = `${i} Room${i > 1 ? 's' : ''}`;
+                            modalRoomSelect.appendChild(option);
+                        }
+                        
+                        // Set the current selected value
+                        modalRoomSelect.value = currentSelectedValue;
+                        
+                        // Show the modal
+                        modalOverlay.style.display = 'flex';
+                    } catch (error) {
+                        console.error('Error showing room details:', error);
+                    }
+                }
+
+                // Add click event to all room cards
+                roomCards.forEach((card, index) => {
+                    console.log(`Setting up room card ${index+1}:`, card.getAttribute('data-room-type'));
+                    
+                    // Add click event to the entire card
+                    card.addEventListener('click', function(e) {
+                        // Don't trigger if clicking on the select element or its child elements
+                        if (e.target.closest('.room-select')) {
+                            return;
+                        }
+                        console.log('Card clicked');
+                        showRoomDetails(this);
+                    });
+
+                    // Add specific click event to the heading
+                    const heading = card.querySelector('h2');
+                    if (heading) {
+                        heading.addEventListener('click', function(e) {
+                            e.stopPropagation(); // Prevent double triggering with card click
+                            console.log('Heading clicked');
+                            showRoomDetails(card);
+                        });
+                    }
+                });
+
+                // Close modal when clicking close button
+                closeModal.addEventListener('click', function() {
+                    modalOverlay.style.display = 'none';
+                });
+
+                // Close modal when clicking outside
+                modalOverlay.addEventListener('click', function(e) {
+                    if (e.target === modalOverlay) {
+                        modalOverlay.style.display = 'none';
+                    }
+                });
+
+                // Handle the "Done" button click
+                modalAddBtn.addEventListener('click', function() {
+                    const selectedValue = modalRoomSelect.value;
+                    console.log('Modal "Done" clicked, value:', selectedValue);
+                    
+                    // Find the corresponding room card and update its select value
+                    const roomCard = document.querySelector(`.room-card[data-room-type="${currentRoomTypeId}"]`);
+                    if (roomCard) {
+                        const roomSelect = roomCard.querySelector('.room-select');
+                        roomSelect.value = selectedValue;
+                        
+                        // Trigger change event to recalculate totals
+                        const event = new Event('change');
+                        roomSelect.dispatchEvent(event);
+                    }
+                    
+                    // Close the modal
+                    modalOverlay.style.display = 'none';
+                });
+            });
+        </script>
+    </div>
+</body>
+</html> 

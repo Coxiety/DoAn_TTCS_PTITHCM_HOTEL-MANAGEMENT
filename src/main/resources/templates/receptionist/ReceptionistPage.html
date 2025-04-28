@@ -192,26 +192,8 @@
 
                 <div class="separator">OR</div>
 
-                <h3>Create New Customer</h3>
-                <form id="createCustomerForm" th:action="@{/receptionist/create-customer}" method="post">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="fullName">Full Name</label>
-                            <input type="text" id="fullName" name="fullName" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="phone">Phone</label>
-                            <input type="text" id="phone" name="phone" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Create Customer</button>
-                </form>
+                <!-- Nút tạo khách hàng mới -->
+                <button id="openSignUpModalBtn" class="btn btn-primary" type="button">Create Customer</button>
                 
                 <h3 class="mt-5">Customer List</h3>
                 <div class="table-container">
@@ -279,20 +261,92 @@
         </div>
     </footer>
 
+    <!-- Include Auth CSS -->
+    <div th:replace="~{fragments/auth-modals :: authCSS}"></div>
+
+    <!-- Tùy chỉnh modal Sign-Up cho lễ tân -->
+    <div id="modalOverlaySignUp" class="modal-overlay">
+        <div class="modal">
+            <span id="closeModalSignUp" class="close-button">&times;</span>
+            <h2 class="modal-title">Create New Customer</h2>
+            <form action="/receptionist/create-customer" method="POST" id="signupForm">
+                <div class="form-group">
+                    <label for="signupPhone">Phone number</label>
+                    <input type="text" 
+                           id="signupPhone" 
+                           name="phone" 
+                           placeholder="Phone number" 
+                           required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" 
+                           id="signupEmail" 
+                           name="email" 
+                           placeholder="Email" 
+                           required>
+                </div>
+                <div class="form-group">
+                    <label for="signupFullName">Full Name</label>
+                    <input type="text" 
+                           id="signupFullName" 
+                           name="fullName" 
+                           placeholder="Full Name" 
+                           required>
+                </div>
+                <div class="form-group">
+                    <label for="signupUsername">Username</label>
+                    <input type="text" 
+                           id="signupUsername" 
+                           name="username" 
+                           placeholder="Username" 
+                           required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" 
+                           id="signupPassword" 
+                           name="password" 
+                           placeholder="Password" 
+                           required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" 
+                           id="confirmPassword" 
+                           name="confirmPassword" 
+                           placeholder="Confirm Password" 
+                           required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="modal-btn signup-modal-btn">
+                        Confirm Create Customer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script>
         // Tab switching
         document.addEventListener('DOMContentLoaded', function() {
-            const tabBtns = document.querySelectorAll('.tab-btn:not(.booking-tab)');
+            console.log('DOM content loaded');
+            
+            const tabBtns = document.querySelectorAll('.tab-btn');
             const tabPanes = document.querySelectorAll('.tab-pane');
             
+            console.log('Found tab buttons:', tabBtns.length);
+            console.log('Found tab panes:', tabPanes.length);
+            
             tabBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
                     const targetTab = this.getAttribute('data-tab');
+                    console.log('Tab button clicked:', targetTab);
                     
                     // Update active button
                     tabBtns.forEach(b => b.classList.remove('active'));
-                    document.querySelector('.booking-tab').classList.remove('active');
                     this.classList.add('active');
                     
                     // Update active tab
@@ -300,6 +354,7 @@
                         pane.classList.remove('active');
                         if (pane.id === targetTab) {
                             pane.classList.add('active');
+                            console.log('Activated tab pane:', pane.id);
                         }
                     });
                 });
@@ -501,6 +556,46 @@
                     }
                 });
             }
+        });
+    </script>
+    <script>
+        // Mở modal đăng ký khi nhấn nút Create Customer
+        document.addEventListener('DOMContentLoaded', function() {
+            const openSignUpModalBtn = document.getElementById('openSignUpModalBtn');
+            const closeModalSignUp = document.getElementById('closeModalSignUp');
+            const modalOverlaySignUp = document.getElementById('modalOverlaySignUp');
+            
+            // Mở modal khi nhấn nút Create Customer
+            if (openSignUpModalBtn) {
+                openSignUpModalBtn.addEventListener('click', function() {
+                    if (modalOverlaySignUp) {
+                        modalOverlaySignUp.style.display = 'flex';
+                    }
+                });
+            }
+            
+            // Đóng modal khi nhấn nút close
+            closeModalSignUp?.addEventListener('click', function() {
+                modalOverlaySignUp.style.display = 'none';
+            });
+            
+            // Đóng modal khi nhấn bên ngoài
+            window.addEventListener('click', function(e) {
+                if (e.target === modalOverlaySignUp) {
+                    modalOverlaySignUp.style.display = 'none';
+                }
+            });
+            
+            // Kiểm tra mật khẩu trùng khớp khi submit form
+            document.getElementById('signupForm')?.addEventListener('submit', function(e) {
+                const password = document.getElementById('signupPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (password !== confirmPassword) {
+                    e.preventDefault();
+                    alert('Passwords do not match!');
+                }
+            });
         });
     </script>
 </body>

@@ -15,8 +15,6 @@ public class RoomTypeDto {
     private String imagePath;
     
     // Additional fields for the UI
-    private String bedType;
-    private String size;
     private List<RoomTypeAmenityDto> amenityList;
     private List<Room> availableRooms;
     private Integer availableCount;
@@ -93,22 +91,6 @@ public class RoomTypeDto {
     }
 
     // Additional getters and setters for UI fields
-    public String getBedType() {
-        return bedType;
-    }
-
-    public void setBedType(String bedType) {
-        this.bedType = bedType;
-    }
-
-    public String getSize() {
-        return size;
-    }
-
-    public void setSize(String size) {
-        this.size = size;
-    }
-
     public List<RoomTypeAmenityDto> getAmenityList() {
         return amenityList;
     }

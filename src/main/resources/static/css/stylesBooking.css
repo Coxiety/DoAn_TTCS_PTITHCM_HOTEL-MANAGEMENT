@@ -10,7 +10,7 @@ main {
     margin: 0 auto;
 }
 
-/* ============ BOOKING HEADER ============ */
+/* ============ BOOKING HEADER ============
 .booking-header {
     text-align: center;
     max-width: 800px;
@@ -28,7 +28,7 @@ main {
     font-size: 1.1rem;
     color: #666;
     line-height: 1.6;
-}
+} */
 
 /* ============ LEFT COLUMN: ROOMS ============ */
 .rooms-section {
@@ -322,11 +322,17 @@ main {
     border: none;
     cursor: pointer;
     margin-top: 20px;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, opacity 0.3s ease;
 }
 
 .book-btn:hover {
     background-color: #388E3C;
+}
+
+.book-btn:disabled, .book-btn.disabled {
+    background-color: #9E9E9E;
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
 /* ============ ROOM DETAILS MODAL ============ */
