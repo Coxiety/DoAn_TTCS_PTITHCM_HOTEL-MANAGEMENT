@@ -131,8 +131,14 @@ public class BookingService {
         BigDecimal totalAmount = BigDecimal.ZERO;
         booking.setTotalAmount(totalAmount);
         
-        // Set user if provided (might be null for receptionist bookings)
-        booking.setUser(user);
+        // Set user if provided, otherwise try to get user from customer if available
+        if (user != null) {
+            booking.setUser(user);
+        } else if (customer.getUser() != null) {
+            booking.setUser(customer.getUser());
+            LOGGER.fine(String.format("Setting user from customer relationship: %s", customer.getUser().getUsername()));
+        }
+        
         bookingRepository.save(booking);
         LOGGER.info(String.format("Created booking with id: %d", booking.getId()));
 

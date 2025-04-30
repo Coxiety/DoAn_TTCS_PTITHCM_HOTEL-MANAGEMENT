@@ -32,7 +32,9 @@ import com.HotelManagement.models.Room;
 import com.HotelManagement.models.RoomType;
 import com.HotelManagement.models.User;
 import com.HotelManagement.repository.BookingDetailRepository;
+import com.HotelManagement.repository.CustomerRepository;
 import com.HotelManagement.repository.RoomTypeRepository;
+import com.HotelManagement.service.AuthService;
 import com.HotelManagement.service.BookingService;
 import com.HotelManagement.service.CustomerService;
 import com.HotelManagement.service.PaymentService;
@@ -63,6 +65,12 @@ public class ReceptionistController {
 
     @Autowired
     private PaymentService paymentService;
+
+    @Autowired
+    private AuthService authService;
+
+    @Autowired
+    private CustomerRepository customerRepository;
 
     @GetMapping("")
     public String dashboard(Model model, HttpSession session,
@@ -162,14 +170,29 @@ public class ReceptionistController {
             RedirectAttributes redirectAttributes) {
 
         try {
-            Customer newCustomer = new Customer();
-            newCustomer.setFullName(fullName);
-            newCustomer.setPhone(phone);
-            newCustomer.setEmail(email);
-
-            customerService.saveCustomer(newCustomer);
-            redirectAttributes.addFlashAttribute("success", "Customer created successfully!");
-            redirectAttributes.addFlashAttribute("customerId", newCustomer.getId());
+            // Generate username from email or phone
+            String username = email.split("@")[0]; // Use part before @ in email as username
+            // Generate a random password (customers can change it later)
+            String password = "Customer" + phone.substring(Math.max(0, phone.length() - 4)); // Last 4 digits of phone
+            
+            // First create a user
+            User newUser = new User();
+            newUser.setUsername(username);
+            newUser.setEmail(email);
+            newUser.setPhone(phone);
+            newUser.setFullName(fullName);
+            newUser.setRoleId(0); // 0 for customer role
+            
+            // Use AuthService to handle password hashing and user creation
+            User savedUser = authService.signup(username, password, email, fullName, phone);
+            
+            // The customer is already created by AuthService.signup
+            // We just need to get the customer ID for redirection
+            Customer customer = customerService.getCustomerByUserId(savedUser.getId());
+            
+            redirectAttributes.addFlashAttribute("success", 
+                "Customer created successfully with username: " + username + " and temporary password: " + password);
+            redirectAttributes.addFlashAttribute("customerId", customer.getId());
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Failed to create customer: " + e.getMessage());
         }
@@ -229,14 +252,8 @@ public class ReceptionistController {
 
     @GetMapping("/search")
     public String searchBookings(@RequestParam(required = false) String phone, Model model) {
-        List<Booking> bookings;
-        if (phone != null && !phone.trim().isEmpty()) {
-            // Search bookings by phone number
-            bookings = bookingService.getBookingsByCustomerPhone(phone);
-        } else {
-            // If no phone number provided, show today's bookings
-            bookings = bookingService.getBookingsByDate(LocalDate.now());
-        }
+        // Since we removed the phone search from the UI, just show today's bookings by default
+        List<Booking> bookings = bookingService.getTodayCheckIns();
         model.addAttribute("bookings", bookings);
         return "receptionist/ReceptionistDashboard";
     }

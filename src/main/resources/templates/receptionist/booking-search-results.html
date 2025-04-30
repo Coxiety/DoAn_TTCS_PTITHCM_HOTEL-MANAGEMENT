@@ -33,7 +33,7 @@
                 <tbody>
                     <tr th:each="booking : ${bookings}">
                         <td th:text="${booking.id}"></td>
-                        <td th:text="${booking.customer.firstName + ' ' + booking.customer.lastName}"></td>
+                        <td th:text="${booking.customer.fullName}"></td>
                         <td th:text="${#temporals.format(booking.checkInDate, 'dd-MM-yyyy')}"></td>
                         <td th:text="${#temporals.format(booking.checkOutDate, 'dd-MM-yyyy')}"></td>
                         <td th:text="${booking.status}"></td>
@@ -107,7 +107,7 @@
             No bookings found for this search criteria.
         </div>
         
-        <a href="/receptionist/dashboard" class="btn btn-primary mt-3">Back to Dashboard</a>
+        <a href="/receptionist" class="btn btn-primary mt-3">Back to Dashboard</a>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
