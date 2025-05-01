@@ -8,6 +8,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -63,11 +64,17 @@ public class AdminController {
     @Autowired
     private BookingDetailRepository bookingDetailRepository;
     
-    // Simple password encoder for security
-    private String encodePassword(String password) {
-        // In a production app, use a proper encryption library
-        // This is just a basic encoding for demo purposes
-        return Base64.getEncoder().encodeToString(password.getBytes());
+    /**
+     * Hash a password using SHA-256
+     */
+    private String hashPassword(String password) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Error hashing password", e);
+        }
     }
     
     @GetMapping("")
@@ -146,7 +153,7 @@ public class AdminController {
             
             User newUser = new User();
             newUser.setUsername(username);
-            newUser.setPassword(encodePassword(password)); // Encode password
+            newUser.setPassword(hashPassword(password)); // Encode password
             newUser.setFullName(fullName);
             newUser.setPhone(phone);
             newUser.setEmail(email);
@@ -222,7 +229,7 @@ public class AdminController {
             
             user.setUsername(username);
             if (password != null && !password.isEmpty()) {
-                user.setPassword(encodePassword(password)); // Encode password
+                user.setPassword(hashPassword(password)); // Encode password
             }
             user.setFullName(fullName);
             user.setPhone(phone);
@@ -296,6 +303,13 @@ public class AdminController {
         List<User> users = userService.getAllUsers();
         model.addAttribute("users", users);
         
+        // Add role options for dropdowns
+        Map<Integer, String> roles = new HashMap<>();
+        roles.put(0, "Customer");
+        roles.put(1, "Administrator");
+        roles.put(2, "Receptionist");
+        model.addAttribute("roles", roles);
+        
         // Pass the current user's ID to the template so we can disable editing for self
         model.addAttribute("currentUserId", user.getId());
         
@@ -332,7 +346,7 @@ public class AdminController {
             
             User newUser = new User();
             newUser.setUsername(username);
-            newUser.setPassword(encodePassword(password)); // Encode password
+            newUser.setPassword(hashPassword(password)); // Encode password
             newUser.setFullName(fullName);
             newUser.setPhone(phone);
             newUser.setEmail(email);
@@ -403,7 +417,7 @@ public class AdminController {
             
             user.setUsername(username);
             if (password != null && !password.isEmpty()) {
-                user.setPassword(encodePassword(password)); // Encode password
+                user.setPassword(hashPassword(password)); // Encode password
             }
             user.setFullName(fullName);
             user.setPhone(phone);
@@ -805,19 +819,6 @@ public class AdminController {
         }
         
         return "redirect:/admin/users";
-    }
-    
-    /**
-     * Hash a password using SHA-256
-     */
-    private String hashPassword(String password) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Error hashing password", e);
-        }
     }
 
     /**

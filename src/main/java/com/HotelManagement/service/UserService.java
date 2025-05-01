@@ -1,11 +1,15 @@
 package com.HotelManagement.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.HotelManagement.models.Customer;
 import com.HotelManagement.models.User;
+import com.HotelManagement.repository.CustomerRepository;
 import com.HotelManagement.repository.UserRepository;
 
 @Service
@@ -13,6 +17,9 @@ public class UserService {
     
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private CustomerRepository customerRepository;
     
     public List<User> getAllUsers() {
         return userRepository.findAll();
@@ -23,6 +30,7 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
     }
     
+    @Transactional
     public User saveUser(User user) {
         // Check if user already exists with the same username
         if (user.getId() == null) {
@@ -58,12 +66,36 @@ public class UserService {
             }
         }
         
-        // Here we would typically encrypt the password before saving
-        // passwordEncoder.encode(user.getPassword())
+        // Save the user first
+        User savedUser = userRepository.save(user);
         
-        return userRepository.save(user);
+        // If user is a customer (roleId = 0), synchronize with customer data
+        if (savedUser.getRoleId() != null && savedUser.getRoleId() == 0) {
+            // Try to find an existing customer for this user
+            Optional<Customer> existingCustomer = customerRepository.findByUserId(savedUser.getId());
+            
+            if (existingCustomer.isPresent()) {
+                // Update existing customer data to match user data
+                Customer customer = existingCustomer.get();
+                customer.setFullName(savedUser.getFullName());
+                customer.setEmail(savedUser.getEmail());
+                customer.setPhone(savedUser.getPhone());
+                customerRepository.save(customer);
+            } else {
+                // Create a new customer record if doesn't exist
+                Customer newCustomer = new Customer();
+                newCustomer.setUser(savedUser);
+                newCustomer.setFullName(savedUser.getFullName());
+                newCustomer.setEmail(savedUser.getEmail());
+                newCustomer.setPhone(savedUser.getPhone());
+                customerRepository.save(newCustomer);
+            }
+        }
+        
+        return savedUser;
     }
     
+    @Transactional
     public void deleteUser(Integer id) {
         // Check if the user exists
         if (!userRepository.existsById(id)) {

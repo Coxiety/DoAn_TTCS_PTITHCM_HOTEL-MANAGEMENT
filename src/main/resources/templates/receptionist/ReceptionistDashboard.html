@@ -18,23 +18,6 @@
     <div class="dashboard-container">
         <h1>Today's Check-Ins</h1>
         
-        <!-- Search Section -->
-        <div class="search-section">
-            <h2>Search Booking by Phone Number</h2>
-            <form class="search-box" th:action="@{/receptionist/search}" method="get">
-                <input type="tel" 
-                       name="phone" 
-                       class="search-input" 
-                       placeholder="Enter customer phone number"
-                       pattern="[0-9]+"
-                       th:value="${param.phone}"
-                       required>
-                <button type="submit" class="search-button">
-                    <i class="fas fa-search"></i> Search
-                </button>
-            </form>
-        </div>
-
         <!-- Bookings Table -->
         <table class="bookings-table">
             <thead>
