@@ -111,21 +111,6 @@ body {
     border-bottom-color: #4338ca;
 }
 
-/* Special booking tab */
-.booking-tab {
-    background-color: #f0f7f0;
-    color: #2e7d32;
-    margin-left: auto;
-    border-radius: 4px;
-    margin-top: 5px;
-    margin-bottom: 5px;
-}
-
-.booking-tab:hover {
-    background-color: #e0f0e0;
-    color: #1b5e20;
-}
-
 /* Main Content */
 .main-content {
     max-width: 1400px;
@@ -198,9 +183,10 @@ body {
 /* Tables */
 .table-container {
     background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    overflow-x: auto;
     margin-bottom: 30px;
 }
 

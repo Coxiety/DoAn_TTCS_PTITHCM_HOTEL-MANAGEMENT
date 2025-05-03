@@ -7,6 +7,10 @@
     <link rel="stylesheet" th:href="@{/css/stylesUniversal.css}">
     <link rel="stylesheet" th:href="@{/css/stylesReceptionist.css}">
     <link rel="stylesheet" th:href="@{/css/receptionist-modals.css}">
+    <!-- DataTables for advanced table functionality -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <!-- Google Fonts -->
@@ -31,22 +35,13 @@
             <div class="tab-pane active" id="check-in">
                 <h2>Today's Check-Ins</h2>
                 
-                <!-- Phone number search box -->
-                <div class="phone-search-container">
-                    <h3>Search Booking by Phone Number</h3>
-                    <div class="phone-search">
-                        <input type="text" id="phoneSearch" placeholder="Enter customer phone number">
-                        <button id="phoneSearchBtn" class="btn btn-primary">Search</button>
-                    </div>
-                    <div id="bookingSearchResults" class="search-results"></div>
-                </div>
-                
                 <div class="table-container">
-                    <table>
+                    <table id="checkInTable" class="display">
                         <thead>
                             <tr>
                                 <th>Booking ID</th>
                                 <th>Customer</th>
+                                <th>Phone</th>
                                 <th>Room</th>
                                 <th>Check-In Date</th>
                                 <th>Check-Out Date</th>
@@ -55,11 +50,12 @@
                         </thead>
                         <tbody>
                             <tr th:if="${checkins == null || checkins.empty}">
-                                <td colspan="6">No check-ins scheduled for today</td>
+                                <td colspan="7">No check-ins scheduled for today</td>
                             </tr>
                             <tr th:each="booking : ${checkins}" th:if="${checkins != null}">
                                 <td th:text="${booking.id}">123</td>
                                 <td th:text="${booking.customer.fullName}">John Doe</td>
+                                <td th:text="${booking.customer.phone}">0123456789</td>
                                 <td>
                                     <!-- Using the bookingDetailsMap -->
                                     <span th:each="detail, detailStat : ${bookingDetailsMap.get(booking.id)}" 
@@ -90,11 +86,12 @@
             <div class="tab-pane" id="check-out">
                 <h2>Occupied Rooms by Booking</h2>
                 <div class="table-container">
-                    <table>
+                    <table id="checkOutTable" class="display">
                         <thead>
                             <tr>
                                 <th>Booking ID</th>
                                 <th>Customer</th>
+                                <th>Phone</th>
                                 <th>Rooms</th>
                                 <th>Check-In Date</th>
                                 <th>Check-Out Date</th>
@@ -103,11 +100,12 @@
                         </thead>
                         <tbody>
                             <tr th:if="${roomsByBooking == null || roomsByBooking.empty}">
-                                <td colspan="6">No bookings are currently active</td>
+                                <td colspan="7">No bookings are currently active</td>
                             </tr>
                             <tr th:each="entry : ${roomsByBooking}" th:if="${roomsByBooking != null}">
                                 <td th:text="${entry.key}">1023</td>
                                 <td th:text="${bookingsMap.get(entry.key).customer.fullName}">Customer Name</td>
+                                <td th:text="${bookingsMap.get(entry.key).customer.phone}">0123456789</td>
                                 <td>
                                     <span th:each="room, roomStat : ${entry.value}">
                                         <span th:text="${room.roomNumber}">101</span>
@@ -184,26 +182,20 @@
             <!-- Customers Tab -->
             <div class="tab-pane" id="customers">
                 <h2>Customer Management</h2>
-                <div class="customer-search">
-                    <input type="text" id="customerSearch" placeholder="Search customer by name, phone or email">
-                    <button id="searchBtn" class="btn">Search</button>
-                </div>
-                <div id="customerSearchResults" class="search-results"></div>
-
-                <div class="separator">OR</div>
-
+                
                 <!-- Nút tạo khách hàng mới -->
                 <button id="openSignUpModalBtn" class="btn btn-primary" type="button">Create Customer</button>
                 
                 <h3 class="mt-5">Customer List</h3>
                 <div class="table-container">
-                    <table>
+                    <table id="customerTable" class="display">
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Name</th>
-                                <th>Phone</th>
+                                <th>Username</th>
+                                <th>Full Name</th>
                                 <th>Email</th>
+                                <th>Phone</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -327,6 +319,103 @@
         </div>
     </div>
 
+    <!-- Additional CSS for role badges -->
+    <style>
+        .role-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .role-receptionist {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .role-customer {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .role-admin {
+            background-color: #4338ca;
+            color: white;
+        }
+        
+        .inline-form {
+            display: inline;
+        }
+        
+        .table-container {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        
+        table.display {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        table.display th, table.display td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        table.display th {
+            background-color: #f2f2f2;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        table.display tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        /* Modal styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .modal-title {
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #1a56db;
+        }
+    </style>
+
     <!-- Scripts -->
     <script>
         // Tab switching
@@ -360,47 +449,6 @@
                 });
             });
             
-            // Phone search for bookings
-            const phoneSearchBtn = document.getElementById('phoneSearchBtn');
-            if (phoneSearchBtn) {
-                phoneSearchBtn.addEventListener('click', function() {
-                    const phone = document.getElementById('phoneSearch').value;
-                    if (phone.trim().length > 0) {
-                        fetch(`/receptionist/search-booking-by-phone?phone=${encodeURIComponent(phone)}`)
-                            .then(response => response.text())
-                            .then(html => {
-                                document.getElementById('bookingSearchResults').innerHTML = html;
-                            });
-                    }
-                });
-            }
-            
-            // Customer search
-            const searchBtn = document.getElementById('searchBtn');
-            if (searchBtn) {
-                searchBtn.addEventListener('click', function() {
-                    const query = document.getElementById('customerSearch').value;
-                    if (query.trim().length > 0) {
-                        fetch(`/receptionist/search-customer?query=${encodeURIComponent(query)}`)
-                            .then(response => response.text())
-                            .then(html => {
-                                document.getElementById('customerSearchResults').innerHTML = html;
-                            });
-                    }
-                });
-            }
-            
-            // Add enter key support for phone search
-            const phoneSearchInput = document.getElementById('phoneSearch');
-            if (phoneSearchInput) {
-                phoneSearchInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        phoneSearchBtn.click();
-                    }
-                });
-            }
-            
             // Load customer list
             function loadCustomerList() {
                 fetch('/receptionist/get-all-customers')
@@ -410,7 +458,7 @@
                         if (!customerListBody) return;
                         
                         if (!customers.length) {
-                            customerListBody.innerHTML = '<tr><td colspan="5">No customers found</td></tr>';
+                            customerListBody.innerHTML = '<tr><td colspan="6">No customers found</td></tr>';
                             return;
                         }
                         
@@ -418,10 +466,11 @@
                         customers.forEach(customer => {
                             html += `
                             <tr>
-                                <td>${customer.id}</td>
+                                <td>${customer.user ? customer.user.id : 'N/A'}</td>
+                                <td>${customer.user ? customer.user.username : 'N/A'}</td>
                                 <td>${customer.fullName}</td>
-                                <td>${customer.phone || 'N/A'}</td>
                                 <td>${customer.email || 'N/A'}</td>
+                                <td>${customer.phone || 'N/A'}</td>
                                 <td>
                                     <a href="/receptionist/book/${customer.id}" class="btn btn-sm btn-primary">
                                         <i class="fas fa-book"></i> Book Room
@@ -432,6 +481,22 @@
                         });
                         
                         customerListBody.innerHTML = html;
+                        
+                        // Initialize DataTable after populating data
+                        if ($.fn.DataTable.isDataTable('#customerTable')) {
+                            $('#customerTable').DataTable().destroy();
+                        }
+                        
+                        $('#customerTable').DataTable({
+                            "paging": true,
+                            "ordering": true,
+                            "info": true,
+                            "searching": true,
+                            "responsive": true,
+                            "columnDefs": [
+                                { "orderable": false, "targets": 5 } // Disable sorting on action column
+                            ]
+                        });
                     })
                     .catch(error => console.error('Error loading customers:', error));
             }
@@ -440,6 +505,41 @@
             if (document.getElementById('customerListBody')) {
                 loadCustomerList();
             }
+            
+            // Initialize DataTables for check-in and check-out tables
+            $(document).ready(function() {
+                // Initialize Check-in table
+                if ($.fn.DataTable.isDataTable('#checkInTable')) {
+                    $('#checkInTable').DataTable().destroy();
+                }
+                
+                $('#checkInTable').DataTable({
+                    "paging": true,
+                    "ordering": true,
+                    "info": true,
+                    "searching": true,
+                    "responsive": true,
+                    "columnDefs": [
+                        { "orderable": false, "targets": 6 } // Disable sorting on action column
+                    ]
+                });
+                
+                // Initialize Check-out table
+                if ($.fn.DataTable.isDataTable('#checkOutTable')) {
+                    $('#checkOutTable').DataTable().destroy();
+                }
+                
+                $('#checkOutTable').DataTable({
+                    "paging": true,
+                    "ordering": true,
+                    "info": true,
+                    "searching": true,
+                    "responsive": true,
+                    "columnDefs": [
+                        { "orderable": false, "targets": 6 } // Disable sorting on action column
+                    ]
+                });
+            });
             
             // Room checkout modal handling
             const checkoutBookingBtns = document.querySelectorAll('.checkout-booking-btn');
@@ -575,27 +675,34 @@
             }
             
             // Đóng modal khi nhấn nút close
-            closeModalSignUp?.addEventListener('click', function() {
-                modalOverlaySignUp.style.display = 'none';
-            });
+            if (closeModalSignUp) {
+                closeModalSignUp.addEventListener('click', function() {
+                    modalOverlaySignUp.style.display = 'none';
+                });
+            }
             
             // Đóng modal khi nhấn bên ngoài
-            window.addEventListener('click', function(e) {
-                if (e.target === modalOverlaySignUp) {
-                    modalOverlaySignUp.style.display = 'none';
-                }
-            });
+            if (modalOverlaySignUp) {
+                modalOverlaySignUp.addEventListener('click', function(e) {
+                    if (e.target === modalOverlaySignUp) {
+                        modalOverlaySignUp.style.display = 'none';
+                    }
+                });
+            }
             
             // Kiểm tra mật khẩu trùng khớp khi submit form
-            document.getElementById('signupForm')?.addEventListener('submit', function(e) {
-                const password = document.getElementById('signupPassword').value;
-                const confirmPassword = document.getElementById('confirmPassword').value;
-                
-                if (password !== confirmPassword) {
-                    e.preventDefault();
-                    alert('Passwords do not match!');
-                }
-            });
+            const signupForm = document.getElementById('signupForm');
+            if (signupForm) {
+                signupForm.addEventListener('submit', function(e) {
+                    const password = document.getElementById('signupPassword').value;
+                    const confirmPassword = document.getElementById('confirmPassword').value;
+                    
+                    if (password !== confirmPassword) {
+                        e.preventDefault();
+                        alert('Passwords do not match!');
+                    }
+                });
+            }
         });
     </script>
 </body>

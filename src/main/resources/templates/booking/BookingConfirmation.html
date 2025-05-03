@@ -168,7 +168,8 @@
         </div>
         
         <div class="return-btn">
-            <a th:href="@{/}" class="btn-primary">Return to Home</a>
+            <a href="/receptionist" class="btn-primary" th:if="${session.userRole == 2}">Return to Receptionist</a>
+            <a href="/" class="btn-primary" th:unless="${session.userRole == 2}">Return to Home</a>
         </div>
     </div>
     

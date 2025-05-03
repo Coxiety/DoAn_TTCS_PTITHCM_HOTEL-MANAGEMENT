@@ -2,12 +2,9 @@ package com.HotelManagement.controller;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,12 +29,11 @@ import com.HotelManagement.models.RoomType;
 import com.HotelManagement.models.User;
 import com.HotelManagement.repository.BookingDetailRepository;
 import com.HotelManagement.service.AdminService;
+import com.HotelManagement.service.AuthService;
 import com.HotelManagement.service.BookingService;
 import com.HotelManagement.service.PaymentService;
 import com.HotelManagement.service.RoomService;
 import com.HotelManagement.service.UserService;
-import com.HotelManagement.validation.RoomTypeValidationError;
-import com.HotelManagement.validation.RoomTypeValidationException;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -63,12 +59,8 @@ public class AdminController {
     @Autowired
     private BookingDetailRepository bookingDetailRepository;
     
-    // Simple password encoder for security
-    private String encodePassword(String password) {
-        // In a production app, use a proper encryption library
-        // This is just a basic encoding for demo purposes
-        return Base64.getEncoder().encodeToString(password.getBytes());
-    }
+    @Autowired
+    private AuthService authService;
     
     @GetMapping("")
     public String dashboard(Model model, HttpSession session) {
@@ -146,7 +138,7 @@ public class AdminController {
             
             User newUser = new User();
             newUser.setUsername(username);
-            newUser.setPassword(encodePassword(password)); // Encode password
+            newUser.setPassword(authService.hashPassword(password)); // Using AuthService
             newUser.setFullName(fullName);
             newUser.setPhone(phone);
             newUser.setEmail(email);
@@ -187,54 +179,49 @@ public class AdminController {
             // Get current logged-in user
             User currentUser = (User) session.getAttribute("user");
             
+            // Prevent admins from editing other admin accounts
+            if (user.getRoleId() == 1 && !currentUser.getId().equals(id)) {
+                throw new RuntimeException("Không được phép chỉnh sửa thông tin của admin khác");
+            }
+            
             // Prevent admins from demoting themselves to non-admin roles
             if (currentUser.getId().equals(id) && user.getRoleId() == 1 && roleId != 1) {
                 throw new RuntimeException("Cannot change your own admin role");
             }
             
-            // Check if username already exists (but not for the current user)
-            User existingUser = userService.getAllUsers().stream()
-                .filter(u -> u.getUsername().equals(username) && !u.getId().equals(id))
-                .findFirst().orElse(null);
+            // Check if username and email already exists (but not for the current user)
+            List<User> users = userService.getAllUsers();
             
-            if (existingUser != null) {
+            // Kiểm tra username
+            boolean usernameExists = users.stream()
+                .anyMatch(u -> u.getUsername().equals(username) && !u.getId().equals(id));
+            if (usernameExists) {
                 throw new RuntimeException("Username already exists");
             }
             
-            // Check if email already exists (but not for the current user)
+            // Kiểm tra email
             if (email != null && !email.isEmpty()) {
-                existingUser = userService.getAllUsers().stream()
-                    .filter(u -> email.equals(u.getEmail()) && !u.getId().equals(id))
-                    .findFirst().orElse(null);
-                    
-                if (existingUser != null) {
+                boolean emailExists = users.stream()
+                    .anyMatch(u -> email.equals(u.getEmail()) && !u.getId().equals(id));
+                if (emailExists) {
                     throw new RuntimeException("Email already in use");
-                }
-            }
-            
-            // Check if trying to update the last admin
-            if (!currentUser.getId().equals(id) && user.getRoleId() == 1 && roleId != 1) {
-                long adminCount = userService.countUsersByRole(1);
-                if (adminCount <= 1) {
-                    throw new RuntimeException("Cannot change role of the last administrator");
                 }
             }
             
             user.setUsername(username);
             if (password != null && !password.isEmpty()) {
-                user.setPassword(encodePassword(password)); // Encode password
+                user.setPassword(authService.hashPassword(password)); // Using AuthService
             }
             user.setFullName(fullName);
             user.setPhone(phone);
             user.setEmail(email);
             // Only update role if not editing self or not changing from admin
-            if (!currentUser.getId().equals(id) || (currentUser.getId().equals(id) && Integer.valueOf(1).equals(user.getRoleId()) && Integer.valueOf(1).equals(roleId))) {
+            if (user.getRoleId() != 1) 
+            {
                 user.setRoleId(roleId);
-            } else if (!Integer.valueOf(roleId).equals(user.getRoleId())) {
-                // If trying to change own role from admin, show warning but keep admin role
-                redirectAttributes.addFlashAttribute("warning", "You cannot change your own admin role. Your admin privileges have been maintained.");
-            }
-            
+                userService.saveUser(user);
+                redirectAttributes.addFlashAttribute("success", "Staff member updated successfully!");
+            } 
             userService.saveUser(user);
             redirectAttributes.addFlashAttribute("success", "Staff member updated successfully!");
         } catch (RuntimeException e) {
@@ -296,6 +283,13 @@ public class AdminController {
         List<User> users = userService.getAllUsers();
         model.addAttribute("users", users);
         
+        // Add role options for dropdowns
+        Map<Integer, String> roles = new HashMap<>();
+        roles.put(0, "Customer");
+        roles.put(1, "Administrator");
+        roles.put(2, "Receptionist");
+        model.addAttribute("roles", roles);
+        
         // Pass the current user's ID to the template so we can disable editing for self
         model.addAttribute("currentUserId", user.getId());
         
@@ -332,7 +326,7 @@ public class AdminController {
             
             User newUser = new User();
             newUser.setUsername(username);
-            newUser.setPassword(encodePassword(password)); // Encode password
+            newUser.setPassword(authService.hashPassword(password)); // Using AuthService
             newUser.setFullName(fullName);
             newUser.setPhone(phone);
             newUser.setEmail(email);
@@ -368,27 +362,21 @@ public class AdminController {
             // Get current logged-in user
             User currentUser = (User) session.getAttribute("user");
             
-            // Prevent admins from demoting themselves
-            if (currentUser.getId().equals(id) && user.getRoleId() == 1 && roleId != 1) {
-                throw new RuntimeException("Cannot change your own admin role");
-            }
+            // Check if username and email already exists (but not for the current user)
+            List<User> users = userService.getAllUsers();
             
-            // Check if username already exists (but not for the current user)
-            User existingUser = userService.getAllUsers().stream()
-                .filter(u -> u.getUsername().equals(username) && !u.getId().equals(id))
-                .findFirst().orElse(null);
-                
-            if (existingUser != null) {
+            // Kiểm tra username
+            boolean usernameExists = users.stream()
+                .anyMatch(u -> u.getUsername().equals(username) && !u.getId().equals(id));
+            if (usernameExists) {
                 throw new RuntimeException("Username already exists");
             }
             
-            // Check if email already exists (but not for the current user)
+            // Kiểm tra email
             if (email != null && !email.isEmpty()) {
-                existingUser = userService.getAllUsers().stream()
-                    .filter(u -> email.equals(u.getEmail()) && !u.getId().equals(id))
-                    .findFirst().orElse(null);
-                    
-                if (existingUser != null) {
+                boolean emailExists = users.stream()
+                    .anyMatch(u -> email.equals(u.getEmail()) && !u.getId().equals(id));
+                if (emailExists) {
                     throw new RuntimeException("Email already in use");
                 }
             }
@@ -403,16 +391,19 @@ public class AdminController {
             
             user.setUsername(username);
             if (password != null && !password.isEmpty()) {
-                user.setPassword(encodePassword(password)); // Encode password
+                user.setPassword(authService.hashPassword(password)); // Using AuthService
             }
             user.setFullName(fullName);
             user.setPhone(phone);
             user.setEmail(email);
             
-            // Only update role if not editing self or not changing from admin
-            if (!currentUser.getId().equals(id) || (currentUser.getId().equals(id) && Integer.valueOf(1).equals(user.getRoleId()) && Integer.valueOf(1).equals(roleId))) {
+            // Only update role if not admin
+            if (user.getRoleId() != 1) 
+            {
                 user.setRoleId(roleId);
-            } else if (!Integer.valueOf(roleId).equals(user.getRoleId())) {
+            } 
+            else 
+            {
                 // If trying to change own role from admin, show warning but keep admin role
                 redirectAttributes.addFlashAttribute("warning", "You cannot change your own admin role. Your admin privileges have been maintained.");
             }
@@ -626,7 +617,7 @@ public class AdminController {
             if (image != null && !image.isEmpty()) {
                 String contentType = image.getContentType();
                 if (!"image/jpeg".equals(contentType) && !"image/png".equals(contentType)) {
-                    throw new RoomTypeValidationException(RoomTypeValidationError.INVALID_IMAGE_FORMAT);
+                    throw new RuntimeException("Định dạng tệp ảnh chỉ chấp nhận JPG hoặc PNG");
                 }
             }
             
@@ -649,9 +640,9 @@ public class AdminController {
             }
             
             redirectAttributes.addFlashAttribute("success", "Room type created successfully!");
-        } catch (RoomTypeValidationException e) {
+        } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            redirectAttributes.addFlashAttribute("errorCode", e.getError().name());
+            
             // Add the invalid input back to the form
             redirectAttributes.addFlashAttribute("roomTypeForm", Map.of(
                 "name", name,
@@ -787,7 +778,7 @@ public class AdminController {
         try {
             // The password to set for all users
             String newPassword = "test";
-            String hashedPassword = hashPassword(newPassword);
+            String hashedPassword = authService.hashPassword(newPassword); // Using AuthService
             
             // Get all users and update their passwords
             List<User> users = userService.getAllUsers();
@@ -805,19 +796,6 @@ public class AdminController {
         }
         
         return "redirect:/admin/users";
-    }
-    
-    /**
-     * Hash a password using SHA-256
-     */
-    private String hashPassword(String password) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Error hashing password", e);
-        }
     }
 
     /**

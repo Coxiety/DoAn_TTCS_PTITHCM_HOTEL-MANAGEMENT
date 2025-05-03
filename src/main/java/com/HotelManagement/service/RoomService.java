@@ -14,8 +14,6 @@ import com.HotelManagement.models.RoomType;
 import com.HotelManagement.repository.BookingDetailRepository;
 import com.HotelManagement.repository.RoomRepository;
 import com.HotelManagement.repository.RoomTypeRepository;
-import com.HotelManagement.validation.RoomTypeValidationError;
-import com.HotelManagement.validation.RoomTypeValidationException;
 
 @Service
 public class RoomService {
@@ -299,39 +297,39 @@ public class RoomService {
         if (roomType.getId() == null) {
             RoomType existingType = roomTypeRepository.findByName(roomType.getName());
             if (existingType != null) {
-                throw new RoomTypeValidationException(RoomTypeValidationError.DUPLICATE_ROOM_TYPE);
+                throw new RuntimeException("Trường bắt buộc và phải là duy nhất");
             }
         } else {
             // For updates, check if the name is unique among other room types
             RoomType existingType = roomTypeRepository.findByName(roomType.getName());
             if (existingType != null && !existingType.getId().equals(roomType.getId())) {
-                throw new RoomTypeValidationException(RoomTypeValidationError.DUPLICATE_ROOM_TYPE);
+                throw new RuntimeException("Trường bắt buộc và phải là duy nhất");
             }
         }
         
         // Validate name
         if (roomType.getName() == null || roomType.getName().trim().isEmpty()) {
-            throw new RoomTypeValidationException(RoomTypeValidationError.DUPLICATE_ROOM_TYPE);
+            throw new RuntimeException("Trường bắt buộc và phải là duy nhất");
         }
         
         // Validate capacity
         if (roomType.getCapacity() == null || roomType.getCapacity() <= 0) {
-            throw new RoomTypeValidationException(RoomTypeValidationError.INVALID_ROOM_CAPACITY);
+            throw new RuntimeException("Giá trị phải lớn hơn 0");
         }
         
         // Validate price
         if (roomType.getPrice() == null || roomType.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RoomTypeValidationException(RoomTypeValidationError.INVALID_ROOM_PRICE);
+            throw new RuntimeException("Giá trị phải lớn hơn 0");
         }
         
         // Validate description
         if (roomType.getDescription() == null || roomType.getDescription().trim().isEmpty()) {
-            throw new RoomTypeValidationException(RoomTypeValidationError.EMPTY_ROOM_DESCRIPTION);
+            throw new RuntimeException("Trường bắt buộc, không được để trống");
         }
         
         // Validate amenities
         if (roomType.getAmenities() == null || roomType.getAmenities().trim().isEmpty()) {
-            throw new RoomTypeValidationException(RoomTypeValidationError.EMPTY_AMENITIES);
+            throw new RuntimeException("Phải có ít nhất 1 tiện nghi");
         }
         
         return roomTypeRepository.save(roomType);

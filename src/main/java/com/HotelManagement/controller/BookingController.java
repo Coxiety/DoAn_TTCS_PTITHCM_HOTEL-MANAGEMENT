@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.HotelManagement.dto.BookingRequestDto;
-import com.HotelManagement.dto.RoomSelectionDto;
 import com.HotelManagement.models.Booking;
 import com.HotelManagement.models.BookingDetail;
 import com.HotelManagement.models.Customer;
@@ -47,7 +44,7 @@ public class BookingController {
 
     @PostMapping("/api/booking/create")
     @ResponseBody
-    public ResponseEntity<?> createBooking(@RequestBody BookingRequestDto bookingRequest, HttpSession session) {
+    public ResponseEntity<?> createBooking(@RequestBody Map<String, Object> bookingData, HttpSession session) {
         // Get user from session
         User user = (User) session.getAttribute("user");
         if (user == null) {
@@ -56,19 +53,23 @@ public class BookingController {
 
         try {
             // Validate input
-            if (bookingRequest == null) {
+            if (bookingData == null) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Booking data is required"));
             }
 
-            if (bookingRequest.getCheckInDate() == null || bookingRequest.getCheckInDate().trim().isEmpty()) {
+            String checkInDate = (String) bookingData.get("checkInDate");
+            String checkOutDate = (String) bookingData.get("checkOutDate");
+            
+            if (checkInDate == null || checkInDate.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Check-in date is required"));
             }
 
-            if (bookingRequest.getCheckOutDate() == null || bookingRequest.getCheckOutDate().trim().isEmpty()) {
+            if (checkOutDate == null || checkOutDate.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Check-out date is required"));
             }
 
-            if (bookingRequest.getRoomSelections() == null || bookingRequest.getRoomSelections().isEmpty()) {
+            List<Map<String, Object>> roomSelections = (List<Map<String, Object>>) bookingData.get("roomSelections");
+            if (roomSelections == null || roomSelections.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("message", "At least one room selection is required"));
             }
 
@@ -79,10 +80,16 @@ public class BookingController {
                 return ResponseEntity.badRequest().body(Map.of("message", "Customer record not found. Please contact reception."));
             }
 
-            // Set the customer ID in the booking request
-            bookingRequest.setCustomerId(customer.getId());
+            // Extract room type IDs and counts from selections
+            List<Integer> roomTypeIds = new ArrayList<>();
+            List<Integer> roomCounts = new ArrayList<>();
+            
+            for (Map<String, Object> selection : roomSelections) {
+                roomTypeIds.add(((Number) selection.get("roomTypeId")).intValue());
+                roomCounts.add(((Number) selection.get("count")).intValue());
+            }
 
-            Booking booking = bookingService.createBooking(bookingRequest, user);
+            Booking booking = bookingService.createBooking(checkInDate, checkOutDate, customer.getId(), roomTypeIds, roomCounts, user);
             Map<String, Object> response = new HashMap<>();
             response.put("bookingId", booking.getId());
             response.put("message", "Booking created successfully");
@@ -95,7 +102,7 @@ public class BookingController {
     }
 
     @GetMapping("/booking/confirmation/{id}")
-    public String showBookingConfirmation(@PathVariable("id") Integer bookingId, Model model) {
+    public String showBookingConfirmation(@PathVariable("id") Integer bookingId, Model model, HttpSession session) {
         // Get the booking
         Booking booking = bookingService.getBookingById(bookingId);
         if (booking == null) {
@@ -115,6 +122,9 @@ public class BookingController {
         model.addAttribute("booking", booking);
         model.addAttribute("bookingDetails", bookingDetails);
         model.addAttribute("totalAmount", totalAmount);
+        
+        // Đảm bảo thông tin userRole được truyền từ session vào model
+        model.addAttribute("userRole", session.getAttribute("userRole"));
 
         return "booking/BookingConfirmation";
     }
@@ -201,39 +211,28 @@ public class BookingController {
                 objectMapper.getTypeFactory().constructCollectionType(List.class, Map.class)
             );
 
-            // Create booking request DTO
-            BookingRequestDto bookingRequest = new BookingRequestDto();
-            bookingRequest.setCheckInDate(checkInDate);
-            bookingRequest.setCheckOutDate(checkOutDate);
-
-            // Find customer by user ID instead of phone number
+            // Find customer by user ID
             Customer customer = customerRepository.findByUserId(user.getId()).orElse(null);
             if (customer == null) {
                 redirectAttributes.addFlashAttribute("error", "Customer record not found. Please contact reception.");
                 return "redirect:/booking";
             }
 
-            bookingRequest.setCustomerId(customer.getId());
-
-            // Convert room selections to DTO format
-            List<RoomSelectionDto> dtoSelections = roomSelections.stream()
-                .map(selection -> {
-                    RoomSelectionDto dto = new RoomSelectionDto();
-                    dto.setRoomTypeId(((Number) selection.get("roomTypeId")).intValue());
-                    dto.setCount(((Number) selection.get("count")).intValue());
-                    return dto;
-                })
-                .collect(Collectors.toList());
-
-            bookingRequest.setRoomSelections(dtoSelections);
+            // Extract room type IDs and counts from selections
+            List<Integer> roomTypeIds = new ArrayList<>();
+            List<Integer> roomCounts = new ArrayList<>();
+            
+            for (Map<String, Object> selection : roomSelections) {
+                roomTypeIds.add(((Number) selection.get("roomTypeId")).intValue());
+                roomCounts.add(((Number) selection.get("count")).intValue());
+            }
 
             // Create booking
-            Booking booking = bookingService.createBooking(bookingRequest, user);
+            Booking booking = bookingService.createBooking(checkInDate, checkOutDate, customer.getId(), roomTypeIds, roomCounts, user);
 
-            // Redirect to confirmation page
             return "redirect:/booking/confirmation/" + booking.getId();
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error creating booking: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/booking";
         }
     }

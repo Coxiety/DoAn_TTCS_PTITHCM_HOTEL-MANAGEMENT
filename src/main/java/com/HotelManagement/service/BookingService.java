@@ -14,9 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.HotelManagement.dto.BookingRequestDto;
-import com.HotelManagement.dto.RoomSelectionDto;
-import com.HotelManagement.dto.RoomTypeDto;
 import com.HotelManagement.models.Booking;
 import com.HotelManagement.models.BookingDetail;
 import com.HotelManagement.models.Customer;
@@ -83,16 +80,17 @@ public class BookingService {
     }
 
     @Transactional
-    public Booking createBooking(BookingRequestDto bookingRequest, User user) {
+    public Booking createBooking(String checkInDateStr, String checkOutDateStr, Integer customerId, 
+                               List<Integer> roomTypeIds, List<Integer> roomCounts, User user) {
         if (user != null) {
-        LOGGER.info(String.format("Creating new booking for user: %s", user.getUsername()));
+            LOGGER.info(String.format("Creating new booking for user: %s", user.getUsername()));
         } else {
             LOGGER.info("Creating new booking by receptionist (no user associated)");
         }
         
         // Validate check-in date
-        LocalDateTime checkInDate = LocalDate.parse(bookingRequest.getCheckInDate(), DATE_FORMATTER).atStartOfDay();
-        LocalDateTime checkOutDate = LocalDate.parse(bookingRequest.getCheckOutDate(), DATE_FORMATTER).atStartOfDay();
+        LocalDateTime checkInDate = LocalDate.parse(checkInDateStr, DATE_FORMATTER).atStartOfDay();
+        LocalDateTime checkOutDate = LocalDate.parse(checkOutDateStr, DATE_FORMATTER).atStartOfDay();
         
         // Compare dates only, not time
         if (checkInDate.toLocalDate().isBefore(LocalDate.now())) {
@@ -107,11 +105,11 @@ public class BookingService {
 
         // Create or get customer
         Customer customer;
-        if (bookingRequest.getCustomerId() != null) {
-            LOGGER.fine(String.format("Using existing customer with id: %d", bookingRequest.getCustomerId()));
-            customer = customerRepository.findById(bookingRequest.getCustomerId()).orElse(null);
+        if (customerId != null) {
+            LOGGER.fine(String.format("Using existing customer with id: %d", customerId));
+            customer = customerRepository.findById(customerId).orElse(null);
             if (customer == null) {
-                LOGGER.warning(String.format("Customer not found with id: %d", bookingRequest.getCustomerId()));
+                LOGGER.warning(String.format("Customer not found with id: %d", customerId));
                 throw new RuntimeException("Customer not found");
             }
         } else {
@@ -131,31 +129,40 @@ public class BookingService {
         BigDecimal totalAmount = BigDecimal.ZERO;
         booking.setTotalAmount(totalAmount);
         
-        // Set user if provided (might be null for receptionist bookings)
-        booking.setUser(user);
+        // Set user if provided, otherwise try to get user from customer if available
+        if (user != null) {
+            booking.setUser(user);
+        } else if (customer.getUser() != null) {
+            booking.setUser(customer.getUser());
+            LOGGER.fine(String.format("Setting user from customer relationship: %s", customer.getUser().getUsername()));
+        }
+        
         bookingRepository.save(booking);
         LOGGER.info(String.format("Created booking with id: %d", booking.getId()));
 
         // Create booking details for each selected room
-        for (RoomSelectionDto roomSelection : bookingRequest.getRoomSelections()) {
+        for (int i = 0; i < roomTypeIds.size(); i++) {
+            Integer roomTypeId = roomTypeIds.get(i);
+            Integer count = roomCounts.get(i);
+            
             // Get rooms by room type
-            RoomType roomType = roomTypeRepository.findById(roomSelection.getRoomTypeId()).orElse(null);
+            RoomType roomType = roomTypeRepository.findById(roomTypeId).orElse(null);
             if (roomType == null) {
-                LOGGER.warning(String.format("Room type not found with id: %d", roomSelection.getRoomTypeId()));
+                LOGGER.warning(String.format("Room type not found with id: %d", roomTypeId));
                 throw new RuntimeException("Room type not found");
             }
             
-            LOGGER.fine(String.format("Processing room selection for room type: %s, count: %d", roomType.getName(), roomSelection.getCount()));
+            LOGGER.fine(String.format("Processing room selection for room type: %s, count: %d", roomType.getName(), count));
             
             // Get available rooms of this type using RoomService
             List<Room> availableRooms = roomService.getAvailableRoomsByType(roomType.getId())
                     .stream()
-                    .limit(roomSelection.getCount())
+                    .limit(count)
                     .collect(Collectors.toList());
             
-            if (availableRooms.size() < roomSelection.getCount()) {
+            if (availableRooms.size() < count) {
                 LOGGER.warning(String.format("Not enough rooms available of type: %s. Requested: %d, Available: %d", 
-                              roomType.getName(), roomSelection.getCount(), availableRooms.size()));
+                              roomType.getName(), count, availableRooms.size()));
                 throw new RuntimeException("Not enough rooms available of type: " + roomType.getName());
             }
             
@@ -188,17 +195,6 @@ public class BookingService {
 
         LOGGER.info(String.format("Booking creation completed successfully for booking id: %d", booking.getId()));
         return booking;
-    }
-
-    public List<RoomType> searchAvailableRoomTypes(LocalDate checkIn, LocalDate checkOut, int guestCount) {
-        // Get all room types with sufficient capacity
-        List<RoomType> allRoomTypes = roomTypeRepository.findAll().stream()
-                .filter(rt -> rt.getCapacity() >= guestCount)
-                .collect(Collectors.toList());
-        
-        // In a real application, you would filter based on availability
-        // For now we'll just return room types with sufficient capacity
-        return allRoomTypes;
     }
 
     public Booking processBookingUpdate(Integer bookingId, List<Integer> roomIds, User user) {
@@ -255,25 +251,6 @@ public class BookingService {
         booking.setStatus("CONFIRMED");
         booking.setUser(user);
         return bookingRepository.save(booking);
-    }
-    
-    public List<RoomTypeDto> getAvailableRoomTypesAsDto(LocalDate checkIn, LocalDate checkOut, int guestCount) {
-        List<RoomType> availableRoomTypes = searchAvailableRoomTypes(checkIn, checkOut, guestCount);
-        
-        // Convert to DTOs
-        return availableRoomTypes.stream()
-                .map(rt -> {
-                    RoomTypeDto dto = new RoomTypeDto();
-                    dto.setId(rt.getId());
-                    dto.setName(rt.getName());
-                    dto.setDescription(rt.getDescription());
-                    dto.setCapacity(rt.getCapacity());
-                    dto.setPrice(rt.getPrice());
-                    dto.setAmenities(rt.getAmenities());
-                    dto.setImagePath(rt.getImagePath());
-                    return dto;
-                })
-                .collect(Collectors.toList());
     }
     
     public void deleteBooking(Integer id) {
