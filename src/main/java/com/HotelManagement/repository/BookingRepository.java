@@ -26,14 +26,14 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     @Query("SELECT b FROM Booking b WHERE b.customer.id = :customerId")
     List<Booking> findByCustomerId(@Param("customerId") Integer customerId);
     
+    @Query("SELECT b FROM Booking b WHERE b.user.id = :userId")
+    List<Booking> findByUserId(@Param("userId") Integer userId);
+    
     @Query("SELECT b FROM Booking b WHERE b.checkInDate BETWEEN :startDate AND :endDate")
     List<Booking> findByCheckInDateBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
     
     @Query("SELECT b FROM Booking b WHERE b.status = 'CONFIRMED' AND CAST(b.checkInDate AS date) = CAST(CURRENT_TIMESTAMP AS date)")
     List<Booking> findTodayCheckIns();
-    
-    @Query("SELECT b FROM Booking b WHERE b.paymentStatus = :paymentStatus")
-    List<Booking> findByPaymentStatus(@Param("paymentStatus") String paymentStatus);
     
     @Query("SELECT COUNT(b) FROM Booking b WHERE b.status = :status AND CAST(b.checkInDate AS date) = :date")
     Long countByStatusAndDate(@Param("status") String status, @Param("date") LocalDate date);
@@ -43,7 +43,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     @Query("SELECT COUNT(b) FROM Booking b WHERE b.status = :status")
     Long countByStatus(@Param("status") String status);
-
-    @Query("SELECT b FROM Booking b WHERE b.status IN ('CONFIRMED', 'CHECKED_IN')")
-    List<Booking> findAllActiveBookings();
+    
+    @Query("SELECT COUNT(b) > 0 FROM Booking b WHERE b.user.id = :userId")
+    boolean existsByUserId(@Param("userId") Integer userId);
 }

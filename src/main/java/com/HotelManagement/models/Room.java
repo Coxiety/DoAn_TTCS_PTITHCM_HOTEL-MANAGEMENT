@@ -31,9 +31,6 @@ public class Room {
     @Column(nullable = false, length = 20)
     private String status;
     
-    @Column
-    private Integer floor;
-    
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
@@ -44,11 +41,10 @@ public class Room {
     public Room() {
     }
     
-    public Room(String roomNumber, RoomType roomType, String status, Integer floor) {
+    public Room(String roomNumber, RoomType roomType, String status) {
         this.roomNumber = roomNumber;
         this.roomType = roomType;
         this.status = status;
-        this.floor = floor;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -84,14 +80,6 @@ public class Room {
     
     public void setStatus(String status) {
         this.status = status;
-    }
-    
-    public Integer getFloor() {
-        return floor;
-    }
-    
-    public void setFloor(Integer floor) {
-        this.floor = floor;
     }
     
     public LocalDateTime getCreatedAt() {

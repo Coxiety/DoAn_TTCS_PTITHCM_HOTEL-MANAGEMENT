@@ -24,6 +24,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+<<<<<<< Updated upstream
+=======
+import com.HotelManagement.exception.BusinessException;
+import com.HotelManagement.exception.ErrorCodes;
+import com.HotelManagement.exception.SuccessCodes;
+>>>>>>> Stashed changes
 import com.HotelManagement.models.Booking;
 import com.HotelManagement.models.BookingDetail;
 import com.HotelManagement.models.Customer;
@@ -68,9 +74,12 @@ public class ReceptionistController {
     @Autowired
     private AuthService authService;
 
+<<<<<<< Updated upstream
     @Autowired
     private CustomerRepository customerRepository;
 
+=======
+>>>>>>> Stashed changes
     @GetMapping("")
     public String dashboard(Model model, HttpSession session,
                            @RequestParam(required = false) Boolean bookingSuccess,
@@ -89,7 +98,9 @@ public class ReceptionistController {
         try {
             // Add success message for booking if applicable
             if (bookingSuccess != null && bookingSuccess && bookingId != null) {
-                model.addAttribute("success", "Booking #" + bookingId + " has been created successfully!");
+                model.addAttribute("success", SuccessCodes.getMessage(SuccessCodes.BOOKING_CREATED));
+                model.addAttribute("successCode", SuccessCodes.BOOKING_CREATED);
+                model.addAttribute("extraInfo", "Booking #" + bookingId);
             }
 
             // Get all rooms for availability display
@@ -282,7 +293,8 @@ public class ReceptionistController {
             // Process the cancellation
             bookingService.cancelBooking(bookingId);
 
-            redirectAttributes.addFlashAttribute("success", "Booking #" + bookingId + " has been cancelled successfully");
+            redirectAttributes.addFlashAttribute("success", SuccessCodes.getMessage(SuccessCodes.BOOKING_DELETED));
+            redirectAttributes.addFlashAttribute("successCode", SuccessCodes.BOOKING_DELETED);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Failed to cancel booking: " + e.getMessage());
         }
@@ -299,7 +311,8 @@ public class ReceptionistController {
             // Process the check-in
             bookingService.checkIn(bookingId);
 
-            redirectAttributes.addFlashAttribute("success", "Booking #" + bookingId + " has been checked in successfully");
+            redirectAttributes.addFlashAttribute("success", SuccessCodes.getMessage(SuccessCodes.BOOKING_CHECKED_IN));
+            redirectAttributes.addFlashAttribute("successCode", SuccessCodes.BOOKING_CHECKED_IN);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Failed to check in: " + e.getMessage());
         }
@@ -365,15 +378,14 @@ public class ReceptionistController {
             // Check out the entire booking
             bookingService.checkOut(bookingId);
 
-            String successMessage = "Booking #" + bookingId + " has been checked out successfully. " +
-                "Total payment: $" + booking.getTotalAmount() + " (" + allBookingDetails.size() + " rooms)";
+            redirectAttributes.addFlashAttribute("success", SuccessCodes.getMessage(SuccessCodes.BOOKING_CHECKED_OUT));
+            redirectAttributes.addFlashAttribute("successCode", SuccessCodes.BOOKING_CHECKED_OUT);
 
             if (isEarlyCheckout) {
-                successMessage += " (Early checkout: " + (plannedCheckoutDate.getDayOfMonth() - today.getDayOfMonth()) +
-                    " days before planned date)";
+                redirectAttributes.addFlashAttribute("extraInfo", 
+                    "(Early checkout: " + (plannedCheckoutDate.getDayOfMonth() - today.getDayOfMonth()) +
+                    " days before planned date)");
             }
-
-            redirectAttributes.addFlashAttribute("success", successMessage);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Failed to check out: " + e.getMessage());
         }
@@ -502,8 +514,8 @@ public class ReceptionistController {
                                      RedirectAttributes redirectAttributes) {
         try {
             bookingService.updatePaymentStatus(bookingId, paymentStatus);
-            redirectAttributes.addFlashAttribute("success",
-                "Payment status updated to " + paymentStatus + " for booking #" + bookingId);
+            redirectAttributes.addFlashAttribute("success", SuccessCodes.getMessage(SuccessCodes.PAYMENT_PROCESSED));
+            redirectAttributes.addFlashAttribute("successCode", SuccessCodes.PAYMENT_PROCESSED);
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
@@ -519,7 +531,7 @@ public class ReceptionistController {
         // Find the booking detail for this room
         Optional<BookingDetail> detailOpt = bookingDetailRepository.findByRoomIdAndStatus(roomId, "CHECKED_IN");
         if (!detailOpt.isPresent()) {
-            throw new RuntimeException("No active booking found for this room");
+            throw new BusinessException(ErrorCodes.NO_ACTIVE_BOOKING);
         }
 
         // Get the booking and all its details
@@ -658,6 +670,7 @@ public class ReceptionistController {
             
             if (checkInDate == null || checkOutDate == null || customerId == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Missing required booking data"));
+<<<<<<< Updated upstream
             }
             
             List<Map<String, Object>> roomSelections = (List<Map<String, Object>>) bookingData.get("roomSelections");
@@ -693,6 +706,43 @@ public class ReceptionistController {
                 roomCounts.add(count);
             }
 
+=======
+            }
+
+            List<Map<String, Object>> roomSelections = (List<Map<String, Object>>) bookingData.get("roomSelections");
+            
+            // Extract room type IDs and counts
+            List<Integer> roomTypeIds = new ArrayList<>();
+            List<Integer> roomCounts = new ArrayList<>();
+            
+            for (Map<String, Object> selection : roomSelections) {
+                // Handle roomTypeId that could be String or Number
+                Object rawRoomTypeId = selection.get("roomTypeId");
+                Integer roomTypeId;
+                if (rawRoomTypeId instanceof Number) {
+                    roomTypeId = ((Number) rawRoomTypeId).intValue();
+                } else if (rawRoomTypeId instanceof String) {
+                    roomTypeId = Integer.parseInt((String) rawRoomTypeId);
+                } else {
+                    throw new IllegalArgumentException("Invalid room type ID format");
+                }
+                
+                // Handle count that could be String or Number
+                Object rawCount = selection.get("count");
+                Integer count;
+                if (rawCount instanceof Number) {
+                    count = ((Number) rawCount).intValue();
+                } else if (rawCount instanceof String) {
+                    count = Integer.parseInt((String) rawCount);
+                } else {
+                    throw new IllegalArgumentException("Invalid count format");
+                }
+                
+                roomTypeIds.add(roomTypeId);
+                roomCounts.add(count);
+            }
+
+>>>>>>> Stashed changes
             // Create booking (without user since receptionist is doing it)
             Booking booking = bookingService.createBooking(checkInDate, checkOutDate, customerId, roomTypeIds, roomCounts, null);
             

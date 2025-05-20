@@ -401,11 +401,7 @@
                         <td class="label">Subtotal:</td>
                         <td class="value" th:text="${'$' + formattedTotal}">$1,000.00</td>
                     </tr>
-                    <tr>
-                        <td class="label">Tax (0%):</td>
-                        <td class="value">$0.00</td>
-                    </tr>
-                    <tr>
+                    <tr class="grand-total">
                         <td class="label grand-total">Grand Total:</td>
                         <td class="value grand-total" th:text="${'$' + formattedTotal}">$1,000.00</td>
                     </tr>

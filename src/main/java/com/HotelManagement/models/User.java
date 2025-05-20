@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "Users")
+@Table(name = "users")
 public class User 
 {
     @Id
@@ -33,7 +33,7 @@ public class User
     @Column(name = "role_id")
     private Integer roleId;
     
-    // Getters/setters thủ công
+    // Manual getters/setters
     public Integer getId() {
         return id;
     }

@@ -28,9 +28,9 @@ public class AdminService {
         Map<String, Object> summary = new HashMap<>();
         
         // Count of users by role
-        long receptionistCount = userRepository.countByRoleId(1);
-        long customerCount = userRepository.countByRoleId(2);
-        long adminCount = userRepository.countByRoleId(3);
+        long adminCount = userRepository.countByRoleId(1);
+        long receptionistCount = userRepository.countByRoleId(2);
+        long customerCount = userRepository.countByRoleId(0);
         
         // Room stats
         long totalRooms = roomRepository.count();

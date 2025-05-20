@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.HotelManagement.exception.BusinessException;
+import com.HotelManagement.exception.ErrorCodes;
 import com.HotelManagement.models.Customer;
 import com.HotelManagement.models.User;
 import com.HotelManagement.repository.CustomerRepository;
@@ -27,14 +29,14 @@ public class CustomerService {
         if (customer.getPhone() != null) {
             Optional<Customer> existingPhone = customerRepository.findByPhone(customer.getPhone());
             if (existingPhone.isPresent() && !existingPhone.get().getId().equals(customer.getId())) {
-                throw new RuntimeException("Customer with this phone already exists");
+                throw new BusinessException(ErrorCodes.CUSTOMER_PHONE_EXISTS);
             }
         }
         
         if (customer.getEmail() != null && !customer.getEmail().isEmpty()) {
             Optional<Customer> existingEmail = customerRepository.findByEmail(customer.getEmail());
             if (existingEmail.isPresent() && !existingEmail.get().getId().equals(customer.getId())) {
-                throw new RuntimeException("Customer with this email already exists");
+                throw new BusinessException(ErrorCodes.CUSTOMER_EMAIL_EXISTS);
             }
         }
         
@@ -60,7 +62,7 @@ public class CustomerService {
     
     public Customer getCustomerById(Integer id) {
         return customerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new BusinessException(ErrorCodes.CUSTOMER_NOT_FOUND));
     }
     
     public List<Customer> getAllCustomers() {
@@ -69,16 +71,17 @@ public class CustomerService {
     
     public Customer getCustomerByPhone(String phone) {
         return customerRepository.findByPhone(phone)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new BusinessException(ErrorCodes.CUSTOMER_NOT_FOUND));
     }
     
     public Customer getCustomerByEmail(String email) {
         return customerRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+                .orElseThrow(() -> new BusinessException(ErrorCodes.CUSTOMER_NOT_FOUND));
     }
     
     public Customer getCustomerByUserId(Integer userId) {
         return customerRepository.findByUserId(userId)
+<<<<<<< Updated upstream
                 .orElseThrow(() -> new RuntimeException("Customer not found"));
     }
     
@@ -101,6 +104,9 @@ public class CustomerService {
         // You might want to add additional checks here
         // For example, check if the customer has any active bookings
         customerRepository.delete(customer);
+=======
+                .orElseThrow(() -> new BusinessException(ErrorCodes.CUSTOMER_NOT_FOUND));
+>>>>>>> Stashed changes
     }
     
     @Transactional

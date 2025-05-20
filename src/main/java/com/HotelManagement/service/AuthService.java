@@ -8,6 +8,8 @@ import java.util.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.HotelManagement.exception.BusinessException;
+import com.HotelManagement.exception.ErrorCodes;
 import com.HotelManagement.models.Customer;
 import com.HotelManagement.models.User;
 import com.HotelManagement.repository.CustomerRepository;
@@ -31,7 +33,7 @@ public class AuthService
             byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(hash);
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Error hashing password", e);
+            throw new BusinessException(ErrorCodes.USER_NOT_FOUND, "Error hashing password");
         }
     }
     
@@ -57,17 +59,17 @@ public class AuthService
         // Check if user already exists
         if (userRepository.findByUsername(username) != null) 
         {
-            throw new RuntimeException("Username already exists");
+            throw new BusinessException(ErrorCodes.USERNAME_EXISTS);
         }
         
         if (userRepository.findByEmail(email) != null) 
         {
-            throw new RuntimeException("Email already exists");
+            throw new BusinessException(ErrorCodes.EMAIL_EXISTS);
         }
         
         if (userRepository.findByPhone(phone) != null) 
         {
-            throw new RuntimeException("Phone number already exists");
+            throw new BusinessException(ErrorCodes.PHONE_EXISTS);
         }
         
         // Create new user

@@ -19,25 +19,6 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, In
     @Query("SELECT bd FROM BookingDetail bd WHERE bd.booking.id IN :bookingIds")
     List<BookingDetail> findByBookingIdIn(@Param("bookingIds") List<Integer> bookingIds);
     
-    @Query("SELECT bd FROM BookingDetail bd WHERE bd.booking.status = :status")
-    List<BookingDetail> findByBookingStatus(@Param("status") String status);
-    
-    @Query("SELECT bd FROM BookingDetail bd WHERE bd.room.id = :roomId AND bd.booking.checkInDate <= :date AND bd.booking.checkOutDate >= :date")
-    List<BookingDetail> findByRoomIdAndDate(@Param("roomId") Integer roomId, @Param("date") LocalDateTime date);
-    
-    @Query("SELECT bd FROM BookingDetail bd WHERE bd.room.roomType.id = :roomTypeId")
-    List<BookingDetail> findByRoomTypeId(@Param("roomTypeId") Integer roomTypeId);
-    
-    @Query("""
-        SELECT bd FROM BookingDetail bd 
-        WHERE bd.booking.checkInDate BETWEEN :startDate AND :endDate 
-        OR bd.booking.checkOutDate BETWEEN :startDate AND :endDate
-    """)
-    List<BookingDetail> findByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
-    
-    @Query("SELECT COUNT(bd) FROM BookingDetail bd WHERE bd.status = :status")
-    Long countByStatus(@Param("status") String status);
-    
     @Query("""
         SELECT bd FROM BookingDetail bd 
         WHERE bd.room.id = :roomId 

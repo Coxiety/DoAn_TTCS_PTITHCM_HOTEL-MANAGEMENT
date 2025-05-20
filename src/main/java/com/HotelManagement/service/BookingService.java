@@ -14,6 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+<<<<<<< Updated upstream
+=======
+import com.HotelManagement.exception.BusinessException;
+import com.HotelManagement.exception.ErrorCodes;
+>>>>>>> Stashed changes
 import com.HotelManagement.models.Booking;
 import com.HotelManagement.models.BookingDetail;
 import com.HotelManagement.models.Customer;
@@ -95,12 +100,12 @@ public class BookingService {
         // Compare dates only, not time
         if (checkInDate.toLocalDate().isBefore(LocalDate.now())) {
             LOGGER.warning(String.format("Attempt to create booking with past date: %s", checkInDate));
-            throw new IllegalArgumentException("Check-in date cannot be in the past");
+            throw new BusinessException(ErrorCodes.INVALID_DATE_RANGE, "Check-in date cannot be in the past");
         }
         
         if (checkOutDate.isBefore(checkInDate)) {
             LOGGER.warning(String.format("Check-out date %s is before check-in date %s", checkOutDate, checkInDate));
-            throw new IllegalArgumentException("Check-out date cannot be before check-in date");
+            throw new BusinessException(ErrorCodes.INVALID_DATE_RANGE);
         }
 
         // Create or get customer
@@ -110,11 +115,15 @@ public class BookingService {
             customer = customerRepository.findById(customerId).orElse(null);
             if (customer == null) {
                 LOGGER.warning(String.format("Customer not found with id: %d", customerId));
+<<<<<<< Updated upstream
                 throw new RuntimeException("Customer not found");
+=======
+                throw new BusinessException(ErrorCodes.CUSTOMER_NOT_FOUND);
+>>>>>>> Stashed changes
             }
         } else {
             LOGGER.warning("No customer ID provided in booking request");
-            throw new RuntimeException("Customer ID is required");
+            throw new BusinessException(ErrorCodes.CUSTOMER_ID_REQUIRED);
         }
 
         // Create booking
@@ -149,7 +158,11 @@ public class BookingService {
             RoomType roomType = roomTypeRepository.findById(roomTypeId).orElse(null);
             if (roomType == null) {
                 LOGGER.warning(String.format("Room type not found with id: %d", roomTypeId));
+<<<<<<< Updated upstream
                 throw new RuntimeException("Room type not found");
+=======
+                throw new BusinessException(ErrorCodes.ROOM_TYPE_NOT_FOUND);
+>>>>>>> Stashed changes
             }
             
             LOGGER.fine(String.format("Processing room selection for room type: %s, count: %d", roomType.getName(), count));
@@ -163,7 +176,13 @@ public class BookingService {
             if (availableRooms.size() < count) {
                 LOGGER.warning(String.format("Not enough rooms available of type: %s. Requested: %d, Available: %d", 
                               roomType.getName(), count, availableRooms.size()));
+<<<<<<< Updated upstream
                 throw new RuntimeException("Not enough rooms available of type: " + roomType.getName());
+=======
+                throw new BusinessException(ErrorCodes.NOT_ENOUGH_ROOMS, 
+                    String.format("Not enough rooms available of type: %s. Requested: %d, Available: %d", 
+                              roomType.getName(), count, availableRooms.size()));
+>>>>>>> Stashed changes
             }
             
             // Create booking details for each available room
@@ -397,16 +416,16 @@ public class BookingService {
     @Transactional
     public Booking checkIn(Integer bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
+                .orElseThrow(() -> new BusinessException(ErrorCodes.BOOKING_NOT_FOUND));
 
         if (!booking.getStatus().equals("CONFIRMED")) {
-            throw new RuntimeException("Booking must be in CONFIRMED status to check in");
+            throw new BusinessException(ErrorCodes.WRONG_BOOKING_STATUS, "Booking must be in CONFIRMED status to check in");
         }
 
         // Allow check-in on or after the check-in date, regardless of time
         LocalDate now = LocalDate.now();
         if (now.isBefore(booking.getCheckInDate().toLocalDate())) {
-            throw new RuntimeException("Cannot check in before the scheduled check-in date");
+            throw new BusinessException(ErrorCodes.EARLY_CHECKIN);
         }
         
         // Make sure all booking details have the correct checkout date from the booking
@@ -423,10 +442,10 @@ public class BookingService {
     @Transactional
     public Booking checkOut(Integer bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
+                .orElseThrow(() -> new BusinessException(ErrorCodes.BOOKING_NOT_FOUND));
 
         if (!booking.getStatus().equals("CHECKED_IN")) {
-            throw new RuntimeException("Booking must be in CHECKED_IN status to check out");
+            throw new BusinessException(ErrorCodes.WRONG_BOOKING_STATUS, "Booking must be in CHECKED_IN status to check out");
         }
         
         // Do NOT modify the checkout date - it represents the planned checkout date
@@ -467,13 +486,6 @@ public class BookingService {
         return bookingRepository.findByCustomerId(customerId);
     }
 
-    public List<Booking> getBookingsByPaymentStatus(String paymentStatus) {
-        if (paymentStatus == null || paymentStatus.trim().isEmpty()) {
-            throw new IllegalArgumentException("Payment status cannot be empty");
-        }
-        return bookingRepository.findByPaymentStatus(paymentStatus);
-    }
-
     public Long countBookingsByStatusAndDate(String status, LocalDate date) {
         if (status == null || status.trim().isEmpty()) {
             throw new IllegalArgumentException("Status cannot be empty");
@@ -489,10 +501,6 @@ public class BookingService {
         return bookingRepository.findByStatus("CONFIRMED").stream()
                 .filter(booking -> booking.getCheckInDate().toLocalDate().equals(today))
                 .collect(Collectors.toList());
-    }
-
-    public List<Booking> getAllActiveBookings() {
-        return bookingRepository.findAllActiveBookings();
     }
 
     @Transactional

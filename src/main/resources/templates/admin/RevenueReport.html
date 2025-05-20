@@ -258,6 +258,7 @@
                     <thead>
                         <tr>
                             <th>Customer</th>
+                            <th>Username</th>
                             <th>Check-in Date</th>
                             <th title="Planned checkout date from booking">Planned Check-out</th>
                             <th title="Date when payment was processed">Actual Payment Date</th>
@@ -269,11 +270,12 @@
                     </thead>
                     <tbody>
                         <tr th:if="${reportData.payments == null || reportData.payments.empty}">
-                            <td colspan="8" class="text-center">No payments found in the selected date range</td>
+                            <td colspan="9" class="text-center">No payments found in the selected date range</td>
                         </tr>
                         
                         <tr th:each="payment : ${reportData.payments}">
                             <td th:text="${payment.booking.customer.fullName}">John Doe</td>
+                            <td th:text="${payment.booking.user != null ? payment.booking.user.username : 'N/A'}">username</td>
                             <td th:text="${#temporals.format(payment.booking.checkInDate, 'dd-MM-yyyy')}">01-04-2023</td>
                             <td th:text="${#temporals.format(payment.booking.checkOutDate, 'dd-MM-yyyy')}">05-04-2023</td>
                             <td th:text="${#temporals.format(payment.paymentDate, 'dd-MM-yyyy HH:mm')}">01-04-2023 14:30</td>

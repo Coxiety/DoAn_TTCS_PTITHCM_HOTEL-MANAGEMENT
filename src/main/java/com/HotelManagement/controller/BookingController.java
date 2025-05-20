@@ -123,7 +123,11 @@ public class BookingController {
         model.addAttribute("bookingDetails", bookingDetails);
         model.addAttribute("totalAmount", totalAmount);
         
+<<<<<<< Updated upstream
         // Đảm bảo thông tin userRole được truyền từ session vào model
+=======
+        // Ensure userRole is passed from session to model
+>>>>>>> Stashed changes
         model.addAttribute("userRole", session.getAttribute("userRole"));
 
         return "booking/BookingConfirmation";

@@ -7,8 +7,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+<<<<<<< Updated upstream
 import com.HotelManagement.models.Customer;
 import com.HotelManagement.models.User;
+=======
+import com.HotelManagement.exception.BusinessException;
+import com.HotelManagement.exception.ErrorCodes;
+import com.HotelManagement.models.Customer;
+import com.HotelManagement.models.User;
+import com.HotelManagement.repository.BookingRepository;
+>>>>>>> Stashed changes
 import com.HotelManagement.repository.CustomerRepository;
 import com.HotelManagement.repository.UserRepository;
 
@@ -21,13 +29,19 @@ public class UserService {
     @Autowired
     private CustomerRepository customerRepository;
     
+<<<<<<< Updated upstream
+=======
+    @Autowired
+    private BookingRepository bookingRepository;
+    
+>>>>>>> Stashed changes
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
     
     public User getUserById(Integer id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new BusinessException(ErrorCodes.USER_NOT_FOUND));
     }
     
     @Transactional
@@ -36,33 +50,33 @@ public class UserService {
         if (user.getId() == null) {
             User existingUser = userRepository.findByUsername(user.getUsername());
             if (existingUser != null) {
-                throw new RuntimeException("Username already exists");
+                throw new BusinessException(ErrorCodes.USERNAME_EXISTS);
             }
             
             // Check for duplicate email and phone
             if (userRepository.findByEmail(user.getEmail()) != null) {
-                throw new RuntimeException("Email already registered");
+                throw new BusinessException(ErrorCodes.EMAIL_EXISTS);
             }
             
             if (userRepository.findByPhone(user.getPhone()) != null) {
-                throw new RuntimeException("Phone number already registered");
+                throw new BusinessException(ErrorCodes.PHONE_EXISTS);
             }
         } else {
             // For updates, check if username exists but belongs to a different user
             User existingUser = userRepository.findByUsername(user.getUsername());
             if (existingUser != null && !existingUser.getId().equals(user.getId())) {
-                throw new RuntimeException("Username already exists");
+                throw new BusinessException(ErrorCodes.USERNAME_EXISTS);
             }
             
             // Similarly for email and phone
             User existingEmail = userRepository.findByEmail(user.getEmail());
             if (existingEmail != null && !existingEmail.getId().equals(user.getId())) {
-                throw new RuntimeException("Email already registered");
+                throw new BusinessException(ErrorCodes.EMAIL_EXISTS);
             }
             
             User existingPhone = userRepository.findByPhone(user.getPhone());
             if (existingPhone != null && !existingPhone.getId().equals(user.getId())) {
-                throw new RuntimeException("Phone number already registered");
+                throw new BusinessException(ErrorCodes.PHONE_EXISTS);
             }
         }
         
@@ -99,7 +113,7 @@ public class UserService {
     public void deleteUser(Integer id) {
         // Check if the user exists
         if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found with id: " + id);
+            throw new BusinessException(ErrorCodes.USER_NOT_FOUND);
         }
         
         // Check if this is not the last administrator
@@ -107,7 +121,20 @@ public class UserService {
         if (user.getRoleId() == 1) {
             long adminCount = countUsersByRole(1);
             if (adminCount <= 1) {
-                throw new RuntimeException("Cannot delete the last administrator account");
+                throw new BusinessException(ErrorCodes.LAST_ADMIN);
+            }
+        }
+        
+        // Check if user has any bookings
+        if (bookingRepository.existsByUserId(id)) {
+            throw new BusinessException(ErrorCodes.USER_HAS_BOOKINGS, "Cannot delete user with existing bookings");
+        }
+        
+        // Find and delete associated customer if this is a customer user
+        if (user.getRoleId() == 0) {
+            Optional<Customer> customer = customerRepository.findByUserId(id);
+            if (customer.isPresent()) {
+                customerRepository.delete(customer.get());
             }
         }
         

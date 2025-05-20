@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.HotelManagement.exception.BusinessException;
+import com.HotelManagement.exception.ErrorCodes;
 import com.HotelManagement.models.BookingDetail;
 import com.HotelManagement.models.Room;
 import com.HotelManagement.models.RoomType;
@@ -53,7 +55,7 @@ public class RoomService {
             throw new IllegalArgumentException("Room ID cannot be null");
         }
         return roomRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Room not found with id: " + id));
+                .orElseThrow(() -> new BusinessException(ErrorCodes.ROOM_NOT_FOUND));
     }
     
     public Room getRoomByRoomNumber(String roomNumber) {
@@ -62,7 +64,7 @@ public class RoomService {
         }
         Room room = roomRepository.findByRoomNumber(roomNumber);
         if (room == null) {
-            throw new RuntimeException("Room not found with number: " + roomNumber);
+            throw new BusinessException(ErrorCodes.ROOM_NOT_FOUND_BY_NUMBER, "Room not found with number: " + roomNumber);
         }
         return room;
     }
@@ -90,13 +92,13 @@ public class RoomService {
         if (room.getId() == null) {
             Room existingRoom = roomRepository.findByRoomNumber(room.getRoomNumber());
             if (existingRoom != null) {
-                throw new RuntimeException("Room number already exists: " + room.getRoomNumber());
+                throw new BusinessException(ErrorCodes.ROOM_NUMBER_EXISTS, "Room number already exists: " + room.getRoomNumber());
             }
         } else {
             // For updates, check if the room number is unique among other rooms
             Room existingRoom = roomRepository.findByRoomNumber(room.getRoomNumber());
             if (existingRoom != null && !existingRoom.getId().equals(room.getId())) {
-                throw new RuntimeException("Room number already exists: " + room.getRoomNumber());
+                throw new BusinessException(ErrorCodes.ROOM_NUMBER_EXISTS, "Room number already exists: " + room.getRoomNumber());
             }
         }
         
@@ -123,7 +125,7 @@ public class RoomService {
                 .anyMatch(bd -> bd.getStatus().equals("CONFIRMED") || bd.getStatus().equals("OCCUPIED"));
         
         if (hasActiveBookings) {
-            throw new RuntimeException("Cannot delete room with active bookings");
+            throw new BusinessException(ErrorCodes.ROOM_HAS_BOOKINGS);
         }
         
         roomRepository.deleteById(id);
@@ -211,53 +213,6 @@ public class RoomService {
     }
     
     /**
-     * Get rooms by floor.
-     * 
-     * @param floor the floor number
-     * @return a list of rooms on the specified floor
-     */
-    public List<Room> getRoomsByFloor(Integer floor) {
-        if (floor == null) {
-            throw new IllegalArgumentException("Floor cannot be null");
-        }
-        
-        return roomRepository.findByFloor(floor);
-    }
-    
-    /**
-     * Get rooms by price range.
-     * 
-     * @param minPrice the minimum price
-     * @param maxPrice the maximum price
-     * @return a list of rooms within the price range
-     */
-    public List<Room> getRoomsByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
-        if (minPrice == null || maxPrice == null) {
-            throw new IllegalArgumentException("Min price and max price cannot be null");
-        }
-        
-        if (minPrice.compareTo(maxPrice) > 0) {
-            throw new IllegalArgumentException("Min price cannot be greater than max price");
-        }
-        
-        return roomRepository.findByRoomTypePriceBetween(minPrice, maxPrice);
-    }
-    
-    /**
-     * Get rooms by amenities.
-     * 
-     * @param amenities the amenities to search for
-     * @return a list of rooms with the specified amenities
-     */
-    public List<Room> getRoomsByAmenities(String amenities) {
-        if (amenities == null || amenities.trim().isEmpty()) {
-            throw new IllegalArgumentException("Amenities cannot be empty");
-        }
-        
-        return roomRepository.findByRoomTypeAmenitiesContaining(amenities);
-    }
-    
-    /**
      * Check if a room status is valid.
      * 
      * @param status the status to check
@@ -284,7 +239,7 @@ public class RoomService {
             throw new IllegalArgumentException("Room type ID cannot be null");
         }
         return roomTypeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Room type not found with id: " + id));
+                .orElseThrow(() -> new BusinessException(ErrorCodes.ROOM_TYPE_NOT_FOUND));
     }
     
     @Transactional
@@ -293,6 +248,7 @@ public class RoomService {
             throw new IllegalArgumentException("Room type cannot be null");
         }
         
+<<<<<<< Updated upstream
         // Validate name uniqueness
         if (roomType.getId() == null) {
             RoomType existingType = roomTypeRepository.findByName(roomType.getName());
@@ -315,10 +271,21 @@ public class RoomService {
         // Validate capacity
         if (roomType.getCapacity() == null || roomType.getCapacity() <= 0) {
             throw new RuntimeException("Giá trị phải lớn hơn 0");
+=======
+        // Validate name
+        if (roomType.getName() == null || roomType.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Room type name cannot be empty");
+        }
+        
+        // Validate capacity
+        if (roomType.getCapacity() == null || roomType.getCapacity() < 1) {
+            throw new IllegalArgumentException("Capacity must be at least 1");
+>>>>>>> Stashed changes
         }
         
         // Validate price
         if (roomType.getPrice() == null || roomType.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+<<<<<<< Updated upstream
             throw new RuntimeException("Giá trị phải lớn hơn 0");
         }
         
@@ -330,6 +297,23 @@ public class RoomService {
         // Validate amenities
         if (roomType.getAmenities() == null || roomType.getAmenities().trim().isEmpty()) {
             throw new RuntimeException("Phải có ít nhất 1 tiện nghi");
+=======
+            throw new IllegalArgumentException("Price must be greater than zero");
+        }
+        
+        // Check if the name is unique
+        if (roomType.getId() == null) {
+            RoomType existingRoomType = roomTypeRepository.findByName(roomType.getName());
+            if (existingRoomType != null) {
+                throw new BusinessException(ErrorCodes.REQUIRED_FIELD_UNIQUE, "There is already a room type with the same name");
+            }
+        } else {
+            // For updates, check if the name is unique among other room types
+            RoomType existingRoomType = roomTypeRepository.findByName(roomType.getName());
+            if (existingRoomType != null && !existingRoomType.getId().equals(roomType.getId())) {
+                throw new BusinessException(ErrorCodes.REQUIRED_FIELD_UNIQUE, "There is already a room type with the same name");
+            }
+>>>>>>> Stashed changes
         }
         
         return roomTypeRepository.save(roomType);
@@ -344,12 +328,12 @@ public class RoomService {
         // Check if the room type exists
         getRoomTypeById(id);
         
-        // Check if there are rooms associated with this type
-        boolean hasRooms = roomRepository.findAll().stream()
+        // Check if the room type is in use
+        boolean inUse = roomRepository.findAll().stream()
                 .anyMatch(room -> room.getRoomType().getId().equals(id));
         
-        if (hasRooms) {
-            throw new RuntimeException("Cannot delete room type that has rooms associated with it");
+        if (inUse) {
+            throw new BusinessException(ErrorCodes.ROOM_TYPE_HAS_ROOMS);
         }
         
         roomTypeRepository.deleteById(id);
@@ -371,52 +355,5 @@ public class RoomService {
         
         return roomRepository.findAll().stream()
                 .anyMatch(room -> room.getRoomType().getId().equals(roomTypeId));
-    }
-    
-    /**
-     * Get room types by capacity.
-     * 
-     * @param minCapacity the minimum capacity
-     * @return a list of room types with at least the specified capacity
-     */
-    public List<RoomType> getRoomTypesByMinCapacity(Integer minCapacity) {
-        if (minCapacity == null || minCapacity < 1) {
-            throw new IllegalArgumentException("Min capacity must be at least 1");
-        }
-        
-        return roomTypeRepository.findByCapacityGreaterThanEqual(minCapacity);
-    }
-    
-    /**
-     * Get room types by price range.
-     * 
-     * @param minPrice the minimum price
-     * @param maxPrice the maximum price
-     * @return a list of room types within the price range
-     */
-    public List<RoomType> getRoomTypesByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
-        if (minPrice == null || maxPrice == null) {
-            throw new IllegalArgumentException("Min price and max price cannot be null");
-        }
-        
-        if (minPrice.compareTo(maxPrice) > 0) {
-            throw new IllegalArgumentException("Min price cannot be greater than max price");
-        }
-        
-        return roomTypeRepository.findByPriceBetween(minPrice, maxPrice);
-    }
-    
-    /**
-     * Get room types by amenities.
-     * 
-     * @param amenities the amenities to search for
-     * @return a list of room types with the specified amenities
-     */
-    public List<RoomType> getRoomTypesByAmenities(String amenities) {
-        if (amenities == null || amenities.trim().isEmpty()) {
-            throw new IllegalArgumentException("Amenities cannot be empty");
-        }
-        
-        return roomTypeRepository.findByAmenitiesContaining(amenities);
     }
 }

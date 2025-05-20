@@ -21,6 +21,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.HotelManagement.exception.BusinessException;
+import com.HotelManagement.exception.ErrorCodes;
+import com.HotelManagement.exception.SuccessCodes;
 import com.HotelManagement.models.Booking;
 import com.HotelManagement.models.BookingDetail;
 import com.HotelManagement.models.Payment;
@@ -110,7 +113,7 @@ public class AdminController {
     }
     
     @PostMapping("/staff/create")
-    public String createStaff(
+    public String createStaffMember(
             @RequestParam String username,
             @RequestParam String password,
             @RequestParam String fullName,
@@ -122,18 +125,18 @@ public class AdminController {
         try {
             // Validate roleId (must be receptionist or admin)
             if (roleId != 1 && roleId != 2) {
-                throw new RuntimeException("Invalid role ID. Must be 1 (admin) or 2 (receptionist)");
+                throw new BusinessException(ErrorCodes.INVALID_ROLE);
             }
             
             // Check if username already exists
             if (userService.getAllUsers().stream().anyMatch(u -> u.getUsername().equals(username))) {
-                throw new RuntimeException("Username already exists");
+                throw new BusinessException(ErrorCodes.USERNAME_EXISTS);
             }
             
             // Check if email already exists
             if (email != null && !email.isEmpty() && 
                 userService.getAllUsers().stream().anyMatch(u -> email.equals(u.getEmail()))) {
-                throw new RuntimeException("Email already in use");
+                throw new BusinessException(ErrorCodes.EMAIL_EXISTS);
             }
             
             User newUser = new User();
@@ -145,12 +148,17 @@ public class AdminController {
             newUser.setRoleId(roleId);
             
             userService.saveUser(newUser);
-            redirectAttributes.addFlashAttribute("success", "Staff member created successfully!");
+            redirectAttributes.addFlashAttribute("success", SuccessCodes.getMessage(SuccessCodes.STAFF_CREATED));
+            redirectAttributes.addFlashAttribute("successCode", SuccessCodes.STAFF_CREATED);
+            return "redirect:/admin/staff";
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorCode", e.getErrorCode());
+            return "redirect:/admin/staff";
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to create staff member: " + e.getMessage());
+            return "redirect:/admin/staff";
         }
-        
-        return "redirect:/admin/staff";
     }
     
     @PostMapping("/staff/update")
@@ -168,12 +176,12 @@ public class AdminController {
         try {
             // Validate roleId (must be receptionist or admin)
             if (roleId != 1 && roleId != 2) {
-                throw new RuntimeException("Invalid role ID. Must be 1 (admin) or 2 (receptionist)");
+                throw new BusinessException(ErrorCodes.INVALID_ROLE);
             }
             
             User user = userService.getUserById(id);
             if (user == null) {
-                throw new RuntimeException("User not found");
+                throw new BusinessException(ErrorCodes.USER_NOT_FOUND);
             }
             
             // Get current logged-in user
@@ -181,17 +189,22 @@ public class AdminController {
             
             // Prevent admins from editing other admin accounts
             if (user.getRoleId() == 1 && !currentUser.getId().equals(id)) {
+<<<<<<< Updated upstream
                 throw new RuntimeException("Không được phép chỉnh sửa thông tin của admin khác");
+=======
+                throw new BusinessException(ErrorCodes.EDIT_OTHER_ADMIN);
+>>>>>>> Stashed changes
             }
             
             // Prevent admins from demoting themselves to non-admin roles
             if (currentUser.getId().equals(id) && user.getRoleId() == 1 && roleId != 1) {
-                throw new RuntimeException("Cannot change your own admin role");
+                throw new BusinessException(ErrorCodes.CHANGE_OWN_ADMIN_ROLE);
             }
             
             // Check if username and email already exists (but not for the current user)
             List<User> users = userService.getAllUsers();
             
+<<<<<<< Updated upstream
             // Kiểm tra username
             boolean usernameExists = users.stream()
                 .anyMatch(u -> u.getUsername().equals(username) && !u.getId().equals(id));
@@ -200,11 +213,25 @@ public class AdminController {
             }
             
             // Kiểm tra email
+=======
+            // Check username
+            boolean usernameExists = users.stream()
+                .anyMatch(u -> u.getUsername().equals(username) && !u.getId().equals(id));
+            if (usernameExists) {
+                throw new BusinessException(ErrorCodes.USERNAME_EXISTS);
+            }
+            
+            // Check email
+>>>>>>> Stashed changes
             if (email != null && !email.isEmpty()) {
                 boolean emailExists = users.stream()
                     .anyMatch(u -> email.equals(u.getEmail()) && !u.getId().equals(id));
                 if (emailExists) {
+<<<<<<< Updated upstream
                     throw new RuntimeException("Email already in use");
+=======
+                    throw new BusinessException(ErrorCodes.EMAIL_EXISTS);
+>>>>>>> Stashed changes
                 }
             }
             
@@ -220,10 +247,19 @@ public class AdminController {
             {
                 user.setRoleId(roleId);
                 userService.saveUser(user);
+<<<<<<< Updated upstream
                 redirectAttributes.addFlashAttribute("success", "Staff member updated successfully!");
+=======
+                redirectAttributes.addFlashAttribute("success", SuccessCodes.getMessage(SuccessCodes.STAFF_UPDATED));
+                redirectAttributes.addFlashAttribute("successCode", SuccessCodes.STAFF_UPDATED);
+>>>>>>> Stashed changes
             } 
             userService.saveUser(user);
-            redirectAttributes.addFlashAttribute("success", "Staff member updated successfully!");
+            redirectAttributes.addFlashAttribute("success", SuccessCodes.getMessage(SuccessCodes.STAFF_UPDATED));
+            redirectAttributes.addFlashAttribute("successCode", SuccessCodes.STAFF_UPDATED);
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorCode", e.getErrorCode());
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to update staff member: " + e.getMessage());
         }
@@ -239,7 +275,7 @@ public class AdminController {
         try {
             User user = userService.getUserById(id);
             if (user == null) {
-                throw new RuntimeException("User not found");
+                throw new BusinessException(ErrorCodes.USER_NOT_FOUND);
             }
             
             // Get current logged-in user
@@ -247,19 +283,23 @@ public class AdminController {
             
             // Prevent admins from deleting themselves
             if (currentUser.getId().equals(id)) {
-                throw new RuntimeException("Administrators cannot delete their own accounts");
+                throw new BusinessException(ErrorCodes.SELF_DELETE);
             }
             
             // Don't allow deletion if this is the last admin
             if (Integer.valueOf(1).equals(user.getRoleId())) {
                 long adminCount = userService.countUsersByRole(1);
                 if (adminCount <= 1) {
-                    throw new RuntimeException("Cannot delete the last administrator account");
+                    throw new BusinessException(ErrorCodes.LAST_ADMIN);
                 }
             }
             
             userService.deleteUser(id);
-            redirectAttributes.addFlashAttribute("success", "Staff member deleted successfully!");
+            redirectAttributes.addFlashAttribute("success", SuccessCodes.getMessage(SuccessCodes.STAFF_DELETED));
+            redirectAttributes.addFlashAttribute("successCode", SuccessCodes.STAFF_DELETED);
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorCode", e.getErrorCode());
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to delete staff member: " + e.getMessage());
         }
@@ -315,13 +355,13 @@ public class AdminController {
         try {
             // Check if username already exists
             if (userService.getAllUsers().stream().anyMatch(u -> u.getUsername().equals(username))) {
-                throw new RuntimeException("Username already exists");
+                throw new BusinessException(ErrorCodes.USERNAME_EXISTS);
             }
             
             // Check if email already exists
             if (email != null && !email.isEmpty() && 
                 userService.getAllUsers().stream().anyMatch(u -> email.equals(u.getEmail()))) {
-                throw new RuntimeException("Email already in use");
+                throw new BusinessException(ErrorCodes.EMAIL_EXISTS);
             }
             
             User newUser = new User();
@@ -333,7 +373,11 @@ public class AdminController {
             newUser.setRoleId(roleId);
             
             userService.saveUser(newUser);
-            redirectAttributes.addFlashAttribute("success", "User created successfully!");
+            redirectAttributes.addFlashAttribute("success", SuccessCodes.getMessage(SuccessCodes.USER_CREATED));
+            redirectAttributes.addFlashAttribute("successCode", SuccessCodes.USER_CREATED);
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorCode", e.getErrorCode());
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to create user: " + e.getMessage());
         }
@@ -356,7 +400,7 @@ public class AdminController {
         try {
             User user = userService.getUserById(id);
             if (user == null) {
-                throw new RuntimeException("User not found");
+                throw new BusinessException(ErrorCodes.USER_NOT_FOUND);
             }
             
             // Get current logged-in user
@@ -364,6 +408,7 @@ public class AdminController {
             
             // Check if username and email already exists (but not for the current user)
             List<User> users = userService.getAllUsers();
+<<<<<<< Updated upstream
             
             // Kiểm tra username
             boolean usernameExists = users.stream()
@@ -373,11 +418,26 @@ public class AdminController {
             }
             
             // Kiểm tra email
+=======
+            
+            // Check username
+            boolean usernameExists = users.stream()
+                .anyMatch(u -> u.getUsername().equals(username) && !u.getId().equals(id));
+            if (usernameExists) {
+                throw new BusinessException(ErrorCodes.USERNAME_EXISTS);
+            }
+            
+            // Check email
+>>>>>>> Stashed changes
             if (email != null && !email.isEmpty()) {
                 boolean emailExists = users.stream()
                     .anyMatch(u -> email.equals(u.getEmail()) && !u.getId().equals(id));
                 if (emailExists) {
+<<<<<<< Updated upstream
                     throw new RuntimeException("Email already in use");
+=======
+                    throw new BusinessException(ErrorCodes.EMAIL_EXISTS);
+>>>>>>> Stashed changes
                 }
             }
             
@@ -385,7 +445,7 @@ public class AdminController {
             if (!currentUser.getId().equals(id) && user.getRoleId() == 1 && roleId != 1) {
                 long adminCount = userService.countUsersByRole(1);
                 if (adminCount <= 1) {
-                    throw new RuntimeException("Cannot change role of the last administrator");
+                    throw new BusinessException(ErrorCodes.LAST_ADMIN);
                 }
             }
             
@@ -409,7 +469,11 @@ public class AdminController {
             }
             
             userService.saveUser(user);
-            redirectAttributes.addFlashAttribute("success", "User updated successfully!");
+            redirectAttributes.addFlashAttribute("success", SuccessCodes.getMessage(SuccessCodes.USER_UPDATED));
+            redirectAttributes.addFlashAttribute("successCode", SuccessCodes.USER_UPDATED);
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorCode", e.getErrorCode());
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to update user: " + e.getMessage());
         }
@@ -425,7 +489,7 @@ public class AdminController {
         try {
             User user = userService.getUserById(id);
             if (user == null) {
-                throw new RuntimeException("User not found");
+                throw new BusinessException(ErrorCodes.USER_NOT_FOUND);
             }
             
             // Get current logged-in user
@@ -433,21 +497,31 @@ public class AdminController {
             
             // Prevent admins from deleting themselves
             if (currentUser.getId().equals(id)) {
-                throw new RuntimeException("Administrators cannot delete their own accounts");
+                throw new BusinessException(ErrorCodes.SELF_DELETE);
             }
             
             // Don't allow deletion if this is the last admin
             if (Integer.valueOf(1).equals(user.getRoleId())) {
                 long adminCount = userService.countUsersByRole(1);
                 if (adminCount <= 1) {
-                    throw new RuntimeException("Cannot delete the last administrator account");
+                    throw new BusinessException(ErrorCodes.LAST_ADMIN);
                 }
             }
             
             userService.deleteUser(id);
-            redirectAttributes.addFlashAttribute("success", "User deleted successfully!");
+            redirectAttributes.addFlashAttribute("success", SuccessCodes.getMessage(SuccessCodes.USER_DELETED));
+            redirectAttributes.addFlashAttribute("successCode", SuccessCodes.USER_DELETED);
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorCode", e.getErrorCode());
         } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("error", "Failed to delete user: " + e.getMessage());
+            String errorMessage = e.getMessage();
+            // Kiểm tra nếu là lỗi constraint khóa ngoại
+            if (errorMessage != null && errorMessage.contains("constraint")) {
+                redirectAttributes.addFlashAttribute("error", "Cannot delete user that has bookings or other related data");
+            } else {
+                redirectAttributes.addFlashAttribute("error", "Failed to delete user: " + errorMessage);
+            }
         }
         
         return "redirect:/admin/users";
@@ -491,7 +565,7 @@ public class AdminController {
         try {
             // Check if room number already exists
             if (roomService.getAllRooms().stream().anyMatch(r -> r.getRoomNumber().equals(roomNumber))) {
-                throw new RuntimeException("Room number already exists");
+                throw new BusinessException(ErrorCodes.ROOM_NUMBER_EXISTS);
             }
             
             Room newRoom = new Room();
@@ -499,14 +573,18 @@ public class AdminController {
             
             RoomType roomType = roomService.getRoomTypeById(typeId);
             if (roomType == null) {
-                throw new RuntimeException("Room type not found");
+                throw new BusinessException(ErrorCodes.ROOM_TYPE_NOT_FOUND);
             }
             newRoom.setRoomType(roomType);
             
             newRoom.setStatus("AVAILABLE");
             
             roomService.saveRoom(newRoom);
-            redirectAttributes.addFlashAttribute("success", "Room created successfully!");
+            redirectAttributes.addFlashAttribute("success", SuccessCodes.getMessage(SuccessCodes.ROOM_CREATED));
+            redirectAttributes.addFlashAttribute("successCode", SuccessCodes.ROOM_CREATED);
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorCode", e.getErrorCode());
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to create room: " + e.getMessage());
         }
@@ -525,7 +603,7 @@ public class AdminController {
         try {
             Room room = roomService.getRoomById(id);
             if (room == null) {
-                throw new RuntimeException("Room not found");
+                throw new BusinessException(ErrorCodes.ROOM_NOT_FOUND);
             }
             
             // Check if room number already exists (but not for the current room)
@@ -534,21 +612,25 @@ public class AdminController {
                 .findFirst().orElse(null);
                 
             if (existingRoom != null) {
-                throw new RuntimeException("Room number already exists");
+                throw new BusinessException(ErrorCodes.ROOM_NUMBER_EXISTS);
             }
             
             room.setRoomNumber(roomNumber);
             
             RoomType roomType = roomService.getRoomTypeById(typeId);
             if (roomType == null) {
-                throw new RuntimeException("Room type not found");
+                throw new BusinessException(ErrorCodes.ROOM_TYPE_NOT_FOUND);
             }
             room.setRoomType(roomType);
             
             room.setStatus(status);
             
             roomService.saveRoom(room);
-            redirectAttributes.addFlashAttribute("success", "Room updated successfully!");
+            redirectAttributes.addFlashAttribute("success", SuccessCodes.getMessage(SuccessCodes.ROOM_UPDATED));
+            redirectAttributes.addFlashAttribute("successCode", SuccessCodes.ROOM_UPDATED);
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorCode", e.getErrorCode());
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to update room: " + e.getMessage());
         }
@@ -562,14 +644,18 @@ public class AdminController {
             // Check if room exists
             Room room = roomService.getRoomById(id);
             if (room == null) {
-                throw new RuntimeException("Room not found");
+                throw new BusinessException(ErrorCodes.ROOM_NOT_FOUND);
             }
             
             // Simple check if room can be deleted
             // In a real app, check if there are related bookings
             
             roomService.deleteRoom(id);
-            redirectAttributes.addFlashAttribute("success", "Room deleted successfully!");
+            redirectAttributes.addFlashAttribute("success", SuccessCodes.getMessage(SuccessCodes.ROOM_DELETED));
+            redirectAttributes.addFlashAttribute("successCode", SuccessCodes.ROOM_DELETED);
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorCode", e.getErrorCode());
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to delete room: " + e.getMessage());
         }
@@ -617,7 +703,11 @@ public class AdminController {
             if (image != null && !image.isEmpty()) {
                 String contentType = image.getContentType();
                 if (!"image/jpeg".equals(contentType) && !"image/png".equals(contentType)) {
+<<<<<<< Updated upstream
                     throw new RuntimeException("Định dạng tệp ảnh chỉ chấp nhận JPG hoặc PNG");
+=======
+                    throw new BusinessException(ErrorCodes.INVALID_IMAGE_FORMAT);
+>>>>>>> Stashed changes
                 }
             }
             
@@ -639,9 +729,28 @@ public class AdminController {
                 roomService.saveRoomType(newRoomType);
             }
             
+<<<<<<< Updated upstream
             redirectAttributes.addFlashAttribute("success", "Room type created successfully!");
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
+=======
+            redirectAttributes.addFlashAttribute("success", SuccessCodes.getMessage(SuccessCodes.ROOM_TYPE_CREATED));
+            redirectAttributes.addFlashAttribute("successCode", SuccessCodes.ROOM_TYPE_CREATED);
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorCode", e.getErrorCode());
+            
+            // Add the invalid input back to the form
+            redirectAttributes.addFlashAttribute("roomTypeForm", Map.of(
+                "name", name,
+                "description", description,
+                "capacity", capacity,
+                "price", price,
+                "amenities", amenities
+            ));
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to create room type: There is already a room type with the same name");
+>>>>>>> Stashed changes
             
             // Add the invalid input back to the form
             redirectAttributes.addFlashAttribute("roomTypeForm", Map.of(
@@ -672,12 +781,12 @@ public class AdminController {
         try {
             // Validate price
             if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
-                throw new RuntimeException("Price must be greater than zero");
+                throw new BusinessException(ErrorCodes.INVALID_PRICE);
             }
             
             RoomType roomType = roomService.getRoomTypeById(id);
             if (roomType == null) {
-                throw new RuntimeException("Room type not found");
+                throw new BusinessException(ErrorCodes.ROOM_TYPE_NOT_FOUND);
             }
             
             roomType.setName(name);
@@ -688,14 +797,24 @@ public class AdminController {
             
             // Handle image upload if provided
             if (image != null && !image.isEmpty()) {
+                // Validate image format
+                String contentType = image.getContentType();
+                if (!"image/jpeg".equals(contentType) && !"image/png".equals(contentType)) {
+                    throw new BusinessException(ErrorCodes.INVALID_IMAGE_FORMAT);
+                }
+                
                 String imagePath = adminService.saveRoomTypeImage(image, name, id);
                 roomType.setImagePath(imagePath);
             }
             
             roomService.saveRoomType(roomType);
-            redirectAttributes.addFlashAttribute("success", "Room type updated successfully!");
+            redirectAttributes.addFlashAttribute("success", SuccessCodes.getMessage(SuccessCodes.ROOM_TYPE_UPDATED));
+            redirectAttributes.addFlashAttribute("successCode", SuccessCodes.ROOM_TYPE_UPDATED);
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorCode", e.getErrorCode());
         } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("error", "Failed to update room type: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Failed to update room type: There is already a room type with the same name");
         } catch (IOException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to upload image: " + e.getMessage());
         }
@@ -709,7 +828,7 @@ public class AdminController {
             // Check if room type exists
             RoomType roomType = roomService.getRoomTypeById(id);
             if (roomType == null) {
-                throw new RuntimeException("Room type not found");
+                throw new BusinessException(ErrorCodes.ROOM_TYPE_NOT_FOUND);
             }
             
             // Check if room type is in use
@@ -717,11 +836,15 @@ public class AdminController {
                 .anyMatch(r -> r.getRoomType().getId().equals(id));
                 
             if (inUse) {
-                throw new RuntimeException("Cannot delete room type that has rooms assigned to it");
+                throw new BusinessException(ErrorCodes.ROOM_TYPE_HAS_ROOMS);
             }
             
             roomService.deleteRoomType(id);
-            redirectAttributes.addFlashAttribute("success", "Room type deleted successfully!");
+            redirectAttributes.addFlashAttribute("success", SuccessCodes.getMessage(SuccessCodes.ROOM_TYPE_DELETED));
+            redirectAttributes.addFlashAttribute("successCode", SuccessCodes.ROOM_TYPE_DELETED);
+        } catch (BusinessException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorCode", e.getErrorCode());
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", "Failed to delete room type: " + e.getMessage());
         }
@@ -758,6 +881,7 @@ public class AdminController {
         
         return "admin/RevenueReport";
     }
+<<<<<<< Updated upstream
     
     // ==================== PASSWORD MANAGEMENT ====================
     
@@ -797,6 +921,8 @@ public class AdminController {
         
         return "redirect:/admin/users";
     }
+=======
+>>>>>>> Stashed changes
 
     /**
      * Display invoice for a specific booking (for admin use)

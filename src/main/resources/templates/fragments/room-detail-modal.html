@@ -290,20 +290,26 @@
                         // Update amenities list
                         roomAmenitiesList.innerHTML = '';
                         
-                        // Add common amenities
-                        roomAmenitiesList.innerHTML += `<li>Wi-Fi</li>`;
-                        roomAmenitiesList.innerHTML += `<li>TV</li>`;
-                        roomAmenitiesList.innerHTML += `<li>Air Conditioning</li>`;
-                        roomAmenitiesList.innerHTML += `<li>Private Bathroom</li>`;
-                        
-                        // Add specific amenities from roomAmenities string
+                        // Add amenities from roomAmenities string
                         if (roomAmenities) {
                             const amenitiesList = roomAmenities.split(',').map(item => item.trim());
                             amenitiesList.forEach(amenity => {
-                                if (amenity && !['Wi-Fi', 'TV', 'Air Conditioning', 'Private Bathroom'].includes(amenity)) {
+                                if (amenity && amenity.trim() !== '') {
                                     roomAmenitiesList.innerHTML += `<li>${amenity}</li>`;
                                 }
                             });
+                        }
+                        
+                        // If we have room type data from the server, use that as a backup
+                        if (roomType && roomType.amenities && roomType.amenities.length > 0) {
+                            // If no amenities were added from the card, use the ones from roomType data
+                            if (roomAmenitiesList.innerHTML === '') {
+                                roomType.amenities.forEach(amenity => {
+                                    if (amenity && amenity.trim() !== '') {
+                                        roomAmenitiesList.innerHTML += `<li>${amenity}</li>`;
+                                    }
+                                });
+                            }
                         }
                         
                         // Update available count

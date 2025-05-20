@@ -25,26 +25,6 @@ public class BookingDetailService {
         return bookingDetailRepository.findByBookingId(bookingId);
     }
     
-    public List<BookingDetail> getBookingDetailsByStatus(String status) {
-        return bookingDetailRepository.findByBookingStatus(status);
-    }
-    
-    public List<BookingDetail> getBookingDetailsByRoomAndDate(Integer roomId, LocalDateTime date) {
-        return bookingDetailRepository.findByRoomIdAndDate(roomId, date);
-    }
-    
-    public List<BookingDetail> getBookingDetailsByRoomType(Integer roomTypeId) {
-        return bookingDetailRepository.findByRoomTypeId(roomTypeId);
-    }
-    
-    public List<BookingDetail> getBookingDetailsByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
-        return bookingDetailRepository.findByDateRange(startDate, endDate);
-    }
-    
-    public Long countBookingDetailsByStatus(String status) {
-        return bookingDetailRepository.countByStatus(status);
-    }
-    
     public boolean isRoomAvailable(Integer roomId, LocalDateTime startDate, LocalDateTime endDate) {
         List<BookingDetail> conflictingBookings = bookingDetailRepository.findConflictingBookings(roomId, startDate, endDate);
         return conflictingBookings.isEmpty();
@@ -106,10 +86,6 @@ public class BookingDetailService {
         roomRepository.save(room);
         
         return bookingDetailRepository.save(bookingDetail);
-    }
-    
-    public List<BookingDetail> getAllBookingDetails() {
-        return bookingDetailRepository.findAll();
     }
     
     public BookingDetail getBookingDetailById(Integer id) {

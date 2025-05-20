@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.HotelManagement.exception.BusinessException;
+import com.HotelManagement.exception.SuccessCodes;
 import com.HotelManagement.models.User;
 import com.HotelManagement.service.AuthService;
 
@@ -49,6 +51,12 @@ public class AuthController
                 return "redirect:/"; // Redirect back with error
             }
         } 
+        catch (BusinessException e) 
+        {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorCode", e.getErrorCode());
+            return "redirect:/";
+        }
         catch (Exception e) 
         {
             redirectAttributes.addFlashAttribute("error", "Login failed: " + e.getMessage());
@@ -75,9 +83,16 @@ public class AuthController
             session.setAttribute("userId", newUser.getId());
             session.setAttribute("userRole", newUser.getRoleId());
             
-            redirectAttributes.addFlashAttribute("success", "Registration successful!");
+            redirectAttributes.addFlashAttribute("success", SuccessCodes.getMessage(SuccessCodes.USER_CREATED));
+            redirectAttributes.addFlashAttribute("successCode", SuccessCodes.USER_CREATED);
             return "redirect:/";
         } 
+        catch (BusinessException e) 
+        {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorCode", e.getErrorCode());
+            return "redirect:/";
+        }
         catch (Exception e) 
         {
             redirectAttributes.addFlashAttribute("error", "Registration failed: " + e.getMessage());

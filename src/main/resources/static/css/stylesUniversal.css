@@ -231,7 +231,7 @@ tr:hover {
 
 .form-control {
     width: 100%;
-    padding: 10px 15px;
+    padding: 10px 1px;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
     font-size: 1rem;

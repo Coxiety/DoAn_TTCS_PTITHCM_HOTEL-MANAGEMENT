@@ -69,13 +69,6 @@ public class PaymentService {
     }
     
     /**
-     * Get payments by status
-     */
-    public List<Payment> getPaymentsByStatus(String status) {
-        return paymentRepository.findByStatus(status);
-    }
-    
-    /**
      * Get payments by date range
      */
     public List<Payment> getPaymentsByDateRange(LocalDate startDate, LocalDate endDate) {
